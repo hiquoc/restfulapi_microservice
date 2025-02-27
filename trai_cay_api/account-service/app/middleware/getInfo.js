@@ -2,10 +2,10 @@ const jwt = require("jsonwebtoken");
 const db = require("../config/mysql");
 
 const getInfo = (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1]; // Lấy token từ header
+    const token = req.cookies.token; // Lấy token từ cookie
 
     if (!token) {
-        return res.status(401).json({ message: "Vui lòng đăng nhập" }); // Khong co token
+        return res.status(401).json({ message: "Vui lòng đăng nhập" }); // Không có token
     }
 
     jwt.verify(token, "huy", async (err, decoded) => {
@@ -13,16 +13,20 @@ const getInfo = (req, res, next) => {
             return res.status(403).json({ message: "Token không hợp lệ" });
         }
 
-        const sql = "SELECT account_id, username, fullname, phone, email, role FROM account WHERE username = ?";
-        const [rows] = await db.promise().query(sql, decoded.username);
+        try {
+            const sql = "SELECT account_id, username, fullname, phone, email, role FROM account WHERE username = ?";
+            const [rows] = await db.promise().query(sql, [decoded.username]);
 
-        if (rows.length === 0) {
-            return res.status(401).json({ message: "Token không hợp lệ" });
+            if (rows.length === 0) {
+                return res.status(401).json({ message: "Token không hợp lệ" });
+            }
+
+            req.user = rows[0]; // Lưu thông tin user vào req.user
+            next();
+        } catch (error) {
+            console.error("Lỗi truy vấn SQL:", error);
+            return res.status(500).json({ message: "Lỗi server" });
         }
-
-        const user = rows[0]; // Lấy user đầu tiên
-        req.user = user;
-        next();
     });
 };
 

@@ -112,51 +112,52 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    const token = localStorage.getItem("token");
-    let dropdown=document.getElementById("user-dropdown")
+    let dropdown = document.getElementById("user-dropdown");
 
-    if (!token) {
-      dropdown.innerHTML = `
-        <li><a class="dropdown-item dropdown-item-header" href="/account/login">Đăng nhập</a></li>
-        <li><a class="dropdown-item dropdown-item-header" href="/account/signup">Đăng kí</a></li>
-    `;
-    } else {
-      fetch("http://localhost:5000/account", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`
+    fetch("http://localhost:5000/account", {
+      method: "GET",
+      credentials: "include",
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error("Không thể lấy thông tin tài khoản");
         }
+        const data = await response.json();
+
+        if (data.role === "admin") {
+          dropdown.innerHTML += `<li><a class="dropdown-item dropdown-item-header" href="/admin/account">Quản lý</a></li>`;
+          dropdown.innerHTML += `<li><a class="dropdown-item dropdown-item-header" href="/account/user">${data.username}</a></li>`;
+        } else if (data.role === "user") {
+          dropdown.innerHTML += `<li><a class="dropdown-item dropdown-item-header" href="/account/user">${data.username}</a></li>`;
+        }
+        dropdown.innerHTML += `<li><a class="dropdown-item dropdown-item-header" href="/account/logout" onclick="logout()">Đăng xuất</a></li>`;
       })
-        .then(async (response) => {
-          const data = await response.json();
-
-          if (response.ok) {
-            if (data.role === "admin") {
-              dropdown.innerHTML += `<li><a class="dropdown-item dropdown-item-header" href="/admin">Quản lý</a></li>`;
-            } else if (data.role === "user") {
-              dropdown.innerHTML += `<li><a class="dropdown-item dropdown-item-header" href="/account/user">${data.username}</a></li>`;
-            }
-            dropdown.innerHTML += `<li><a class="dropdown-item dropdown-item-header" href="/account/logout" onclick="logout()">Đăng xuất</a></li>`;
-          } else {
-            dropdown.innerHTML = `
-                <li><a class="dropdown-item dropdown-item-header" href="/account/login">Đăng nhập</a></li>
-                <li><a class="dropdown-item dropdown-item-header" href="/account/signup">Đăng kí</a></li>
-            `;
-          }
-        })
-        .catch((error) => {
-          console.error("Fetch error:", error);
-        });
-    }
-
-
+      .catch(() => {
+        dropdown.innerHTML = `
+            <li><a class="dropdown-item dropdown-item-header" href="/account/login">Đăng nhập</a></li>
+            <li><a class="dropdown-item dropdown-item-header" href="/account/signup">Đăng kí</a></li>
+        `;
+      });
   });
 
   // Hàm đăng xuất
-  function logout() {
-    localStorage.removeItem("token");
-    window.location.href = "/account/login";
-  }
+ async function logout() {
+    try {
+        const response = await fetch("http://localhost:5000/account/logout", {
+            method: "POST",
+            credentials: "include", // Đảm bảo gửi cookie
+        });
+
+        if (response.ok) {
+            window.location.reload(); // Tải lại trang sau khi đăng xuất
+        } else {
+            console.error("Lỗi khi đăng xuất!");
+        }
+    } catch (error) {
+        console.error("Lỗi khi gửi yêu cầu đăng xuất:", error);
+    }
+}
+
 
 
 

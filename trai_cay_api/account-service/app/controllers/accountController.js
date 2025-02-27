@@ -28,7 +28,16 @@ module.exports = {
         expiresIn: "1h",
       });
 
-      return res.json({ message: "Đăng nhập thành công!", token });
+      res.cookie("token", token, {
+        httpOnly: true, // Bảo mật, không thể truy cập từ JavaScript trên trình duyệt
+        secure: true, // Để `true` nếu dùng HTTPS
+        sameSite: "None", // Chặn gửi cookie với các yêu cầu từ trang khác
+        domain: "localhost", // Đặt đúng domain
+        path: "/", // Đảm bảo cookie được gửi trên tất cả đường dẫn
+        maxAge: 3600000, // 1 giờ
+      });
+
+      return res.json({ message: "Đăng nhập thành công!" });
     } catch (err) {
       console.error("Lỗi đăng nhập:", err);
       return res
@@ -89,6 +98,17 @@ module.exports = {
     }
   },
 
+  logout: (req, res) => {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true, // Phải khớp với lúc tạo cookie
+      sameSite: "None",
+      domain: "localhost",
+      path: "/",
+    });
+    res.json({ message: "Đăng xuất thành công!" });
+  },
+
   infoGet: (req, res) => {
     res.json({
       account_id: req.user.account_id,
@@ -99,14 +119,20 @@ module.exports = {
       role: req.user.role,
     });
   },
+
   infoPost: async (req, res) => {
     const account_id = req.user.account_id;
-    const { hovatenval,emailval,sdtval } = req.body;
-    try{
-      const checkExitSql="SELECT * FROM account WHERE (phone=? OR email=?) AND account_id!=?";
-      const [results]=await db.promise().query(checkExitSql,[sdtval,emailval,account_id]);
-      if(results.length>0){
-        const existingAcc=results.find((acc)=>acc.phone===sdtval||acc.email===emailval);
+    const { hovatenval, emailval, sdtval } = req.body;
+    try {
+      const checkExitSql =
+        "SELECT * FROM account WHERE (phone=? OR email=?) AND account_id!=?";
+      const [results] = await db
+        .promise()
+        .query(checkExitSql, [sdtval, emailval, account_id]);
+      if (results.length > 0) {
+        const existingAcc = results.find(
+          (acc) => acc.phone === sdtval || acc.email === emailval
+        );
         if (existingAcc.phone === sdtval) {
           return res
             .status(400)
@@ -118,11 +144,11 @@ module.exports = {
             .json({ message: "Email đã được sử dụng để đăng kí!" });
         }
       }
-      const sql="UPDATE account SET fullname=?, email=?, phone=? WHERE account_id=?";
-      await db.promise().query(sql,[hovatenval,emailval,sdtval,account_id]);
+      const sql =
+        "UPDATE account SET fullname=?, email=?, phone=? WHERE account_id=?";
+      await db.promise().query(sql, [hovatenval, emailval, sdtval, account_id]);
       return res.status(200).json({ message: "Lưu thành công!" });
-    }
-    catch(error) {
+    } catch (error) {
       console.log("Lỗi khi thêm/cập nhật thông tin: " + error);
       return res
         .status(500)
@@ -153,6 +179,7 @@ module.exports = {
         .json({ message: "Lỗi server", error: error.message });
     }
   },
+
   addressPost: async (req, res) => {
     const account_id = req.user.account_id;
     const { tinh, quan, phuong, nha, ghichu } = req.body;
@@ -187,6 +214,42 @@ module.exports = {
       return res
         .status(500)
         .json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  accounts: async (req, res) => {
+    if (req.user.role == "admin") {
+      try {
+        const getAccountsSql = "SELECT * FROM account";
+        const [results] = await db.promise().query(getAccountsSql);
+
+        return res.status(200).json(results);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách tài khoản:", error.message);
+        return res
+          .status(500)
+          .json({ message: "Lỗi server", error: error.message });
+      }
+    } else {
+      return res.status(403).json({ message: "Bạn không có quyền truy cập" });
+    }
+  },
+
+  addresses: async (req, res) => {
+    if (req.user.role == "admin") {
+      try {
+        const getAddressesSql = "SELECT * FROM address";
+        const [results] = await db.promise().query(getAddressesSql);
+
+        return res.status(200).json(results);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách địa chỉ:", error.message);
+        return res
+          .status(500)
+          .json({ message: "Lỗi server", error: error.message });
+      }
+    } else {
+      return res.status(403).json({ message: "Bạn không có quyền truy cập" });
     }
   },
 };
