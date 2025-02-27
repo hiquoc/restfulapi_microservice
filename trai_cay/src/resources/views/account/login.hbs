@@ -1,0 +1,118 @@
+<div
+    style="background-color: rgb(255, 255, 255); margin: 80px auto; width: 900px; height: 550px;position:relative;
+     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); display: flex; flex-direction: row; border-radius: 15px; overflow: hidden;">
+    <a href="/" style="position: absolute; top: 10px; right: 10px; text-decoration: none; color: #333;">
+        <i class="bi bi-x-circle" style="font-size: 24px;"></i>
+    </a>
+    <div style="flex: 50%;">
+        <img style="width: 100%; height: 100%; object-fit: cover;"
+            src="https://64.media.tumblr.com/967c94f6202a5fe5032e4165bbfeeff7/f7b876c187bd4b05-4d/s1280x1920/c6847ff06bd952afd3d7eb95a0cae182ae43c62f.jpg">
+    </div>
+    <div
+        style="flex: 50%; background-color: rgb(147, 147, 147); display: flex; align-items: center; justify-content: center;">
+        <form id="loginForm" method="post" style="background: #fff; padding: 40px; border-radius: 0 15px 15px 0; width: 100%; height: 100%;
+         display: flex; flex-direction: column; justify-content: center;">
+            <h1 style="margin-bottom: 20px; text-align: center; color: #333;">Đăng nhập</h1>
+            <div style="margin-bottom: 15px;">
+                <label for="username" style="display: block; margin-bottom: 8px; color: #555;">Tên tài khoản</label>
+                <input type="text" id="username" name="username"
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label for="password" style="display: block; margin-bottom: 8px; color: #555;">Mật khẩu</label>
+                <input type="password" id="password" name="password"
+                    style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+            </div>
+            {{#if err}}
+            <div style="padding-bottom:5px;text-align:center;color:red">{{err}}</div>
+            {{/if}}
+            <button id="submit-btn" type="submit" class="button-27" style="margin-top: 20px;">Đăng nhập</button>
+            <p style="margin-top: 20px; text-align: center; color: #555; font-size: 14px;">
+                Chưa có tài khoản? <a href="/account/signup"
+                    style="color: #0000EE; text-decoration: none; font-size: 14px;">Đăng ký ngay</a>
+            </p>
+        </form>
+    </div>
+</div>
+<div class="modal fade" id="alertModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+            style="position:relative; display: flex; align-items: center; justify-content: center;">
+            <span class="closex"
+                style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+            <div
+                style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                <p id="alert-text"
+                    style="margin-bottom:-20px; text-align: center; color: #333;font-size:20px;color:red">Có lỗi</p>
+
+            </div>
+            <button type="submit" class="button-27 closex"
+                style="margin-bottom: 30px; background-color: #010101; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width:170px; font-size: 16px;">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", (event) => {
+        const form = document.querySelector("form");
+        const submit_btn = document.getElementById("submit-btn");
+        const alerttext = document.getElementById("alert-text")
+        const closeButtons = document.querySelectorAll('.closex');
+        closeButtons.forEach(function (button) {
+            button.onclick = function () {
+                $('#alertModal').modal('hide');
+            };
+        });
+        submit_btn.onclick = async function (e) {
+            e.preventDefault();
+            if (!check()) {
+                $('#alertModal').modal('show');
+            }
+            else {
+                const username = document.getElementById("username").value;
+                const password = document.getElementById("password").value;
+
+                try {
+                    const response = await fetch("http://localhost:5001/login", { //"http://localhost:5000/account/login,"http://localhost:5001/login""
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ username, password }),
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem("token", data.token); // Lưu token
+                        window.location.href = "/"; // Chuyển hướng đến trang chính
+                    } else {
+                        alerttext.innerHTML = "Tên tài khoản hoặc mật khẩu không đúng!"
+                        $('#alertModal').modal('show');
+                    }
+                } catch (error) {
+                    console.log("Lỗi kết nối đến server:", error);
+                    alerttext.innerHTML ="Không thể kết nối đến server. Hãy thử lại sau! \n" + error;
+                    $('#alertModal').modal('show');
+                }
+            }
+
+        }
+        function check() {
+            //Tai khoan
+            const username = document.getElementById("username");
+            if (username.value == '') {
+                alerttext.innerHTML = "Tên tài khoản không được để trống!"
+                return false;
+            }
+            const password = document.getElementById("password");
+            if (password.value == '') {
+                alerttext.innerHTML = "Mật khẩu không được để trống!"
+                return false;
+            }
+            return true;
+        }
+    })
+
+
+
+</script>
