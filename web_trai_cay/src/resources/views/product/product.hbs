@@ -1,0 +1,891 @@
+<div class="flex-container"
+    style="display: flex; flex-direction: row; font-size: 30px; gap: 20px; text-align: center; padding: 30px 80px 0 80px;">
+    <!-- Product Image Section -->
+    <div class="flex-item-left card" style="flex: 45%; height:auto; border:none;">
+        <!-- Display the main image -->
+        <img src="{{product.mainImg}}" class="img-fluid" id="main-image" alt="Main product image"
+            style="height: 450px; width: 100%; object-fit: cover" data-original-src="{{product.mainImg}}">
+
+        <!-- Display thumbnails of other images -->
+        <div style="margin-top: 10px;">
+            <img class="small-img" style="height: 60px; margin-right: 5px;border:1px solid #12487f;border-radius:6px"
+                src="{{product.mainImg}}" alt="Product thumbnail">
+            {{#each product.images}}
+            <img class="small-img" style="height: 60px; margin-right: 5px;border:1px solid #eee;border-radius:6px "
+                src="{{this}}" alt="Product thumbnail">
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Product Details Section -->
+    <div class="flex-item-left" style="padding: 10px; flex: 55%;padding-top:10px">
+        <div>
+            <input style="display:none" id="productID" value="{{product.product_id}}">
+            <p style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2;
+                 font-family: 'Arial', sans-serif; padding-right: 25px; font-size: 27px; font-weight: bold;"
+                class="ten-sp"> {{product.name}} </p>
+            <div style="display: flex;margin-top:10px;justify-content:space-between;margin-top:30px">
+                <div style="display: flex;align-items:center">
+                    <p>Giá bán:</p>
+                    <p
+                        style="margin-left: 70px; color: red; font-weight: 600; font-family: 'Arial', sans-serif;font-size:22px">
+                        {{formatPrice product.price}}₫</p>
+                </div>
+                <div>
+                    <p style="font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic;">
+                        {{product.sold}} lượt mua
+                    </p>
+                </div>
+
+            </div>
+            {{!-- <div style="display: flex; margin-top: 17px;">
+                <p style="margin: 8px 100px 0 0;">Size:</p>
+                <div>
+                    <div style="display: flex; justify-content: space-between; gap: 20px">
+                        <button style="width: 100px;" type="button" class="btn btn-light btn-size"
+                            onclick="highlightSize(this)">S</button>
+                        <button style="width: 100px;" type="button" class="btn btn-light btn-size"
+                            onclick="highlightSize(this)">M</button>
+                        <button style="width: 100px;" type="button" class="btn btn-light btn-size"
+                            onclick="highlightSize(this)">L</button>
+                        <button style="width: 100px;" type="button" class="btn btn-light btn-size"
+                            onclick="highlightSize(this)">XL</button>
+                    </div>
+                    <p style="margin: 10px 60px 20px 0;">
+                        <a href="#" style="color: #05a;" data-bs-toggle="modal" data-bs-target="#sizeGuideModal">Hướng
+                            dẫn chọn size</a>
+                    </p>
+
+                    <!-- Modal -->
+                    <div class="modal fade" id="sizeGuideModal" tabindex="-1" aria-labelledby="sizeGuideModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-body text-center">
+                                    <img src="https://4menshop.com/images/2023/07/20230701_a05edeb9e4ba5d26e5459cdfcc5c593c_1688188761.png"
+                                        alt="Size Guide" style="width: 100%; height: auto;">
+                                </div>
+                                <div class="modal-body text-center">
+                                    <img src="https://4menshop.com/images/2023/07/20230701_25291a52d340dd01a81dc4e6a89628db_1688188761.png"
+                                        alt="Size Guide" style="width: 100%; height: auto;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+            <div style="display: flex;">
+                <p style="margin: 8px 66px 0 0;">Màu sắc:</p>
+                <div style="display: flex; justify-content: space-between; gap: 20px;align-items:center">
+                    {{#each product.color}}
+                    <button
+                        style="min-width: 100px; max-height: 61.6px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"
+                        type="button" class="btn btn-light btn-color" onclick="highlightColor(this)">
+                        {{this}}
+                    </button>
+                    {{/each}}
+
+
+                </div>
+
+            </div> --}}
+            <div style="display: flex;margin-top:-25px">
+                <p style="margin: 40px 62px 0 0;">Số lượng:</p>
+                <div class="quantity-container" style="margin-left:-45px">
+                    <button type="button" class="quantity-btn" onclick="decrementQuantity()">-</button>
+                    <input type="number" id="so-luong" name="soluong" value="1" min="1" max="10" readonly>
+                    <button type="button" class="quantity-btn" onclick="incrementQuantity()">+</button>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 25px;">
+
+                <button type="button" class="button-27"
+                    style="background-color: #ff5722; color: #fff; width: 48%;border: none" onclick="them()">
+                    <i class="bi bi-cart4" style="margin-right: 8px; font-size: 20px;"></i> Thêm vào giỏ
+                </button>
+
+                <button type="button" class="button-27"
+                    style="width: 48%; margin-left: 4px; margin-top: -5px; display: flex; align-items: center; justify-content: center; gap: 8px;"
+                    onclick="checkOut()">
+                    <i class="bi bi-credit-card" style="font-size: 20px;"></i>
+                    <span>Thanh toán</span>
+                </button>
+            </div>
+            <p style="margin-top: 20px; cursor: pointer; color: #05a; position: relative; text-align: left;"
+                onclick="toggleDescription()">
+                <span>Thông tin chi tiết</span>
+                <span id="toggleIcon" style="position: absolute; right: 0;">+</span>
+                <span style="display: block; border-bottom: 1px solid #05a; margin-top: 5px;"></span>
+            </p>
+            <div class="description" id="description"
+                style="display: none; padding: 10px; margin-top: 10px; border: 1px solid #ccc; background-color: #f9f9f9;">
+                <p style="white-space: pre-line;">{{product.description}}
+                </p>
+            </div>
+            <p style="margin-top: 20px; cursor: pointer; color: rgb(0, 0, 0); position: relative; text-align: left; "
+                onclick="toggleComment()">
+                <span>Bình luận và đánh giá</span>
+                <span id="toggleIcon1" style="position: absolute; right: 0;">+</span>
+                <span style="display: block; border-bottom: 1px solid rgb(0, 0, 0); margin-top: 5px;"></span>
+            </p>
+            <div class="comment" id="comment"
+                style="display: none; padding: 10px;padding-left:20px; margin-top: 10px; border: 1px solid #ccc; background-color: #f9f9f9;">
+                {{#if comments}}
+                {{#if dccmt}}
+                <form id="comment-form" style="position: relative; padding-bottom: 50px;" method="post" action="comment"
+                    onsubmit="return validateForm()">
+                    <div style="display: flex">
+                        <p style="font-weight: bold; display: inline-block; margin-right: 10px;">{{user.username}}</p>
+
+                        <div style="display:flex; margin-top:-9px">
+                            <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"
+                                rel="stylesheet">
+
+                            <div id="rating-container">
+                                <i style="font-size: 16px;" id="1-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="2-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="3-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="4-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="5-star" class="fa fa-star rating-star"></i>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selected-rating" name="rating" value="">
+                        <input type="hidden" id="product_id" name="id" value="{{product.product_id}}">
+
+                        <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+                        <script>
+                            $(function () {
+                                let ratingValue = 0;  // Variable to store the selected rating
+
+                                $('#rating-container .rating-star').hover(function () {
+                                    // Highlight stars on hover
+                                    $(this).prevAll().addBack().addClass("rating-hover");
+                                    $(this).nextAll().removeClass("rating-hover");
+                                }, function () {
+                                    // Remove hover effect when mouse leaves
+                                    $('#rating-container .rating-star').removeClass("rating-hover");
+                                });
+
+                                $('#rating-container .rating-star').click(function () {
+                                    // Set the rating value when a star is clicked
+                                    ratingValue = $(this).attr('id').split('-')[0];  // Get the number from the star ID (1, 2, 3, etc.)
+
+                                    // Set the chosen stars to gold and remove from the next ones
+                                    $(this).prevAll().addBack().addClass("rating-chosen");
+                                    $(this).nextAll().removeClass("rating-chosen");
+
+                                    // Update the hidden input field with the selected rating
+                                    $('#selected-rating').val(ratingValue);
+
+                                    // Optionally, display the rating value
+                                    console.log('Selected rating:', ratingValue);
+                                });
+                            });
+
+                            function validateForm() {
+                                var comment = document.querySelector('textarea[name="comment"]').value.trim();
+                                var rating = document.getElementById('selected-rating').value;
+
+                                if (!comment) {
+                                    alert("Vui lòng nhập bình luận.");
+                                    return false; // Prevent form submission
+                                }
+
+                                if (!rating) {
+                                    alert("Vui lòng chọn đánh giá.");
+                                    return false; // Prevent form submission
+                                }
+
+                                return true; // Allow form submission if validation passes
+                            }
+                        </script>
+
+                    </div>
+                    <textarea name="comment" placeholder="Nhập bình luận"
+                        style="margin: 0 20px; width: 94%; font-size: 16px;"></textarea>
+                    <button type="submit" style="position: absolute; bottom: 13px; right: 15px; padding: 10px 20px; font-size: 16px;
+                background-color: #f13737; color: #ffffff; border: none; border-radius: 8px;
+                cursor: pointer; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); transition: background-color 0.3s;">
+                        Đăng
+                    </button>
+                </form>
+                <span style="display: block; border-bottom: 2px solid rgb(217, 215, 215); margin-top: 0px;"></span>
+                {{/if}}
+                {{#each comments}}
+                <div>
+                    <div style="display: flex">
+                        <p style="font-weight: bold; display: inline-block; margin-right: 10px;">{{this.username}}
+                            {{#ifEqual this.username ../user.username}} (bạn){{/ifEqual}}
+                        </p>
+                        <!-- Display rating as stars -->
+                        <div style="color: gold; font-size: 16px;margin-top:7px">
+                            {{#each (range 1 6)}}
+                            {{#if (lte @index ../this.rating)}}
+                            <i class="fa fa-star"></i> <!-- Filled star for rating -->
+                            {{else}}
+                            <i class="fa fa-star-o"></i> <!-- Empty star for the remaining -->
+                            {{/if}}
+                            {{/each}}
+                        </div>
+                    </div>
+                    <p
+                        style="font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic;margin-top:-5px">
+                        Ngày: {{this.ngay}}</p>
+                    <p style="margin-left: 20px;">{{this.comment}}</p>
+                    <span style="display: block; border-bottom: 2px solid rgb(217, 215, 215); margin-top: 5px;"></span>
+                </div>
+                {{/each}}
+                {{else}}
+                <p>Chưa có bình luận và đánh giá</p>
+                {{#if dccmt}}
+                <form id="comment-form" style="position: relative; padding-bottom: 50px;" method="post" action="comment"
+                    onsubmit="return validateForm()">
+                    <div style="display: flex">
+                        <p style="font-weight: bold; display: inline-block; margin-right: 10px;">{{user.username}}</p>
+
+                        <div style="display:flex; margin-top:-9px">
+                            <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"
+                                rel="stylesheet">
+
+                            <div id="rating-container">
+                                <i style="font-size: 16px;" id="1-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="2-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="3-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="4-star" class="fa fa-star rating-star"></i>
+                                <i style="font-size: 16px;" id="5-star" class="fa fa-star rating-star"></i>
+                            </div>
+                        </div>
+                        <input type="hidden" id="selected-rating" name="rating" value="">
+                        <input type="hidden" id="product_id" name="id" value="{{product.product_id}}">
+
+                        <script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+                        <script>
+                            $(function () {
+                                let ratingValue = 0;  // Variable to store the selected rating
+
+                                $('#rating-container .rating-star').hover(function () {
+                                    // Highlight stars on hover
+                                    $(this).prevAll().addBack().addClass("rating-hover");
+                                    $(this).nextAll().removeClass("rating-hover");
+                                }, function () {
+                                    // Remove hover effect when mouse leaves
+                                    $('#rating-container .rating-star').removeClass("rating-hover");
+                                });
+
+                                $('#rating-container .rating-star').click(function () {
+                                    // Set the rating value when a star is clicked
+                                    ratingValue = $(this).attr('id').split('-')[0];  // Get the number from the star ID (1, 2, 3, etc.)
+
+                                    // Set the chosen stars to gold and remove from the next ones
+                                    $(this).prevAll().addBack().addClass("rating-chosen");
+                                    $(this).nextAll().removeClass("rating-chosen");
+
+                                    // Update the hidden input field with the selected rating
+                                    $('#selected-rating').val(ratingValue);
+
+                                    // Optionally, display the rating value
+                                    console.log('Selected rating:', ratingValue);
+                                });
+                            });
+
+                            function validateForm() {
+                                var comment = document.querySelector('textarea[name="comment"]').value.trim();
+                                var rating = document.getElementById('selected-rating').value;
+
+                                if (!comment) {
+                                    alert("Vui lòng nhập bình luận.");
+                                    return false; // Prevent form submission
+                                }
+
+                                if (!rating) {
+                                    alert("Vui lòng chọn đánh giá.");
+                                    return false; // Prevent form submission
+                                }
+
+                                return true; // Allow form submission if validation passes
+                            }
+                        </script>
+
+                    </div>
+                    <textarea name="comment" placeholder="Nhập bình luận"
+                        style="margin: 0 20px; width: 94%; font-size: 16px;"></textarea>
+                    <button type="submit" style="position: absolute; bottom: 13px; right: 15px; padding: 10px 20px; font-size: 16px;
+                background-color: #f13737; color: #ffffff; border: none; border-radius: 8px;
+                cursor: pointer; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); transition: background-color 0.3s;">
+                        Đăng
+                    </button>
+                </form>
+                <span style="display: block; border-bottom: 2px solid rgb(217, 215, 215); margin-top: 0px;"></span>
+                {{/if}}
+
+                {{/if}}
+            </div>
+        </div>
+    </div>
+</div>
+
+{{!-- <div style="display: flex; align-items: center; width: 100%; margin: 20px 0;padding-top:50px">
+    <span style="border-top: 1px solid #696969;flex:0.05 "></span>
+    <h1 style="margin: 0; padding: 0 10px; white-space: nowrap; font-size: 24px; color: #333;">
+        Sản phẩm thường được mua kèm
+    </h1>
+    <span style="border-top: 1px solid #696969; flex: 1;"></span>
+</div>
+
+
+<div class="grid-container"
+    style="display: flex; overflow: hidden; gap: 10px; padding: 0; position: relative; width: 100%; ">
+
+    <!-- Previous Button -->
+    <button class="prev-btn1"
+        style="position: absolute; top: 50%; left: 0px; background: rgba(255, 255, 255, 0); border: none; cursor: pointer; font-size: 36px; transform: translateY(-50%); z-index: 10; padding: 10px;">
+        <i class="bi bi-arrow-left-square"></i>
+    </button>
+
+    <!-- Container for the product cards -->
+    <div class="product-cards1"
+        style="display: flex; transition: transform 0.3s ease; padding: 0; margin: 0 50px 0 50px;">
+        <!-- Example Product Cards -->
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+        <!-- Repeat the structure for more products -->
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+        <a class="grid-item grid-item1" href="/product/one" style="flex: 0 0 25%; box-sizing: border-box;">
+            <div class="card" style="width: auto; position: relative;">
+                <img src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png"
+                    class="card-img-top" alt="..." style="width: 100%; height: 350px; object-fit: cover;"
+                    data-original-src="https://4menshop.com/cache/image/300x400/images/thumbs/2022/06/ao-so-mi-regular-mr-friendly-asm092_2_small-16907.png">
+                <i class="bi bi-cart4 cart-icon" style="display: none;"></i>
+                <div style="margin-top: 10px;">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-trang-kem-18720-slide-products-66f526dfea2d1.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-bien-18722-slide-products-66f527ce14af8.jpg">
+                    <img class="small-img" style="height: 60px; margin-right: 5px;"
+                        src="https://4menshop.com/images/thumbs/2024/09/ao-so-mi-vai-oxford-tron-signature-form-regular-sm157-mau-xanh-den-18723-slide-products-66f5286c8b689.jpg">
+                </div>
+                <div class="card-body" style="padding: 10px;">
+                    <p class="card-text">Quần Tây Sidetab 1 Bên Form Regular QT062 Màu Be</p>
+                    <p class="card-text" style="color: red; font-weight: bold;">425.000₫</p>
+                </div>
+            </div>
+        </a>
+
+        <!-- Add more cards as needed -->
+    </div>
+    <!-- Next Button -->
+    <button class="next-btn1"
+        style="position: absolute; top: 50%; right: -1px; background: rgba(255, 255, 255, 0); border: none; cursor: pointer; font-size: 36px; transform: translateY(-50%); z-index: 10; padding: 10px;">
+        <i class="bi bi-arrow-right-square"></i>
+    </button>
+</div> --}}
+
+<div style="display: flex; align-items: center; width: 100%; margin: 20px 0;padding-top:00px">
+    <span style="border-top: 1px solid #696969;flex:0.05 "></span>
+    <h1
+        style="margin: 0; padding: 0 10px; white-space: nowrap; font-size: 30px; color: #f68d0e;font-family: 'Quicksand', sans-serif;font-weight:bold">
+        Có thể bạn sẽ thích
+    </h1>
+    <span style="border-top: 1px solid #696969; flex: 1;"></span>
+</div>
+
+<div style="position: relative; width: 100%; overflow: hidden;">
+    <!-- Previous Button -->
+    <button class="prev-btn" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer; font-size: 36px; z-index: 10;">
+        <i class="bi bi-arrow-left-square"></i>
+    </button>
+
+    <div class="scroll-container" style="overflow-x: auto; scroll-behavior: smooth; white-space: nowrap;">
+        <div class="product-grid" style="display: flex; gap: 10px;">
+            {{#each other}}
+            <div class="product-card" style="display: inline-block; width: 220px;">
+                <a href="/product/{{this.product_id}}" class="product-image">
+                    <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}">
+                </a>
+                <div class="product-body">
+                    <p class="product-name">{{this.name}}</p>
+                    <p class="product-price">{{formatPrice this.price}}₫</p>
+                    <button class="buy-button" onclick="themNhanh({{this.product_id}})">
+                        <i class="fas fa-shopping-bag"></i> THÊM VÀO GIỎ
+                    </button>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+
+    <!-- Next Button -->
+    <button class="next-btn" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer; font-size: 36px; z-index: 10;">
+        <i class="bi bi-arrow-right-square"></i>
+    </button>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const scrollContainer = document.querySelector(".scroll-container");
+        const prevBtn = document.querySelector(".prev-btn");
+        const nextBtn = document.querySelector(".next-btn");
+
+        const scrollAmount = 220; // Adjust based on product width
+
+        nextBtn.addEventListener("click", () => {
+            scrollContainer.scrollBy({ left: scrollAmount, behavior: "smooth" });
+        });
+
+        prevBtn.addEventListener("click", () => {
+            scrollContainer.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+        });
+    });
+</script>
+
+
+<div class="modal fade" id="alertModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+            style="position:relative; display: flex; align-items: center; justify-content: center;">
+            <span class="closexxx"
+                style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+            <div
+                style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                <p id="alert-text"
+                    style="margin-bottom:-20px; text-align: center; color: #333;font-size:20px;color:red">Có lỗi</p>
+
+            </div>
+            <button type="submit" class="button-27 closexxx"
+                style="margin-bottom: 30px; background-color: #010101; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width:170px; font-size: 16px;">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleDescription() {
+        const description = document.getElementById('description');
+        const icon = document.getElementById('toggleIcon');
+
+        if (description.style.display === 'none' || description.style.display === '') {
+            description.style.display = 'block';
+            icon.innerHTML = '-'; // Change icon to minus
+        } else {
+            description.style.display = 'none';
+            icon.innerHTML = '+'; // Change icon back to plus
+        }
+    }
+    function toggleComment() {
+        const comment = document.getElementById('comment');
+        const icon1 = document.getElementById('toggleIcon1');
+
+        if (comment.style.display === 'none' || comment.style.display === '') {
+            comment.style.display = 'block';
+            icon1.innerHTML = '-'; // Change icon to minus
+        } else {
+            comment.style.display = 'none';
+            icon1.innerHTML = '+'; // Change icon back to plus
+        }
+    }
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const productGrid = document.querySelector(".product-grid");
+        const prevBtn = document.querySelector(".prev-btn");
+        const nextBtn = document.querySelector(".next-btn");
+
+        const scrollAmount = 220; // Adjust based on product width
+
+        nextBtn.addEventListener("click", () => {
+            productGrid.scrollBy({ left: scrollAmount, behavior: "smooth" });
+        });
+
+        prevBtn.addEventListener("click", () => {
+            productGrid.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+        });
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Select all card elements
+        const largeImage = document.getElementById('main-image');
+        const smallImg = document.querySelectorAll('.small-img');
+        smallImg.forEach(img => {
+            img.addEventListener('click', function () {
+                largeImage.src = this.src;
+                const smallImgs = document.querySelectorAll('.small-img');
+                smallImgs.forEach(function (Img) {
+                    Img.style.border = '1px solid #eee';
+                    if (Img.classList.contains("main-image")) {
+                        Img.classList.remove("main-image");
+                    }
+                });
+                this.style.border = '1px solid #12487f';
+                this.classList.add("main-image");
+
+            })
+        })
+
+        const closeButtonsxxx = document.querySelectorAll('.closexxx');
+        closeButtonsxxx.forEach(async function (button) {
+            button.onclick = function () {
+                $('#alertModal').modal('hide');
+            };
+        });
+
+    });
+</script>
+<script>
+    async function them() {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            document.getElementById("alert-text").innerHTML = "Vui lòng đăng nhập!";
+            $("#alertModal").modal("show");
+            $("#alertModal").on("hidden.bs.modal", function () {
+                window.location.href = "/account/login";
+                return;
+            });
+        }
+        let spId = document.getElementById('productID').value;
+        let soLuong = document.getElementById('so-luong').value;
+
+        let formData = {
+            product_id: spId,
+            quantity: soLuong
+        };
+
+        try {
+            const response = await fetch('http://localhost:3003/cart', {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+            const data = await response.json();
+            if (data.message == "Vui lòng đăng nhập!") {
+                document.getElementById("alert-text").innerHTML = "Vui lòng đăng nhập!";
+                $("#alertModal").modal("show");
+                $("#alertModal").on("hidden.bs.modal", function () {
+                    window.location.href = "/account/login";
+                    return;
+                });
+            }
+            await updateCart();
+
+        } catch (e) {
+            alert("Error: " + e.message)
+        }
+    }
+    
+    function incrementQuantity() {
+        let quantityInput = document.getElementById("so-luong");
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue < 10) {
+            quantityInput.value = currentValue + 1;
+        }
+    }
+
+    function decrementQuantity() {
+        let quantityInput = document.getElementById("so-luong");
+        let currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) {
+            quantityInput.value = currentValue - 1;
+        }
+    }
+
+    //them vao gio hang
+    async function themNhanh(product_id) {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            document.getElementById("alert-text").innerHTML = "Vui lòng đăng nhập!";
+            $("#alertModal").modal("show");
+            $("#alertModal").on("hidden.bs.modal", function () {
+                window.location.href = "/account/login";
+                return;
+            });
+        }
+        let spId = product_id;
+        let soLuong = 1;
+
+        let formData = {
+            product_id: spId,
+            quantity: soLuong
+        };
+
+        try {
+            const response = await fetch('http://localhost:3003/cart', {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            })
+            const data = await response.json();
+            if (data.message == "Vui lòng đăng nhập!") {
+                document.getElementById("alert-text").innerHTML = "Vui lòng đăng nhập!";
+                $("#alertModal").modal("show");
+                $("#alertModal").on("hidden.bs.modal", function () {
+                    window.location.href = "/account/login";
+                    return;
+                });
+            }
+            await updateCart()
+        } catch (e) {
+            alert("Error: " + e.message)
+        }
+    }
+
+    //cap nhat gio hang
+    async function updateCart() {
+        const cartItems = document.getElementById("cartItems");
+        const token = localStorage.getItem("token");
+        fetch("http://localhost:3003/cart", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            }
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                return { items: data.cartItems, sum: data.sum };
+            })
+            .then(({ items, sum }) => {
+                console.log(items)
+                cartItems.innerHTML = "";
+                if (items.length === 0) {
+                    cartItems.innerHTML = `<hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+                                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                                <i class="fas fa-box-open" style="font-size: 18px; color: #525252;"></i>
+                                                <p style="font-size: 14px; margin: 0;">Chưa có sản phẩm</p>
+                                            </div>`;
+                    return;
+                }
+                items.forEach(item => {
+                    const div = document.createElement("div");
+                    div.classList.add("cart-item");
+                    div.innerHTML = `
+                    <div  style="text-decoration: none; color: inherit;border: none; background: #fff;
+                            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-top: 10px;border-radius: 10px;padding:3px;position: relative;">
+                        <div class="row g-0 h-100">
+                            <a href="/product/${item.product_id}" class="col-md-4 d-flex justify-content-center align-items-center;">
+                                <img src="${item.mainImg}" class="img-fluid" alt="Image" style="height: 100px; width: auto; object-fit: fill; border-radius: 0; border: none;">
+                            </a>
+                            <div class="col-md-8">
+                                <div class="card-body text-start" style="padding: 5px; height: 100px; display: flex; flex-direction: column; justify-content: center;">
+                                    <h5 class="card-title"
+                                        style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal; margin: 0;
+                                        text-align: left; font-size: 15px;margin-bottom: 5px;margin-top:5px;font-weight: 600;">
+                                        ${item.name}
+                                    </h5>
+                                    <div style="display:flex;justify-content:space-between">
+                                    <p class="card-text" style="margin-top: 10px; text-align: center; font-size: 12px;">
+                                        <span style="color: red;font-size: 13px;font-weight: 600;">${item.price.toLocaleString('vi-VN')}₫</span>
+                                    </p>
+                                    <div class="quantity-container" style="display: flex;justify-content: center;align-items: center;gap: 3px;margin-top:0px;margin-top: -11px;margin-right: 15px;">
+                                        <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
+                                        <div style="display: flex; align-items: center; justify-content: center; height: 20px;">
+                                            <input type="number" id="${item.cart_id}" name="soluong" value="${item.quantity}" min="1" max="10" readonly 
+                                                style="width: 30px; height: 20px; font-size: 12px; text-align: right; line-height: 20px; padding: 0;">
+                                        </div>
+                                        <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
+                                    </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            <i class="bi bi-x"  onclick=xoa(${item.cart_id})></i>
+                        </div>
+                    </div>`;
+                    cartItems.appendChild(div);
+                });
+                const tongGia = document.createElement("div");
+                tongGia.innerHTML = `
+            <div style="display:flex; justify-content:space-between; padding: 10px;margin-top:5px">
+                <p style="font-weight:400;">Tổng giá:</p>
+                <p style="color: red;font-weight:600;">${sum.toLocaleString('vi-VN')}₫</p>
+            </div>
+            <button type="button" class="button-27" 
+                  style="width: 98%; margin-left: 4px; margin-top: -5px; display: flex; align-items: center; justify-content: center; gap: 8px;" 
+                  onclick="checkOut()">
+                <i class="bi bi-credit-card" style="font-size: 20px;"></i> 
+                <span>Thanh toán</span>
+            </button>
+            `;
+
+                cartItems.appendChild(tongGia);
+            })
+            .catch((error) => {
+                const empty = document.createElement("div");
+                empty.innerHTML = `<hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                        <i class="fas fa-box-open" style="font-size: 18px; color: #525252;"></i>
+                                        <p style="font-size: 14px; margin: 0;">Chưa có sản phẩm</p>
+                                    </div>`;
+                cartItems.appendChild(empty);
+
+                console.error("Lỗi:", error);
+            });
+    }
+
+
+    //hieu ung khi them san pham
+    document.addEventListener("DOMContentLoaded", function () {
+        const buyButtons = document.querySelectorAll(".buy-button");
+        const cartButton = document.getElementById("cartButton");
+
+        buyButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                // Thêm hiệu ứng rung
+                cartButton.classList.add("shake");
+
+                // Xóa hiệu ứng sau 400ms
+                setTimeout(() => {
+                    cartButton.classList.remove("shake");
+                }, 400);
+            });
+        });
+    });
+</script>

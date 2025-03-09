@@ -1,0 +1,432 @@
+<div>
+    <div style="text-align:center">
+        <h2 style=" ;font-weight:bold ;">Thanh toán</h2>
+
+    </div>
+    <div class="flex-container" style="display: flex;flex-direction: row;font-size: 30px;gap:50px;text-align: center; ">
+        <form class="flex-item-left" method="post" id="form-checkout"
+            style="padding: 10px; flex: 70%; display: flex; align-items: center; justify-content: center;">
+            <div
+                style="background: #fff; padding: 40px;padding-top:0; border-radius: 0 15px 15px 0; width: 100%; box-shadow: none;">
+                <h2 style="text-align: left; margin-bottom: 20px; ;font-weight:bold ;font-size:22px">Thông tin liên hệ
+                </h2>
+                <div style="margin-bottom: 15px; display: flex; gap: 4%;">
+                    <input type="text" id="hovaten" name="hovaten" placeholder="Nhập họ và tên của bạn"
+                        style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                </div>
+                <div style="margin-bottom: 15px; display: flex; gap: 4%;">
+                    <input type="email" id="email" name="email" placeholder="Nhập email của bạn"
+                        style="width: 48%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                    <input type="text" id="phone" name="phone" placeholder="Nhập sdt của bạn"
+                        style="width: 48%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                </div>
+
+                <h2 style="text-align: left; margin-bottom: 20px; ;font-weight:bold ;font-size:22px;margin-top:25px">Địa
+                    chỉ giao hàng</h2>
+
+                <div style="margin-bottom: 15px; display: flex; gap: 4%;">
+                    <div style="flex: 1;">
+                        <select id="tinh" required name="tinh"
+                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                            <option value="">Chọn Tỉnh/Thành phố</option>
+                            <option value="TP Hồ Chí Minh">TP Hồ Chí Minh</option>
+                            <option value="Hà Nội">Hà Nội</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <select name="quan" required id="quan"
+                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; margin-bottom: 15px;">
+                            <option value="">Chọn Quận/Huyện</option>
+                            <option value="Quận 1">Quận 1</option>
+                            <option value="Quận 2">Quận 2</option>
+                            <option value="Quận 3">Quận 3</option>
+                            <option value="Quận 4">Quận 4</option>
+                            <option value="Quận 5">Quận 5</option>
+                            <option value="Quận 6">Quận 6</option>
+                            <option value="Quận 7">Quận 7</option>
+                            <option value="Quận 8">Quận 8</option>
+                            <option value="Quận 9">Quận 9</option>
+                            <option value="Quận 10">Quận 10</option>
+                            <option value="Quận 11">Quận 11</option>
+                            <option value="Quận 12">Quận 12</option>
+                            <option value="Quận Bình Thạnh">Quận
+                                Bình Thạnh</option>
+                            <option value="Quận Phú Nhuận">Quận Phú
+                                Nhuận</option>
+                            <option value="Quận Gò Vấp">Quận Gò Vấp
+                            </option>
+                            <option value="Quận Tân Bình">Quận Tân
+                                Bình</option>
+                            <option value="Quận Tân Phú">Quận Tân Phú
+                            </option>
+                            <option value="Quận Thủ Đức">Quận Thủ Đức
+                            </option>
+                            <option value="Huyện Bình Chánh">Huyện
+                                Bình Chánh</option>
+                            <option value="Huyện Cần Giờ">Huyện Cần
+                                Giờ</option>
+                            <option value="Huyện Củ Chi">Huyện Củ Chi
+                            </option>
+                            <option value="Huyện Hóc Môn">Huyện Hóc
+                                Môn</option>
+                            <option value="Huyện Nhà Bè">Huyện Nhà Bè
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px; display: flex; gap: 4%;">
+                    <div style="flex: 1;">
+                        <input type="phuong" id="phuong" name="phuong" placeholder="Phường/ Xã" required
+                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; margin-bottom: 5px;">
+                        <p style="font-size: 14px; color: #777; margin-top: 2px;">Ví dụ: Tăng Nhơn Phú A</p>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text" id="nha" name="nha" placeholder="Số nhà/ tên đường" required
+                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                        <p style="margin-top: 5px; font-size: 14px; color: #777;">Ví dụ: 33 đường Lê Duẩn</p>
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="ghichu" name="ghichu" placeholder="Ghi chú" required
+                        style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                    <p style="margin-top: 5px; font-size: 14px; color: #777;">Ví dụ: Tên tòa nhà, tầng</p>
+                </div>
+                <h2 style="text-align: left; margin-bottom: 20px; ;font-weight:bold ;font-size:22px;margin-top:25px">
+                    Phương thức thanh toán</h2>
+                <div class="payment-option">
+                    <input type="radio" id="cod" name="payment" value="cod" checked>
+                    <label for="cod">Thanh toán khi nhận hàng</label>
+                </div>
+
+                <div style="margin-top: 20px; display: flex; justify-content:flex-end;gap:20px">
+                    <button class="button-27"
+                        style="background-color: #ff5722; color: #fff;  width: 18%; display: flex; align-items: center; justify-content: center; border: none;"
+                        role="button">
+                        Hủy
+                    </button>
+                    <button class="button-27" type="submit" id="info-button"
+                        style="background-color: #000; color: #fff;  width: 27%; display: flex; align-items: center; justify-content: center; border: none;"
+                        role="button">
+                        Xác nhận
+                    </button>
+                </div>
+            </div>
+        </form>
+        <div class="flex-item-right" style="padding: 10px;flex: 30%;">
+            <h1 style="text-align: left;font-weight:bold ;font-size:22px;">Giỏ hàng của bạn</h1>
+            <div style="margin:30px 0 20px 0">
+                <div style="display:flex;justify-content:space-between">
+                    <p id="nop" style="text-align: left;margin-bottom:5px; font-size: 17px; ">0 sản phẩm</p>
+                    <p id="pop" style="text-align: left;margin-bottom:5px; font-size: 17px; ">0₫</p>
+
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                    <p style="text-align: left;margin-bottom:5px; font-size: 17px; ">Giao hàng</p>
+                    <p style="text-align: left;margin-bottom:5px; font-size: 17px; ">Miễn phí</p>
+                </div>
+                {{!-- <div style="display:flex;justify-content:space-between;align-items:center">
+                    <p style="text-align: left;margin-bottom:5px; font-size: 17px; ">Thanh toan</p>
+
+                    <select id="district"
+                        style="margin-bottom:5px;height: 49px;width:50%; border: 1px solid #000000; border-radius: 0px; font-size: 17px;">
+                        <option>Khi nhan hang</option>
+                    </select>
+                </div> --}}
+                <div style="display:flex;justify-content:space-between">
+                    <p style="text-align: left;margin-bottom:5px;margin-top:15px; font-size: 17px;font-weight:bold; ">
+                        Tổng</p>
+                    <p id="sum"
+                        style="text-align: left;margin-bottom:5px;margin-top:15px; font-size: 17px;font-weight:bold;color:red ">
+                        0₫ </p>
+                </div>
+
+            </div>
+            <span style="display: block; border-bottom: 2px solid rgb(0, 0, 0); margin-top: 5px;"></span>
+            <div id="checkOutItems" style="max-height: 450px; overflow-y: auto; padding-right: 5px;">
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="alertModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+            style="position:relative; display: flex; align-items: center; justify-content: center;">
+            <span class="closexxx"
+                style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+            <div
+                style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                <p id="alert-text"
+                    style="margin-bottom:-20px; text-align: center; color: #333;font-size:20px;color:red">Có lỗi</p>
+
+            </div>
+            <button type="submit" class="button-27 closexxx"
+                style="margin-bottom: 30px; background-color: #010101; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width:170px; font-size: 16px;">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+{{!-- ////kiem tra thong tin --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let check = true;
+        const info = document.getElementById('info-button');
+        const alerttext = document.getElementById("alert-text")
+        const closeButtons = document.querySelectorAll('.closexxx');
+        const form = document.getElementById("form-checkout")
+        closeButtons.forEach(function (button) {
+            button.onclick = function () {
+                $('#alertModal').modal('hide');
+            };
+        });
+        //kiem tra va cap nhat thong tin tai khoan
+        info.addEventListener('click', async (e) => {
+            e.preventDefault();
+            let check = true;  // Ensure check is properly defined
+
+            const hovatenval = document.getElementById("hovaten").value.trim();
+            const emailval = document.getElementById("email").value.trim();
+            const sdtval = document.getElementById("phone").value.trim();
+
+            if (hovatenval === "" || sdtval === "" || emailval === "") {
+                alerttext.innerHTML = "Vui lòng điền đầy đủ thông tin!";
+                $("#alertModal").modal("show");
+                check = false;
+            }
+            if (sdtval.length < 8) {
+                alerttext.innerHTML = "Số điện thoại không hợp lệ!";
+                $("#alertModal").modal("show");
+                check = false;
+            }
+            if (!check) return;
+
+            try {
+                const response = await fetch("http://localhost:3001/", {
+                    method: "PATCH",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ hovatenval, emailval, sdtval }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    alerttext.innerHTML = data.message || "Xác thực thất bại!";
+                    $("#alertModal").modal("show");
+                    return;
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                return;
+            }
+
+            const tinh = document.getElementById("tinh").value;
+            const quan = document.getElementById("quan").value;
+            const phuong = document.getElementById("phuong").value.trim();
+            const nha = document.getElementById("nha").value.trim();
+            const ghichu = document.getElementById("ghichu").value.trim();
+
+            if (tinh === "" || quan === "" || phuong === "" || nha === "" || ghichu === "") {
+                alerttext.innerHTML = "Vui lòng điền đầy đủ thông tin!";
+                $("#alertModal").modal("show");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://localhost:3001/address", {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ tinh, quan, phuong, nha, ghichu }),
+                });
+
+                const data = await response.json();
+                if (!response.ok) {
+                    document.getElementById("alert-text").innerHTML = data.message || "Xác thực thất bại!";
+                    $("#alertModal").modal("show");
+                    return;
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                return;
+            }
+
+            await order();
+        });
+
+
+
+        const token = localStorage.getItem("token") || "";
+        const hovaten = document.getElementById("hovaten");
+        const phone = document.getElementById("phone");
+        const email = document.getElementById("email");
+
+        if (!token) {
+            alerttext.innerHTML = "Vui lòng đăng nhập!";
+            $("#alertModal").modal("show");
+            $("#alertModal").on("hidden.bs.modal", function () {
+                window.location.href = "/account/login";
+                return;
+            });
+        }
+        //lay thong tin khach hang
+        fetch("http://localhost:3001", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            }
+        })
+            .then(async (response) => {
+                const data = await response.json();
+
+                if (response.ok) {
+                    hovaten.value = data.fullname || "";
+                    phone.value = data.phone || "";
+                    email.value = data.email || "";
+                } else {
+                    alerttext.innerHTML = data.message || "Xác thực thất bại!";
+                    $("#alertModal").modal("show");
+                }
+            })
+            .catch((error) => {
+                console.error("Fetch error:", error);
+            });
+
+        //lay dia chi khach hang
+        const tinh = document.getElementById("tinh")
+        const quan = document.getElementById("quan")
+        const phuong = document.getElementById("phuong")
+        const nha = document.getElementById("nha")
+        const ghichu = document.getElementById("ghichu")
+        fetch("http://localhost:3001/address", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            },
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (response.ok) {
+                    tinh.value = data.tinh || "";
+                    quan.value = data.quan || "";
+                    phuong.value = data.phuong || "";
+                    nha.value = data.nha || "";
+                    ghichu.value = data.ghichu || "";
+                } else {
+                    alerttext.innerHTML = "Vui lòng đăng nhập!";
+                    $("#alertModal").modal("show");
+                    $("#alertModal").on("hidden.bs.modal", function () {
+                        window.location.href = "/account/login";
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Fetch error:", error);
+            });
+    });
+
+    const token = localStorage.getItem("token");
+    fetch("http://localhost:3003/cart", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}`,
+        }
+    })
+        .then(async (response) => {
+            const data = await response.json();
+            return { items: data.cartItems, sum: data.sum };
+        })
+        .then(({ items, sum }) => {
+            if (items.length === 0) {
+                document.getElementById("alert-text").innerHTML = "Giỏ hàng rỗng!";
+                $("#alertModal").modal("show");
+                $("#alertModal").on("hidden.bs.modal", function () {
+                    window.location.href = "/";
+                });
+            }
+            let num = 0;
+            const checkOutItems = document.getElementById("checkOutItems");
+            items.forEach(item => {
+                num += 1;
+                const div = document.createElement("div");
+                div.classList.add("cart-item");
+                div.innerHTML = `
+                        <div  style="text-decoration: none; color: inherit;border: none; background: #fff;
+                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-top: 10px;border-radius: 10px;padding:3px;position: relative;">
+                            <div class="row g-0 h-100">
+                                <a href="/product/${item.product_id}" class="col-md-4 d-flex justify-content-center align-items-center;">
+                                    <img src="${item.mainImg}" class="img-fluid" alt="Image" style="height: 100px; width: auto; object-fit: fill; border-radius: 0; border: none;">
+                                </a>
+                                <div class="col-md-8">
+                                    <div class="card-body text-start" style="padding: 5px; height: 100px; display: flex; flex-direction: column; justify-content: center;">
+                                        <h5 class="card-title"
+                                            style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal; margin: 0;
+                                            text-align: left; font-size: 14px;margin-bottom: 5px;margin-top:5px;font-weight: 600;">
+                                            ${item.name}
+                                        </h5>
+                                        <div style="display:flex;justify-content:space-between">
+                                        <p class="card-text" style="margin-top: 10px; text-align: center; font-size: 12px;">
+                                            <span style="color: red;font-size: 12px;font-weight: 600;">${item.price.toLocaleString('vi-VN')}₫</span>
+                                        </p>
+                                        <div class="quantity-container" style="display: flex;justify-content: center;align-items: center;gap: 3px;margin-top:0px;margin-top: -11px;margin-right: 15px;">
+                                            <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
+                                            <div style="display: flex; align-items: center; justify-content: center; height: 20px;">
+                                                <input type="number" id="${item.cart_id}" name="soluong" value="${item.quantity}" min="1" max="10" readonly 
+                                                    style="width: 30px; height: 20px; font-size: 12px; text-align: right; line-height: 20px; padding: 0;">
+                                            </div>
+                                            <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
+                                        </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                <i class="bi bi-x"  onclick=xoa(${item.cart_id})></i>
+                            </div>
+                        </div>`;
+                checkOutItems.appendChild(div);
+            });
+            document.getElementById("nop").innerHTML = `${num} sản phẩm`
+            document.getElementById("pop").innerHTML = `${sum.toLocaleString('vi-VN')}₫`
+            document.getElementById("sum").innerHTML = `${sum.toLocaleString('vi-VN')}₫`
+
+        })
+        .catch((error) => {
+            console.log("Loi khi lay gio hang: ", error)
+        })
+    async function order() {
+        console.log("dat hang")
+        const token = localStorage.getItem("token");
+        //dat hang
+        fetch(`http://localhost:3003/order`, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+            },
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById("alert-text").innerHTML = data.message || "Đặt hàng thành công!";
+                    $("#alertModal").modal("show");
+                    $("#alertModal").on("hidden.bs.modal", function () {
+                        window.location.href = "/account/user";
+                        return;
+                    });
+                } else {
+                    document.getElementById("alert-text").innerHTML = data.message || "Có lỗi khi đặt hàng!";
+                    $("#alertModal").modal("show");
+                }
+            })
+            .catch((error) => {
+                console.error("POST error:", error);
+            });
+    }
+
+</script>

@@ -28,16 +28,7 @@ module.exports = {
         expiresIn: "1h",
       });
 
-      res.cookie("token", token, {
-        httpOnly: true, // Bảo mật, không thể truy cập từ JavaScript trên trình duyệt
-        secure: true, // Để `true` nếu dùng HTTPS
-        sameSite: "None", // Chặn gửi cookie với các yêu cầu từ trang khác
-        domain: "localhost", // Đặt đúng domain
-        path: "/", // Đảm bảo cookie được gửi trên tất cả đường dẫn
-        maxAge: 3600000, // 1 giờ
-      });
-
-      return res.json({ message: "Đăng nhập thành công!" });
+      return res.json({ message: "Đăng nhập thành công!", token });
     } catch (err) {
       console.error("Lỗi đăng nhập:", err);
       return res
@@ -98,20 +89,8 @@ module.exports = {
     }
   },
 
-  logout: (req, res) => {
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: true, // Phải khớp với lúc tạo cookie
-      sameSite: "None",
-      domain: "localhost",
-      path: "/",
-    });
-    res.json({ message: "Đăng xuất thành công!" });
-  },
-
   infoGet: (req, res) => {
     res.json({
-      account_id: req.user.account_id,
       username: req.user.username,
       fullname: req.user.fullname,
       phone: req.user.phone,
@@ -217,13 +196,50 @@ module.exports = {
     }
   },
 
-  accounts: async (req, res) => {
+  changePassword: async (req, res) => {
+    const oldpw = req.body.oldpw;
+    const newpw = req.body.newpw;
+    const account_id = req.user.account_id;
+    try {
+      const checkPwSql = "SELECT password FROM account WHERE account_id=?";
+      const [results] = await db.promise().query(checkPwSql, [account_id]);
+      const user = results[0];
+
+      const isMatch = await bcrypt.compare(oldpw, user.password);
+      if (!isMatch) {
+        return res.status(401).json({ message: "Mật khẩu không chính xác!" });
+      }
+
+      const sql = "UPDATE account SET password=? WHERE account_id=?";
+      const hashedPassword = await bcrypt.hash(newpw, 10);
+      await db.promise().query(sql, [hashedPassword, account_id]);
+      return res.status(200).json({ message: "Đổi thành công!" });
+    } catch (error) {
+      console.log("Lỗi khi đổi mật khẩu: " + error);
+      return res
+        .status(500)
+        .json({ message: "Lỗi server", error: error.message });
+    }
+  },
+
+  accountInfo: async (req, res) => {
     if (req.user.role == "admin") {
       try {
-        const getAccountsSql = "SELECT * FROM account";
-        const [results] = await db.promise().query(getAccountsSql);
+        let getAccountsSql = `
+                SELECT 
+                    COALESCE(a.account_id, ad.account_id) AS account_id, 
+                    a.username, a.password, a.role, a.fullname, a.phone, a.email,
+                    ad.address_id, ad.tinh, ad.quan, ad.phuong, ad.nha, ad.ghichu
+                FROM account a
+                LEFT JOIN address ad ON a.account_id = ad.account_id`;
 
-        return res.status(200).json(results);
+        let params = [];
+        if (req.query.tentaikhoan) {
+          getAccountsSql += ` WHERE a.username LIKE ?`;
+          params.push(`%${req.query.tentaikhoan}%`);
+        }
+        const [rows] = await db.promise().query(getAccountsSql, params);
+        return res.status(200).json(rows);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách tài khoản:", error.message);
         return res
@@ -235,21 +251,90 @@ module.exports = {
     }
   },
 
-  addresses: async (req, res) => {
+  findAccount: async (req, res) => {
     if (req.user.role == "admin") {
       try {
-        const getAddressesSql = "SELECT * FROM address";
-        const [results] = await db.promise().query(getAddressesSql);
+        let getAccountsSql = `
+                SELECT 
+                    COALESCE(a.account_id, ad.account_id) AS account_id, 
+                    a.username, a.password, a.role, a.fullname, a.phone, a.email,
+                    ad.address_id, ad.tinh, ad.quan, ad.phuong, ad.nha, ad.ghichu
+                FROM account a
+                LEFT JOIN address ad ON a.account_id = ad.account_id `;
 
-        return res.status(200).json(results);
+        let params = [];
+        if (req.params.username) {
+          getAccountsSql += ` WHERE a.username LIKE ?`;
+          params.push(`%${req.params.username}%`);
+        }
+        const [rows] = await db.promise().query(getAccountsSql, params);
+        return res.status(200).json(rows);
       } catch (error) {
-        console.error("Lỗi khi lấy danh sách địa chỉ:", error.message);
+        console.error("Lỗi khi lấy danh sách tài khoản:", error.message);
         return res
           .status(500)
           .json({ message: "Lỗi server", error: error.message });
       }
     } else {
       return res.status(403).json({ message: "Bạn không có quyền truy cập" });
+    }
+  },
+
+  role: async (req, res) => {
+    if (req.user.role != "admin") {
+      return res.status(403).json({ message: "Bạn không có quyền truy cập!" });
+    }
+    if (req.user.account_id == req.body.account_id) {
+      return res
+        .status(403)
+        .json({ message: "Bạn không thể thay đổi quyền của bản thân!" });
+    }
+    try {
+      const account_id = req.body.account_id;
+
+      // Kiểm tra nếu account_id bị undefined hoặc rỗng
+      if (!account_id) {
+        return res.status(400).json({ message: "Thiếu account_id!" });
+      }
+
+      const RoleSql = `
+          UPDATE account 
+            SET role = CASE 
+                WHEN role = 'admin' THEN 'user' 
+                WHEN role = 'user' THEN 'admin'
+                ELSE role
+            END
+          WHERE account_id = ?;
+      `;
+      await db.promise().query(RoleSql, [account_id]);
+      return res.status(200).json({ message: "Cập nhật thành công!" });
+    } catch (err) {
+      console.log("Lỗi Server:", err);
+      return res
+        .status(500)
+        .json({ message: "Lỗi Server", error: err.message });
+    }
+  },
+
+  accDelete: async (req, res) => {
+    if (req.user.role != "admin") {
+      return res.status(403).json({ message: "Bạn không có quyền truy cập!" });
+    }
+    if (req.user.account_id == req.body.account_id) {
+      return res
+        .status(403)
+        .json({ message: "Bạn không thể xóa tài khoản của bản thân!" });
+    }
+    const account_id = req.body.account_id;
+    try {
+      const deleteSql = "DELETE FROM account WHERE account_id=?";
+      await db.promise().query(deleteSql, [account_id]);
+      return res.status(200).json({ message: "Xóa thành công!" });
+    } catch (err) {
+      console.log("Lỗi Server:", err);
+      return res
+        .status(500)
+        .json({ message: "Lỗi Server", error: err.message });
     }
   },
 };

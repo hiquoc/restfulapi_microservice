@@ -1,0 +1,627 @@
+<div class="flex-container"
+    style="display: flex;flex-direction: row;font-size: 30px;gap:50px;text-align: center;padding: 0px 50px 0 50px; ">
+    <div class="flex-item-left" style="padding: 10px; flex: 70%;">
+        <div style="display: flex;align-items:center;justify-content:space-between">
+            <h1 style="text-align: left;font-weight:bold ;">Quản lý tài khoản</h1>
+        </div>
+        <p id="no-account" style="text-align: left;margin-top:0px; font-size: 20px;display:none">Không tìm thấy tài khoản</p>
+
+        <table class="table" id="account-table"
+            style="border: 1px solid black; border-collapse: collapse; font-size: 20px;border-bottom: none;">
+            <thead>
+                <tr>
+                    <th scope="col" style="border: 1px solid black;">ID</th>
+                    <th scope="col" style="border: 1px solid black;">Tên tài khoản</th>
+                    <th scope="col" style="border: 1px solid black;">Thông tin</th>
+                </tr>
+            </thead>
+            <tbody id="accountTableBody">
+
+            </tbody>
+        </table>
+
+    </div>
+
+
+    <div class="flex-item-right" style="padding: 10px;flex: 30%;">
+        <div
+            style="background: #fff; padding-top: 0px;padding-top:0; border-radius: 0 15px 15px 0; width: 100%; box-shadow: none;margin-top:56px">
+            <form id="searchForm" style="display: flex; width: 100%;">
+                <input type="text" id="username-search" name="username" placeholder="Nhập tên tài khoản"
+                    style="flex: 1; padding: 12px; border: 1px solid #000000; border-right: none; border-radius: 0px; font-size: 16px;">
+                <button type="submit"
+                    style="padding: 12px; border: 1px solid #000000; border-left: none; border-radius: 0px; background-color: #f1f1f1; font-size: 16px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="16" fill="currentColor"
+                        class="bi bi-search" viewBox="0 0 16 16" style="cursor: pointer;">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                    </svg>
+                </button>
+            </form>
+
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/product" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý sản phẩm
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/new-product" style="background-color: #000000; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Đăng sản phẩm mới
+                </a>
+            </div>
+            <span style="display: block; border-bottom: 1px solid rgb(0, 0, 0); margin-top: 15px;"></span>
+
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý tài khoản
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/order" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý đơn hàng
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Thống kê
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="alertModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+            style="position:relative; display: flex; align-items: center; justify-content: center;">
+            <span class="closexxx"
+                style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+            <div
+                style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                <p id="alert-text"
+                    style="margin-bottom:-20px; text-align: center; color: #333;font-size:20px;color:red">Có lỗi</p>
+
+            </div>
+            <button type="submit" class="button-27 closexxx"
+                style="margin-bottom: 30px; background-color: #010101; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width:170px; font-size: 16px;">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        loadAccounts();
+    });
+
+
+</script>
+<script>
+    async function loadAccounts() {
+        try {
+            const token = localStorage.getItem("token");
+            const response = await fetch('http://localhost:3001/accounts', {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            const accounts = await response.json();
+
+            const tbody = document.getElementById("accountTableBody");
+            tbody.innerHTML = ""; // Xóa dữ liệu cũ (nếu có)
+
+            accounts.forEach(account => {
+                if ([account.tinh, account.quan, account.phuong, account.nha, account.ghichu].some(value => value == null)) {
+                    account.tinh = account.quan = account.phuong = account.nha = account.ghichu = "Trống";
+                }
+
+                const selectedUser = account.role === "user" ? "selected" : "";
+                const selectedAdmin = account.role === "admin" ? "selected" : "";
+                const row = `
+                <tr>
+                    <td style="display: table-cell; vertical-align: middle; justify-content: space-evenly; align-items: center; border-bottom: 1px solid black;">${account.account_id}</td>
+                    <td style="display: table-cell; vertical-align: middle;border: 1px solid black; text-align: center;">${account.username}</td>
+                    <td style="display:flex; justify-content:space-evenly; border-bottom: 1px solid black;">
+                        <div style="display:flex;gap:10px">
+                            <!-- Nút Xem -->
+                            <button data-bs-toggle="modal" data-bs-target="#xemModal${account.account_id}"
+                                style="background-color: #4caf50; color: #fff; width: 120px; height: 40px; border: none;">
+                                Xem
+                            </button>
+
+                            <!-- Modal Xem -->
+                           <div class="modal fade" id="xemModal${account.account_id}" tabindex="-1"
+                                aria-labelledby="xemModal${account.account_id}Label" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" style="max-width: 800px;">
+                                    <div class="modal-content"
+                                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                                        <span class="closexx" data-product-id="${account.account_id}"
+                                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+                                        <div
+                                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                            <h1 style="margin-bottom: 20px; text-align: center; color: #333;">Thông tin
+                                                tài khoản</h1>
+
+                                            <!-- Two Column Flex Container -->
+                                            <div style="display: flex; gap: 20px;">
+
+                                                <!-- Left Column (Existing Fields) -->
+                                                <div style="flex: 1;">
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="username"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Tên
+                                                            tài khoản</label>
+                                                        <input type="text" id="username" name="username" disabled
+                                                            value="${account.username}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="hovaten"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Tên</label>
+                                                        <input type="text" id="hovaten" name="hovaten"
+                                                            value="${account.fullname}" disabled
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="email"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Email</label>
+                                                        <input type="email" id="email" name="email" value="${account.email}"
+                                                            disabled
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="so dien thoai"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Số
+                                                            điện thoại</label>
+                                                        <input type="text" id="so dien thoai" name="sdt"
+                                                            value="${account.phone}" disabled
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="role"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Role</label>
+                                                        <form class="statusForm" action="/admin/tai-khoan/role"
+                                                            method="POST">
+                                                            <select class="form-select statusSelect ${account.account_id}"
+                                                                id="role" name="role"
+                                                                style="width: 100%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; box-sizing: border-box;"
+                                                                required onchange="RoleChange(this, '${account.account_id}')">
+                                                                <option value="user" ${selectedUser}
+                                                                    >User</option>
+                                                                <option value="admin" ${selectedAdmin}
+                                                                    >Admin</option>
+                                                            </select>
+                                                            <input style="display: none;" type="text" class="accountID"
+                                                                value="${account.account_id}" name="id">
+                                                        </form>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Right Column (New Fields) -->
+                                                <div style="flex: 1;">
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="tinh"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Tỉnh</label>
+                                                        <input type="text" id="tinh" name="tinh" disabled
+                                                            value="${account.tinh}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="quan-huyen"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Quận/Huyện</label>
+                                                        <input type="text" id="quan-huyen" name="quan_huyen" disabled
+                                                            value="${account.quan}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="phuong-xa"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Phường/Xã</label>
+                                                        <input type="text" id="phuong-xa" name="phuong_xa" disabled
+                                                            value="${account.phuong}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="dia-chi-nha"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Địa
+                                                            chỉ nhà</label>
+                                                        <input type="text" id="dia-chi-nha" name="dia_chi_nha" disabled
+                                                            value="${account.nha}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="ghi-chu"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Ghi
+                                                            chú</label>
+                                                        <input type="text" id="ghi-chu" name="ghi-chu" disabled
+                                                            value="${account.ghichu}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Quản lý sản phẩm Button -->
+                                            <a class="button-27" href="/admin/tai-khoan/order/${account.account_id}"
+                                                style="background-color: #ff5722; color: #fff; margin-top: 15px; width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                                                Quản lý đơn hàng
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Nút Xóa -->
+                            <button data-bs-toggle="modal" data-bs-target="#xoa${account.account_id}"
+                                style="background-color: #fd1818; color: #fff; width: 120px; height: 40px; border: none;">
+                                Xóa
+                            </button>
+
+                            <!-- Modal Xóa -->
+                            <div class="modal fade" id="xoa${account.account_id}" tabindex="-1"
+                                aria-labelledby="xoa${account.account_id}Label" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content"
+                                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                                        <span class="closex" data-account-id="${account.account_id}"
+                                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                                            &times;
+                                        </span>
+                                        <div id="changePasswordForm"
+                                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                            <h1 style="margin-bottom: 20px; text-align: center; color: #333;font-size: 37px;margin-left: 34px;margin-right: 36px;">Bạn có
+                                                chắc là muốn xóa tài khoản này?</h1>
+                                            <div style="display:flex;justify-content:space-between;gap:10px">
+                                                <input style="display: none;" name="id" value="">
+                                                <button type="button" class="button-27 closex "
+                                                    data-account-id="${account.account_id}"
+                                                    style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                    Hủy
+                                                </button>
+                                                <button type="submit" class="button-27" onclick="xoaTK('${account.account_id}')" 
+                                                    style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                    Xác nhận
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            const closeButtons = document.getElementsByClassName('closex');
+            Array.from(closeButtons).forEach(function (closeButton) {
+                closeButton.onclick = function () {
+                    // Get the product_id from a data attribute on the button, or another way to associate the product ID
+                    const accountId = closeButton.getAttribute('data-account-id');
+                    if (accountId) {
+                        $(`#xoa${accountId}`).modal('hide'); // Select the modal with the specific product_id
+                    }
+                }
+            });
+            const closeButtonsxxx = document.querySelectorAll('.closexxx');
+            closeButtonsxxx.forEach(async function (button) {
+                button.onclick = function () {
+                    $('#alertModal').modal('hide');
+                };
+            });
+            const xemButtons = document.getElementsByClassName('closexx');
+            Array.from(xemButtons).forEach(function (xemButton) {
+                xemButton.onclick = function () {
+                    const productId = xemButton.getAttribute('data-product-id');
+                    if (productId) {
+                        $(`#xemModal${productId}`).modal('hide'); // Select the modal with the specific product_id
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Lỗi khi tải dữ liệu:", error);
+        }
+    }
+
+</script>
+<script>
+    function RoleChange(selectElement, account_id) {
+        const selectedRole = selectElement.value;
+        const token = localStorage.getItem("token");
+        console.log(`Account ID: ${account_id}, Selected Role: ${selectedRole}`);
+
+        // Gửi dữ liệu lên server nếu cần
+        fetch('http://localhost:3001/role', {
+            method: 'PATCH',
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ account_id, role: selectedRole })
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById("alert-text").innerHTML = data.message || "Lưu thành công!";
+                    $("#alertModal").modal("show");
+                } else {
+                    document.getElementById("alert-text").innerHTML = data.message || "Xác thực thất bại!";
+                    $("#alertModal").modal("show");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function xoaTK(account_id) {
+        const token = localStorage.getItem("token");
+        console.log(`Account ID: ${account_id}`);
+        fetch('http://localhost:3001', {
+            method: 'DELETE',
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ account_id })
+        })
+            .then(async (response) => {
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById("alert-text").innerHTML = data.message || "Xóa thành công!";
+                    $("#alertModal").modal("show");
+                    $("#alertModal").on("hidden.bs.modal", function () {
+                        window.location.reload();
+                        return;
+                    });
+                } else {
+                    document.getElementById("alert-text").innerHTML = data.message || "Xóa thất bại!";
+                    $("#alertModal").modal("show");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>
+
+<script>
+    document.getElementById("searchForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+         try {
+            const username=document.getElementById("username-search").value.trim();
+            const token = localStorage.getItem("token");
+            const response = await fetch(`http://localhost:3001/accounts/${username}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            const accounts = await response.json();
+            if(accounts.length == 0) {
+                document.getElementById("no-account").style.display ="block";
+                document.getElementById("account-table").style.display ="none";
+                return;
+            }
+            else{
+                document.getElementById("no-account").style.display ="none";
+                document.getElementById("account-table").style.display ="table";
+            }
+            const tbody = document.getElementById("accountTableBody");
+            tbody.innerHTML = ""; // Xóa dữ liệu cũ (nếu có)
+
+            accounts.forEach(account => {
+                if ([account.tinh, account.quan, account.phuong, account.nha, account.ghichu].some(value => value == null)) {
+                    account.tinh = account.quan = account.phuong = account.nha = account.ghichu = "Trống";
+                }
+
+                const selectedUser = account.role === "user" ? "selected" : "";
+                const selectedAdmin = account.role === "admin" ? "selected" : "";
+                const row = `
+                <tr>
+                    <td style="display: table-cell; vertical-align: middle; justify-content: space-evenly; align-items: center; border-bottom: 1px solid black;">${account.account_id}</td>
+                    <td style="display: table-cell; vertical-align: middle;border: 1px solid black; text-align: center;">${account.username}</td>
+                    <td style="display:flex; justify-content:space-evenly; border-bottom: 1px solid black;">
+                        <div style="display:flex;gap:10px">
+                            <!-- Nút Xem -->
+                            <button data-bs-toggle="modal" data-bs-target="#xemModal${account.account_id}"
+                                style="background-color: #4caf50; color: #fff; width: 120px; height: 40px; border: none;">
+                                Xem
+                            </button>
+
+                            <!-- Modal Xem -->
+                           <div class="modal fade" id="xemModal${account.account_id}" tabindex="-1"
+                                aria-labelledby="xemModal${account.account_id}Label" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered" style="max-width: 800px;">
+                                    <div class="modal-content"
+                                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                                        <span class="closexx" data-product-id="${account.account_id}"
+                                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+                                        <div
+                                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                            <h1 style="margin-bottom: 20px; text-align: center; color: #333;">Thông tin
+                                                tài khoản</h1>
+
+                                            <!-- Two Column Flex Container -->
+                                            <div style="display: flex; gap: 20px;">
+
+                                                <!-- Left Column (Existing Fields) -->
+                                                <div style="flex: 1;">
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="username"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Tên
+                                                            tài khoản</label>
+                                                        <input type="text" id="username" name="username" disabled
+                                                            value="${account.username}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="hovaten"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Tên</label>
+                                                        <input type="text" id="hovaten" name="hovaten"
+                                                            value="${account.fullname}" disabled
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="email"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Email</label>
+                                                        <input type="email" id="email" name="email" value="${account.email}"
+                                                            disabled
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="so dien thoai"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Số
+                                                            điện thoại</label>
+                                                        <input type="text" id="so dien thoai" name="sdt"
+                                                            value="${account.phone}" disabled
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="role"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Role</label>
+                                                        <form class="statusForm" action="/admin/tai-khoan/role"
+                                                            method="POST">
+                                                            <select class="form-select statusSelect ${account.account_id}"
+                                                                id="role" name="role"
+                                                                style="width: 100%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; box-sizing: border-box;"
+                                                                required onchange="RoleChange(this, '${account.account_id}')">
+                                                                <option value="user" ${selectedUser}
+                                                                    >User</option>
+                                                                <option value="admin" ${selectedAdmin}
+                                                                    >Admin</option>
+                                                            </select>
+                                                            <input style="display: none;" type="text" class="accountID"
+                                                                value="${account.account_id}" name="id">
+                                                        </form>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Right Column (New Fields) -->
+                                                <div style="flex: 1;">
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="tinh"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Tỉnh</label>
+                                                        <input type="text" id="tinh" name="tinh" disabled
+                                                            value="${account.tinh}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="quan-huyen"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Quận/Huyện</label>
+                                                        <input type="text" id="quan-huyen" name="quan_huyen" disabled
+                                                            value="${account.quan}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="phuong-xa"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Phường/Xã</label>
+                                                        <input type="text" id="phuong-xa" name="phuong_xa" disabled
+                                                            value="${account.phuong}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="dia-chi-nha"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Địa
+                                                            chỉ nhà</label>
+                                                        <input type="text" id="dia-chi-nha" name="dia_chi_nha" disabled
+                                                            value="${account.nha}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                                                    </div>
+                                                    <div style="margin-bottom: 10px;">
+                                                        <label for="ghi-chu"
+                                                            style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">Ghi
+                                                            chú</label>
+                                                        <input type="text" id="ghi-chu" name="ghi-chu" disabled
+                                                            value="${account.ghichu}"
+                                                            style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Quản lý sản phẩm Button -->
+                                            <a class="button-27" href="/admin/tai-khoan/order/${account.account_id}"
+                                                style="background-color: #ff5722; color: #fff; margin-top: 15px; width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                                                Quản lý đơn hàng
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Nút Xóa -->
+                            <button data-bs-toggle="modal" data-bs-target="#xoa${account.account_id}"
+                                style="background-color: #fd1818; color: #fff; width: 120px; height: 40px; border: none;">
+                                Xóa
+                            </button>
+
+                            <!-- Modal Xóa -->
+                            <div class="modal fade" id="xoa${account.account_id}" tabindex="-1"
+                                aria-labelledby="xoa${account.account_id}Label" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content"
+                                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                                        <span class="closex" data-account-id="${account.account_id}"
+                                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                                            &times;
+                                        </span>
+                                        <div id="changePasswordForm"
+                                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                            <h1 style="margin-bottom: 20px; text-align: center; color: #333;font-size: 37px;margin-left: 34px;margin-right: 36px;">Bạn có
+                                                chắc là muốn xóa tài khoản này?</h1>
+                                            <div style="display:flex;justify-content:space-between;gap:10px">
+                                                <input style="display: none;" name="id" value="">
+                                                <button type="button" class="button-27 closex "
+                                                    data-account-id="${account.account_id}"
+                                                    style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                    Hủy
+                                                </button>
+                                                <button type="submit" class="button-27" onclick="xoaTK('${account.account_id}')" 
+                                                    style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                    Xác nhận
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            const closeButtons = document.getElementsByClassName('closex');
+            Array.from(closeButtons).forEach(function (closeButton) {
+                closeButton.onclick = function () {
+                    // Get the product_id from a data attribute on the button, or another way to associate the product ID
+                    const accountId = closeButton.getAttribute('data-account-id');
+                    if (accountId) {
+                        $(`#xoa${accountId}`).modal('hide'); // Select the modal with the specific product_id
+                    }
+                }
+            });
+            const closeButtonsxxx = document.querySelectorAll('.closexxx');
+            closeButtonsxxx.forEach(async function (button) {
+                button.onclick = function () {
+                    $('#alertModal').modal('hide');
+                };
+            });
+            const xemButtons = document.getElementsByClassName('closexx');
+            Array.from(xemButtons).forEach(function (xemButton) {
+                xemButton.onclick = function () {
+                    const productId = xemButton.getAttribute('data-product-id');
+                    if (productId) {
+                        $(`#xemModal${productId}`).modal('hide'); // Select the modal with the specific product_id
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Lỗi khi tải dữ liệu:", error);
+        }
+    })
+</script>

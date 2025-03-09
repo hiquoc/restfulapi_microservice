@@ -1,0 +1,150 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="flex-container"
+    style="display: flex;flex-direction: row;font-size: 30px;gap:50px;text-align: center;padding: 0px 50px 0 50px; ">
+    <div class="flex-item-left" style="padding: 10px; flex: 70%;">
+        <div style="display: flex;align-items:center;justify-content:space-between">
+            <h1 style="text-align: left;font-weight:bold ;">Doanh thu</h1>
+
+        </div>
+        <div>
+
+            <h2>Danh mục được mua nhiều</h2>
+            <canvas id="salesByCategoryChart" width="300" height="250" style="display: block; max-width: 70%; height: auto;margin:20px auto"></canvas>
+
+            <h2 style="padding-top:30px">Doanh thu theo tuần</h2>
+            <canvas id="monthlySalesRevenueChart" width="600" height="350" style="display: block; max-width: 100%; height: auto;"></canvas>
+
+
+            <script>
+                // Sales by Category Chart
+                const pieData = {{{ pie }}}; 
+                const categoryNames = pieData.map(item => item.danhmuc);
+                const purchaseCounts = pieData.map(item => item.luotmua);
+
+                const salesByCategoryCtx = document.getElementById('salesByCategoryChart').getContext('2d');
+                const salesByCategoryChart = new Chart(salesByCategoryCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: categoryNames,
+                        datasets: [{
+                            label: 'Lượt mua',
+                            data: purchaseCounts, 
+                            backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffcd56', '#4bc0c0']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: { font: { size: 12 } }
+                            }
+                        }
+                    }
+                });
+
+
+                const doanhthutheotuanthang = {{{ doanhthu }}}; 
+
+                function getEndDateOfWeek(year, week) {
+                    // Set the date to the first day of the year
+                    const firstDayOfYear = new Date(year, 0, 1);
+                    // Calculate the days to reach the first day of the desired week
+                    const daysToAdd = (week - 1) * 7 + (8 - firstDayOfYear.getDay()); // Go to end of week
+                    const endDate = new Date(firstDayOfYear.setDate(firstDayOfYear.getDate() + daysToAdd));
+                    return endDate.toISOString().split('T')[0]; // Format as "YYYY-MM-DD"
+                }
+
+                const labels = doanhthutheotuanthang.map(item => {
+                    const [year, week] = item.tuan.split('-'); // Split "YYYY-WW" into year and week
+                    return getEndDateOfWeek(parseInt(year), parseInt(week)); // Get last date of the week
+                });
+
+                const revenueData = doanhthutheotuanthang.map(item => item.doanhthu);
+
+                // Monthly Sales and Revenue Trend Chart
+                const monthlySalesRevenueCtx = document.getElementById('monthlySalesRevenueChart').getContext('2d');
+                const monthlySalesRevenueChart = new Chart(monthlySalesRevenueCtx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Tổng doanh thu',
+                                data: revenueData,
+                                borderColor: '#36a2eb',
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            </script>
+        </div>
+
+
+
+
+    </div>
+
+
+    <div class="flex-item-right" style="padding: 10px;flex: 30%;">
+        <div
+            style="background: #fff; padding-top: 0px;padding-top:0; border-radius: 0 15px 15px 0; width: 100%; box-shadow: none;margin-top:56px">
+            <form id="searchForm" style="display: flex; width: 100%;" action="/admin/search">
+                <input type="text" name="tensanpham" placeholder="Nhập tên sản phẩm"
+                    style="flex: 1; padding: 12px; border: 1px solid #000000; border-right: none; border-radius: 0px; font-size: 16px;">
+
+                <button type="submit"
+                    style="padding: 12px; border: 1px solid #000000; border-left: none; border-radius: 0px; background-color: #f1f1f1; font-size: 16px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="16" fill="currentColor"
+                        class="bi bi-search" viewBox="0 0 16 16" style="cursor: pointer;">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                    </svg>
+                </button>
+            </form>
+
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý sản phẩm
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/san-pham-moi" style="background-color: #000000; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Đăng sản phẩm mới
+                </a>
+            </div>
+            <span style="display: block; border-bottom: 1px solid rgb(0, 0, 0); margin-top: 15px;"></span>
+
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/tai-khoan" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý tài khoản
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/order" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý đơn hàng
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Thống kê
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+

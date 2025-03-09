@@ -1,0 +1,603 @@
+<div class="flex-container"
+    style="display: flex;flex-direction: row;font-size: 30px;gap:50px;text-align: center;padding: 0px 50px 0 50px; ">
+    <div class="flex-item-left" style="padding: 10px; flex: 70%;">
+        <h1 style="text-align: left;font-weight:bold ;">Đơn hàng</h1>
+        {{!-- {{#ifEqual length 0 }}
+        <p style="text-align: left;margin-top:10px; font-size: 20px">Bạn chưa thanh toán đơn hàng nào!</p>
+        {{/ifEqual}}
+        {{#each products}}
+        <div style="height: 250px; border: 1px solid #000; overflow: hidden;margin-bottom:30px;">
+            <div class="row g-0">
+                <a href="/product/{{this.product_id}}"
+                    class="col-md-4 d-flex align-items-center justify-content-center">
+                    <img src="../../../../{{this.mainImage}}" class="img-fluid " alt="..."
+                        style="width: 267px;aspect-ratio: 1/1;object-fit: cover;">
+                </a>
+                <div class="col-md-8" style="">
+                    <div class="card-body don-hang"
+                        style="height: 250px; padding: 20px; position: relative;background-color:white">
+                        <p
+                            style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-weight:bold;padding-right: 25px;">
+                            {{this.name}}
+                        </p>
+                        <div style="display: flex;gap:50px">
+                            <p style="">Size: {{this.size}}</p>
+                            <p style="">Màu: {{this.color}}</p>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;">
+                            <p style="margin-top: -5px; color: red; font-weight: 600; ">
+                                {{formatPrice this.price}}₫</p>
+                            <p
+                                style="margin-top: 0px; font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic; ">
+                                {{this.ngay}}</p>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <select class="form-select" id="so-luong" name="sellist1" disabled
+                                style="width: 100px; height: 40px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 30px; box-sizing: border-box;">
+                                <option {{#ifEqual this.number 1 }}selected{{/ifEqual}}>1</option>
+                                <option {{#ifEqual this.number 2 }}selected{{/ifEqual}}>2</option>
+                                <option {{#ifEqual this.number 3 }}selected{{/ifEqual}}>3</option>
+                                <option {{#ifEqual this.number 4 }}selected{{/ifEqual}}>4</option>
+                            </select>
+                            {{#ifEqual this.status "đang giao hàng" }}
+                            <button id="statusButton" class="madonhang" data-bs-toggle="modal" data-id="{{thhis.id}}"
+                                data-bs-target="#huyModal{{this.id}}"
+                                style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;">
+                                <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đang giao
+                            </button>
+                            <div class="modal fade" id="huyModal{{this.id}}" tabindex="-1"
+                                aria-labelledby="huyModalLabel" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content"
+                                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                                        <span class="closex" data-id="{{this.id}}"
+                                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                                            &times;
+                                        </span>
+                                        <div
+                                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                            <h1 style="margin-bottom: 20px; text-align: center; color: #333;">Bạn có
+                                                chắc là muốn hủy đơn hàng này?</h1>
+                                            <div style="display:flex;justify-content:space-between;gap:10px">
+                                                <button type="button" class="button-27 closex" data-id="{{this.id}}"
+                                                    style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                    Đóng
+                                                </button>
+                                                <button type="button" class="button-27 huy-btn" id="{{this.id}}"
+                                                    data-id="{{this.id}}"
+                                                    style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                    Xác nhận
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            {{else}}
+                            {{#ifEqual this.status "đã giao"}}
+                            <button class="madonhang"
+                                style="background-color: #4caf50; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;">
+                                <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> {{this.status}}
+                            </button>
+                            {{/ifEqual}}
+                            {{#ifEqual this.status "đã hủy"}}
+                            <button
+                                style="background-color: #ff0000; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;">
+                                <i class="bi bi-x-circle" style="margin-right: 8px; font-size: 20px;"></i>
+                                {{this.status}}
+                            </button>
+                            {{/ifEqual}}
+                            {{/ifEqual}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{/each}} --}}
+    </div>
+
+
+    <div class="flex-item-right" style="padding: 10px;flex: 30%;">
+        <div
+            style="background: #fff; padding: 0px;padding-top:0; border-radius: 0 15px 15px 0; width: 100%; box-shadow: none;">
+            <form method="POST" action="/account/user/info" id="info-form">
+                <h2 style="text-align: left; margin-bottom: 20px;margin-top: 12px ;font-weight:bold ;font-size:22px">
+                    Thông tin cá nhân
+                </h2>
+                <div style="margin-bottom: 15px; display: flex">
+                    <input type="text" id="hovaten" name="hovaten" placeholder="Nhập họ và tên của bạn" value=""
+                        style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
+                </div>
+                <input type="email" id="email" name="email" placeholder="Nhập email của bạn" value=""
+                    style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;margin-bottom: 15px;">
+                <input type="text" id="sdt" name="sdt" placeholder="Nhập sdt của bạn" value=""
+                    style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;margin-bottom: 15px;">
+                <div style="display: flex;  justify-content: space-between;gap:10px">
+                    <button class="button-27" type="submit" id="info-button"
+                        style="background-color: #000; color: #fff;  width: 100%; display: flex; align-items: center; justify-content: center; border: none;"
+                        role="button">
+                        Lưu
+                    </button>
+                </div>
+            </form>
+
+            <button class="button-27"
+                style="margin-top:10px;background-color: #ff5722; color: #fff; width: 100%; display: flex; align-items: center; justify-content: center; border: none;"
+                role="button" data-bs-toggle="modal" data-bs-target="#changepasswordModal">
+                Đổi mật khẩu
+            </button>
+            <div class="modal fade" id="changepasswordModal" tabindex="-1" aria-labelledby="changepasswordModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content"
+                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                        <span id="closex"
+                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                            &times;
+                        </span>
+                        <form method="post" id="pw-form"
+                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                            <h1 style="margin-bottom: 20px; text-align: center; color: #333;">Đổi mật khẩu</h1>
+
+                            <div style="margin-bottom: 10px;">
+                                <label for="oldPassword"
+                                    style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">
+                                    Mật khẩu cũ
+                                </label>
+                                <input type="password" id="oldPassword" name="oldPassword"
+                                    style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                                    required>
+                            </div>
+
+                            <div style="margin-bottom: 10px;">
+                                <label for="newPassword"
+                                    style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">
+                                    Mật khẩu mới
+                                </label>
+                                <input type="password" id="newPassword" name="newPassword"
+                                    style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                                    required>
+                            </div>
+
+                            <div style="margin-bottom: 15px;">
+                                <label for="confirmPassword"
+                                    style="display: block; margin-bottom: 5px; color: #555; font-size: 18px; text-align: left;">
+                                    Xác nhận mật khẩu
+                                </label>
+                                <input type="password" id="confirmPassword" name="confirmPassword"
+                                    style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                                    required>
+                            </div>
+
+                            <button type="submit" class="button-27" id="password-btn"
+                                style="margin-top: 15px; background-color: #ff5722; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                Lưu thay đổi
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <form id="huy-form" method="POST" action="/account/user/order" style="display:none">
+            <input id="huy-id" type="hidden" name="id" value="">
+        </form>
+        <h2 style="text-align: left; margin-top: 20px; cursor: pointer;  position: relative; font-weight: bold; font-size: 22px; margin-bottom: 20px;"
+            onclick="toggleInputs()">
+            Địa chỉ giao hàng
+            <span id="toggleIcon" style="position: absolute; right: 0;">+</span> <!-- Icon to be toggled -->
+            <span style="display: block; border-bottom: 1px solid rgb(0, 0, 0); margin-top: 5px;"></span>
+        </h2>
+
+        <form id="addressInputs" style="display: none;" method="post">
+
+            <select name="tinh" id="tinh" required
+                style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; margin-bottom: 15px;">
+                <option value="">Chọn Tỉnh/Thành phố</option>
+                <option value="TP Hồ Chí Minh">TP Hồ Chí Minh</option>
+                <option value="Hà Nội">Hà Nội</option>
+            </select>
+
+            <select name="quan" id="quan" required
+                style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; margin-bottom: 15px;">
+                <option value="">Chọn Quận/Huyện</option>
+                <option value="Quận 1">Quận 1</option>
+                <option value="Quận 2">Quận 2</option>
+                <option value="Quận 3">Quận 3</option>
+                <option value="Quận 4">Quận 4</option>
+                <option value="Quận 5">Quận 5</option>
+                <option value="Quận 6">Quận 6</option>
+                <option value="Quận 7">Quận 7</option>
+                <option value="Quận 8">Quận 8</option>
+                <option value="Quận 9">Quận 9</option>
+                <option value="Quận 10">Quận 10</option>
+                <option value="Quận 11">Quận 11</option>
+                <option value="Quận 12">Quận 12</option>
+                <option value="Quận Bình Thạnh">Quận
+                    Bình Thạnh</option>
+                <option value="Quận Phú Nhuận">Quận Phú
+                    Nhuận</option>
+                <option value="Quận Gò Vấp">Quận Gò Vấp
+                </option>
+                <option value="Quận Tân Bình">Quận Tân
+                    Bình</option>
+                <option value="Quận Tân Phú">Quận Tân Phú
+                </option>
+                <option value="Quận Thủ Đức">Quận Thủ Đức
+                </option>
+                <option value="Huyện Bình Chánh">Huyện
+                    Bình Chánh</option>
+                <option value="Huyện Cần Giờ">Huyện Cần
+                    Giờ</option>
+                <option value="Huyện Củ Chi">Huyện Củ Chi
+                </option>
+                <option value="Huyện Hóc Môn">Huyện Hóc
+                    Môn</option>
+                <option value="Huyện Nhà Bè">Huyện Nhà Bè
+                </option>
+            </select>
+
+            <input type="text" name="phuong" id="phuong" placeholder="Phường/ Xã" required
+                style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; margin-bottom: 5px;">
+            <p style="font-size: 14px; color: #777; margin-top: 2px;">Ví dụ: Tăng Nhơn Phú A</p>
+
+            <input type="text" name="nha" id="nha" placeholder="Số nhà/ tên đường" required
+                style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; margin-bottom: 5px;">
+            <p style="font-size: 14px; color: #777; margin-top: 2px;">Ví dụ: 33 đường Lê Duẩn</p>
+
+            <input type="text" name="ghichu" id="ghichu" placeholder="Ghi chú"
+                style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; margin-bottom: 5px;">
+            <p style="font-size: 14px; color: #777; margin-top: 2px;">Ví dụ: Tên tòa nhà, tầng</p>
+
+            <button class="button-27" type="submit" id="address-btn"
+                style="background-color: #000; color: #fff;  width: 100%; display: flex; align-items: center; justify-content: center; border: none;"
+                role="button">
+                Lưu
+            </button>
+
+        </form>
+    </div>
+</div>
+<div class="modal fade" id="alertModal" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+            style="position:relative; display: flex; align-items: center; justify-content: center;">
+            <span class="closexxx"
+                style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+            <div
+                style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                <p id="alert-text"
+                    style="margin-bottom:-20px; text-align: center; color: #333;font-size:20px;color:red">Có lỗi</p>
+
+            </div>
+            <button type="submit" class="button-27 closexxx"
+                style="margin-bottom: 30px; background-color: #010101; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width:170px; font-size: 16px;">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function toggleInputs() {
+        const inputs = document.getElementById('addressInputs');
+        const icon = document.getElementById('toggleIcon');
+
+        if (inputs.style.display === 'none' || inputs.style.display === '') {
+            inputs.style.display = 'block';
+            icon.innerHTML = '-'; // Change icon to minus
+        } else {
+            inputs.style.display = 'none';
+            icon.innerHTML = '+'; // Change icon back to plus
+        }
+    }
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const button = document.querySelectorAll("#statusButton");
+        button.forEach(btn => {
+            if (btn.textContent.includes("Đang giao")) {
+                btn.onmouseover = function () {
+                    this.innerHTML = '<i class="bi bi-x-circle" style="margin-right: 8px; font-size: 20px;"></i> Hủy đơn hàng';
+                    this.style.backgroundColor = '#ff0000';
+                };
+                btn.onmouseout = function () {
+                    this.innerHTML = '<i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đang giao';
+                    this.style.backgroundColor = '#ff5722';
+                };
+            }
+        })
+        // Check if the button text includes "Đang giao"
+
+        document.getElementById('closex').onclick = function () {
+            $('#changepasswordModal').modal('hide');
+        }
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const closeButtons = document.getElementsByClassName('closex');
+
+        Array.from(closeButtons).forEach(function (closeButton) {
+            closeButton.onclick = function () {
+                // Get the modal ID from the button's 'data-id' or the button's own id
+                const modalId = `#huyModal${closeButton.getAttribute('data-id')}`;
+
+                // Hide the modal dynamically
+                $(modalId).modal('hide');
+            }
+        });
+    });
+
+</script>
+{{!-- Kiem tra thong tin --}}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById('info-form');
+        const pwform = document.getElementById('pw-form');
+        const pw = document.getElementById('password-btn');
+        const alerttext = document.getElementById("alert-text")
+        const closeButtons = document.querySelectorAll('.closexxx');
+        closeButtons.forEach(async function (button) {
+            button.onclick = function () {
+                $('#alertModal').modal('hide');
+            };
+        });
+        const token = localStorage.getItem("token") || "";
+        if (!token) {
+            alerttext.innerHTML = "Vui lòng đăng nhập!";
+            $("#alertModal").modal("show");
+            $("#alertModal").on("hidden.bs.modal", function () {
+                window.location.href = "/account/login";
+                return;
+            });
+        }
+        pw.addEventListener("click", async function (e) {
+            e.preventDefault();
+            if (!checkpw()) {
+                $('#alertModal').modal('show');
+            } else {
+                const newpw = document.getElementById("newPassword").value.trim();
+                const oldpw = document.getElementById("oldPassword").value.trim();
+                fetch("http://localhost:3001/password", {
+                    method: "PUT",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ oldpw, newpw }),
+                })
+                    .then(async (response) => {
+                        const data = await response.json();
+                        if (data.message == "Mật khẩu không chính xác!") {
+                            alerttext.innerHTML = data.message;
+                            $("#alertModal").modal("show");
+                        }
+                        else if (data.message == "Đổi thành công!") {
+                            alerttext.innerHTML = "Đổi thành công!<br>Vui lòng đăng nhập lại!";
+                            $("#alertModal").modal("show");
+                            $("#alertModal").on("hidden.bs.modal", function () {
+                                localStorage.removeItem("token");
+                                window.location.href = "/account/login";
+                                return;
+                            });
+                        }
+                        else {
+                            alerttext.innerHTML = data.message;
+                            $("#alertModal").modal("show");
+                            $("#alertModal").on("hidden.bs.modal", function () {
+                                window.location.href = "/account/login";
+                                return;
+                            });
+                        }
+
+                    })
+                    .catch((error) => {
+                        console.log("Lỗi kết nối đến server:", error);
+                        alert("Không thể kết nối đến server. Hãy thử lại sau!" + error);
+                    });
+
+            }
+
+            function checkpw() {
+                const oldpw = document.getElementById("oldPassword");
+                const newpw = document.getElementById("newPassword");
+                const conpw = document.getElementById("confirmPassword");
+                if (oldpw.value == '') {
+                    alerttext.innerHTML = "Mật khẩu không được để trống!";
+                    return false;
+                }
+                else if (newpw.value == '' || conpw.value == '') {
+                    alerttext.innerHTML = "Mật khẩu không được để trống!";
+                    return false;
+                }
+                else if (newpw.value.length < 6) {
+                    alerttext.innerHTML = "Mật khẩu phải lớn hơn 5 kí tự!";
+                    return false;
+                }
+                else if (newpw.value != conpw.value) {
+                    alerttext.innerHTML = "Mật khẩu không khớp!";
+                    return false;
+                }
+                else if (newpw.value == oldpw.value) {
+                    alerttext.innerHTML = "Mật khẩu mới không được trùng với mật khẩu cũ!";
+                    return false;
+                }
+                return true;
+            }
+        })
+    })
+</script>
+
+
+{{!-- Thong tin khach hang --}}
+<script>
+    document.addEventListener("DOMContentLoaded", async (event) => {
+        const token = localStorage.getItem("token") || "";
+        const alerttext = document.getElementById("alert-text");
+        const hovaten = document.getElementById("hovaten");
+        const sdt = document.getElementById("sdt");
+        const email = document.getElementById("email");
+        const info = document.getElementById('info-button');
+        if (!token) {
+            alerttext.innerHTML = "Vui lòng đăng nhập!";
+            $("#alertModal").modal("show");
+            $("#alertModal").on("hidden.bs.modal", function () {
+                window.location.href = "/account/login";
+                return;
+            });
+        }
+        fetch("http://localhost:3001", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            }
+        })
+            .then(async (response) => {
+                const data = await response.json();
+
+                if (response.ok) {
+                    hovaten.value = data.fullname || "";
+                    sdt.value = data.phone || "";
+                    email.value = data.email || "";
+                } else {
+                    alerttext.innerHTML = data.message || "Xác thực thất bại!";
+                    $("#alertModal").modal("show");
+                }
+            })
+            .catch((error) => {
+                console.error("Fetch error:", error);
+            });
+
+        info.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const hovatenval = hovaten.value.trim();
+            const emailval = email.value.trim();
+            const sdtval = sdt.value.trim();
+            if (hovatenval == "" || sdtval == "" || emailval == "") {
+                alerttext.innerHTML = "Vui lòng điền đầy đủ thông tin!";
+                $("#alertModal").modal("show");
+                return;
+            }
+            if (sdtval.length< 8) {
+                alerttext.innerHTML = "Số điện thoại không hợp lệ!";
+                $("#alertModal").modal("show");
+                return;
+            }
+            fetch("http://localhost:3001/", {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ hovatenval, emailval, sdtval }),
+            })
+                .then(async (respone) => {
+                    const data = await respone.json();
+                    if (respone.ok) {
+                        alerttext.innerHTML = data.message || "Lưu thành công!";
+                        $("#alertModal").modal("show");
+                    } else {
+                        alerttext.innerHTML = data.message || "Xác thực thất bại!";
+                        $("#alertModal").modal("show");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Fetch error:", error);
+                });
+        })
+    });
+
+</script>
+{{!-- Lay dia chi khach hang --}}
+<script>
+    document.addEventListener("DOMContentLoaded", async (event) => {
+        const token = localStorage.getItem("token") || "";
+        const alerttext = document.getElementById("alert-text");
+        const tinh = document.getElementById("tinh");
+        const quan = document.getElementById("quan");
+        const phuong = document.getElementById("phuong");
+        const nha = document.getElementById("nha");
+        const ghichu = document.getElementById("ghichu");
+
+        fetch("http://localhost:3001/address", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+        })
+            .then(async (response) => {
+                const data = await response.json();
+
+                if (response.ok) {
+                    tinh.value = data.tinh || "";
+                    quan.value = data.quan || "";
+                    phuong.value = data.phuong || "";
+                    nha.value = data.nha || "";
+                    ghichu.value = data.ghichu || "";
+                } else {
+                    alerttext.innerHTML = "Vui lòng đăng nhập!";
+                    $("#alertModal").modal("show");
+                    $("#alertModal").on("hidden.bs.modal", function () {
+                        window.location.href = "/account/login";
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error("Fetch error:", error);
+            });
+    });
+
+</script>
+
+{{!-- Them sua dia Chi --}}
+<script>
+    document.addEventListener("DOMContentLoaded", (event) => {
+        const token = localStorage.getItem("token") || "";
+        const submit_btn = document.getElementById('address-btn');
+        const alerttext = document.getElementById("alert-text");
+
+        submit_btn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            const tinh = document.getElementById("tinh").value;
+            const quan = document.getElementById("quan").value;
+            const phuong = document.getElementById("phuong").value.trim();
+            const nha = document.getElementById("nha").value.trim();
+            const ghichu = document.getElementById("ghichu").value.trim();
+            if (tinh == "" || quan == "" || phuong == "" || nha == "" || ghichu == "") {
+                alerttext.innerHTML = "Vui lòng điền đầy đủ thông tin!";
+                $("#alertModal").modal("show");
+                return;
+            }
+            fetch("http://localhost:3001/address", {
+                method: "PATCH",
+                credentials: "include",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ tinh, quan, phuong, nha, ghichu }),
+            })
+                .then(async (response) => {
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        alerttext.innerHTML = data.message || "Lưu thành công!";
+                        $("#alertModal").modal("show");
+                    } else {
+                        alerttext.innerHTML = data.message || "Xác thực thất bại!";
+                        $("#alertModal").modal("show");
+                    }
+                })
+                .catch((error) => {
+                    console.error("Fetch error:", error);
+                });
+        })
+    })
+</script>

@@ -1,0 +1,346 @@
+<div style="text-align:center">
+    <h2 style="font-weight:bold;">Chỉnh sửa sản phẩm</h2>
+    <input id="product_id" type="text" style="display: none;" value="{{product.product_id}}">
+</div>
+<div class="flex-container"
+    style="display: flex; flex-direction: row; font-size: 30px; gap: 50px; text-align: center; padding: 0px 50px 0 50px;">
+    <div class="flex-item-left"
+        style="padding: 10px; flex: 70%; display: flex; align-items: center; justify-content: center;">
+        <div
+            style="background: #fff; padding: 40px; padding-top: 0; border-radius: 0 15px 15px 0; width: 100%; box-shadow: none;">
+            <h2 style="text-align: left; margin-bottom: 20px; font-weight:bold; font-size:22px;">Thông tin sản phẩm
+            </h2>
+
+            <form id="product-form" enctype="multipart/form-data">
+                <div style="margin-bottom: 15px; display: flex; gap: 4%;">
+                    <input type="text" name="name" placeholder="Tên sản phẩm" value="{{product.name}}"
+                        style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                        maxlength="55" required>
+                </div>
+
+                <div style="margin-bottom: 15px; display: flex; justify-content: space-between;align-items:center">
+                    <input type="text" name="price" placeholder="Giá" value="{{product.price}}"
+                        style="width: 24%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                        required maxlength="10" pattern="\d*" title="Chỉ nhận số (không quá 10 chữ số)">
+
+                    <select class="form-select" id="category" name="category"
+                        style="width: 24%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 0px; box-sizing: border-box;"
+                        required>
+                        <option value="">Danh mục</option>
+                    </select>
+                    <input type="text" style="display: none;" id="product_category" value="{{product.category}}">
+                    <input type="text" name="stock" placeholder="Số lượng" value="{{product.stock}}"
+                        style="width: 24%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                        required maxlength="10" pattern="\d*" title="Chỉ nhận chữ số">
+                    <select class="form-select statusSelect" name="status"
+                        style="width: 24%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 0px; box-sizing: border-box;"
+                        required>
+                        <option value="con-hang" {{#ifEqual product.status "con-hang" }}selected{{/ifEqual}}>Còn
+                            hàng</option>
+                        <option value="het-hang" {{#ifEqual product.status "het-hang" }}selected{{/ifEqual}}>Hết
+                            hàng</option>
+                    </select>
+
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <textarea id="details" name="details" placeholder="Thông tin về sản phẩm"
+                        style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px; resize: vertical;"
+                        required>{{product.description}}</textarea>
+                </div>
+
+
+                <!-- Multiple Image Input Field with Preview -->
+                <div style="margin-bottom: 15px;">
+                    <h2
+                        style="text-align: left; margin-bottom: 20px; margin-top: 20px; font-weight:bold; font-size:22px;">
+                        Hình ảnh sản phẩm
+                    </h2>
+                    <input type="file" id="product-images" name="images" accept="image/*" multiple
+                        style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                        onchange="previewImages()">
+                </div>
+
+                <!-- Image Preview Section -->
+                <div class="flex-item-left card" style="flex: 45%; height:auto; border:none" id="image-preview">
+                    <!-- Large Image -->
+                    <img src="{{product.mainImg}}" class="img-fluid card-img-top" alt="..."
+                        style="height: 450px; width: 100%; object-fit:scale-down" id="large-image" data-original-src="">
+
+                    <!-- Thumbnails -->
+
+                    <div style="margin-top: 10px; background-color: rgb(238, 236, 236);" id="small-images">
+                        <img src="{{product.mainImg}}" alt="Product Image"
+                            style="width: auto; height: 60px; object-fit: cover;border:2px solid blue">
+                        {{#each product.images}}
+                        <img src="{{this}}" alt="Product Image" style="width: auto; height: 60px; object-fit: cover;">
+                        {{/each}}
+                    </div>
+
+
+                </div>
+
+                <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 20px">
+                    <button type="button" class="button-27"
+                        style="background-color: #ff5722; color: #fff; width: 18%; display: flex; align-items: center; justify-content: center; border: none;"
+                        onclick="clearForm()">
+                        Hủy
+                    </button>
+                    <button type="submit" class="button-27"
+                        style="background-color: #000; color: #fff; width: 27%; display: flex; align-items: center; justify-content: center; border: none;">
+                        Xác nhận
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="flex-item-right" style="padding: 10px; flex: 30%;">
+        <div
+            style="background: #fff; padding-top: 0px; border-radius: 0 15px 15px 0; width: 100%; box-shadow: none; margin-top: 46px">
+            <form id="searchForm" style="display: flex; width: 100%;">
+                <input type="text" name="tensanpham" placeholder="Nhập tên sản phẩm"
+                    style="flex: 1; padding: 12px; border: 1px solid #000000; border-right: none; border-radius: 0px; font-size: 16px;">
+
+                <button type="submit"
+                    style="padding: 12px; border: 1px solid #000000; border-left: none; border-radius: 0px; background-color: #f1f1f1; font-size: 16px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="16" fill="currentColor"
+                        class="bi bi-search" viewBox="0 0 16 16" style="cursor: pointer;">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                    </svg>
+                </button>
+            </form>
+
+            <div style="display: flex; justify-content: right;">
+                <a class="button-27" href="/admin/product" style="background-color: #ff5722; color: #fff; margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý sản phẩm
+                </a>
+            </div>
+            <div style="display: flex; justify-content: right;">
+                <a class="button-27" href="/admin/new-product" style="background-color: #000000; color: #fff; margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Đăng sản phẩm mới
+                </a>
+            </div>
+            <span style="display: block; border-bottom: 1px solid rgb(0, 0, 0); margin-top: 15px;"></span>
+
+            <div style="display: flex; justify-content: right;">
+                <a class="button-27" href="/admin/account" style="background-color: #ff5722; color: #fff; margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý tài khoản
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/order" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Quản lý đơn hàng
+                </a>
+            </div>
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
+                     width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
+                    Thống kê
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="alertModal" style="display: none;">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                style="position:relative; display: flex; align-items: center; justify-content: center;">
+                <span class="closexxx"
+                    style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">&times;</span>
+                <div
+                    style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                    <p id="alert-text"
+                        style="margin-bottom:-20px; text-align: center; color: #333;font-size:20px;color:red">Có lỗi</p>
+
+                </div>
+                <button type="submit" class="button-27 closexxx"
+                    style="margin-bottom: 30px; background-color: #010101; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width:170px; font-size: 16px;">
+                    Xác nhận
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    let check = false;
+    document.addEventListener("DOMContentLoaded", async function () {
+        const closeButtonsxxx = document.querySelectorAll('.closexxx');
+        closeButtonsxxx.forEach(async function (button) {
+            button.onclick = function () {
+                $('#alertModal').modal('hide');
+            };
+        });
+
+        try {
+            const product_category = document.getElementById('product_category').value;
+            const category_select = document.getElementById('category');
+            const response = await fetch("http://localhost:3002/categories")
+            const categories = await response.json();
+            category_select.innerHTML = '<option value="">Danh mục</option>';
+
+            // Populate the select dropdown
+            categories.forEach(category => {
+                const option = document.createElement("option");
+                option.value = category.category_id;  // Set category_id as value
+                option.textContent = category.name; // Set category name as text
+                if (product_category == category.category_id) {
+                    option.selected = true;
+                }
+                category_select.appendChild(option);
+            })
+        } catch (error) {
+            console.error("Error loading categories:", error);
+        }
+    })
+</script>
+
+<script>
+    function previewImages() {
+        check = true;
+        const files = document.getElementById('product-images').files;
+        const largeImage = document.getElementById('large-image');
+        const smallImagesContainer = document.getElementById('small-images');
+        const imgPreview = document.getElementById('image-preview');
+        imgPreview.style.display = "block";
+
+        smallImagesContainer.innerHTML = '';
+
+        if (files.length === 0) {
+            return;
+        }
+        if (files.length > 4) {
+            alert('Nhiều nhất là 5 files ảnh.');
+            document.getElementById('product-images').value = ''; // Clear the input
+            return;
+        }
+
+        const firstFile = files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            largeImage.src = e.target.result;
+            largeImage.setAttribute('data-original-src', e.target.result);
+        };
+        reader.readAsDataURL(firstFile);
+
+        // Iterate through uploaded files for thumbnails
+        Array.from(files).forEach((file, index) => {
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('small-img');
+                img.style.height = '60px';
+                img.style.marginRight = '5px';
+                img.style.border = '1px solid black';
+                img.dataset.filename = file.name;
+                smallImagesContainer.appendChild(img);
+
+                img.addEventListener('click', function () {
+                    largeImage.src = this.src;
+                    const smallImgs = document.querySelectorAll('.small-img');
+                    smallImgs.forEach(function (Img) {
+                        Img.style.border = '1px solid black';
+                        if (Img.classList.contains("main-image")) {
+                            Img.classList.remove("main-image");
+                        }
+                    });
+                    this.style.border = '2px solid blue';
+                    this.classList.add("main-image");
+                });
+            };
+
+            reader.readAsDataURL(file);
+        });
+    }
+</script>
+
+<script>
+    document.getElementById('product-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const images = formData.getAll("images");
+        const mainImageElement = document.querySelector(".small-img.main-image");
+
+        if (check) {
+            if (!mainImageElement) {
+                document.getElementById("alert-text").innerHTML = "Vui lòng chọn ảnh chính!";
+                $("#alertModal").modal("show");
+                return
+            }
+
+            const mainImageName = mainImageElement.dataset.filename;
+            let mainFile = null;
+            let otherFiles = [];
+
+            images.forEach(file => {
+                if (file.name === mainImageName) {
+                    mainFile = file;
+                } else {
+                    otherFiles.push(file);
+                }
+            });
+
+            formData.delete("images");
+            otherFiles.forEach(file => formData.append("images", file));
+
+            if (mainFile) {
+                formData.append("mainImage", new File([mainFile], `main-${mainFile.name}`, { type: mainFile.type }));
+            }
+        }
+        try {
+            const token = localStorage.getItem("token") || "";
+            if (!token) {
+                alerttext.innerHTML = "Vui lòng đăng nhập!";
+                $("#alertModal").modal("show");
+                $("#alertModal").on("hidden.bs.modal", function () {
+                    window.location.href = "/account/login";
+                    return;
+                });
+            }
+            const product_id = document.getElementById("product_id").value;
+            let fetchQuery = `http://localhost:3002/edit1/${product_id}`
+            if (check == false) {
+                fetchQuery = `http://localhost:3002/edit2/${product_id}`
+                formData.forEach((value, key) => {
+                    console.log(`${key}: ${value}`);
+                });
+            }
+            const response = await fetch(fetchQuery, {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: formData
+            })
+            const data = await response.json();
+            if (data.message = "Đăng thành công!") {
+                document.getElementById("alert-text").innerHTML = "Lưu thành công!";
+                $("#alertModal").modal("show");
+                $("#alertModal").on("hidden.bs.modal", function () {
+                    window.location.href = "/admin/product";
+                });
+            }
+            else if (data.message = "Vui lòng đăng nhập!") {
+                document.getElementById("alert-text").innerHTML = data.message;
+                $("#alertModal").modal("show");
+                $("#alertModal").on("hidden.bs.modal", function () {
+                    window.location.href = "/account/login";
+                });
+            }
+            else {
+                document.getElementById("alert-text").innerHTML = data.message;
+                $("#alertModal").modal("show");
+            }
+        } catch (error) {
+            alert(error)
+        }
+    });
+</script>
