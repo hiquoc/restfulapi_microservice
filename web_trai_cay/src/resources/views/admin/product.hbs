@@ -3,49 +3,46 @@
     <div class="flex-item-left" style="padding: 10px; flex: 70%;">
         <div style="display: flex;align-items:center;justify-content:space-between">
             <h1 style="text-align: left;font-weight:bold ;">Quản lý sản phẩm</h1>
-            <div style="display: flex; align-items: center;margin-right:0px;margin-bottom:6px">
-                <form class="dropdown" id="sortForm" method="GET">
+            <div style="display: flex; align-items: center; margin-bottom: 6px;margin-right:10px">
+                <form class="dropdown" id="sortForm" method="GET" action="">
                     <button id="sortDropdown"
-                        style="background-color: #ffffff; border: 1px solid #000000; border-radius: px; color: #151515; padding: 10px; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;"
+                        style="width: 120px; background-color: #fff; border: 1px solid #000; color: #151515; padding: 10px; font-size: 16px ; cursor: pointer; transition: 0.3s; box-shadow: 2px 2px 5px rgba(0,0,0,0.1);"
                         type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Sắp xếp
+                        Lọc ▼
                     </button>
                     <input type="hidden" name="sort" id="sortValue" value="">
-                    <ul class="dropdown-menu" name="sort"
-                        style="position: absolute; left: 50%; transform: translate(-50%, 0); text-align: center; margin-top: 5px; padding: 0; border-radius: 5px; background-color: #ffffff; border: 1px solid #ddd; z-index: 1000; width: auto;">
+                    <ul class="dropdown-menu" style="position: absolute; left: 50%; transform: translateX(-50%); text-align: center; 
+                   margin-top: 5px; padding: 0; border-radius: 6px; background-color: #fff; 
+                   border: 1px solid #ddd; z-index: 1000; width: 140px; box-shadow: 2px 2px 5px rgba(0,0,0,0.2);">
+
                         <li style="list-style: none;">
-                            <button class="dropdown-item" value="thap-den-cao"
+                            <button class="dropdown-item" value="gio-trai-cay"
                                 style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
-                                Thấp đến cao
+                                Giỏ trái cây
                             </button>
                         </li>
                         <li style="list-style: none;">
-                            <button class="dropdown-item" value="cao-den-thap"
+                            <button class="dropdown-item" value="trai-cay"
                                 style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
-                                Cao đến thấp
+                                Trái cây
                             </button>
                         </li>
                         <li style="list-style: none;">
-                            <button class="dropdown-item" value="moi-nhap"
+                            <button class="dropdown-item" value="rau-cu"
                                 style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
-                                Mới nhất
+                                Rau củ
                             </button>
                         </li>
-                        <li style="list-style: none;">
-                            <button class="dropdown-item" value="mua-nhieu"
-                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
-                                Mua nhiều nhất
-                            </button>
-                        </li>
-                    </ul>
+
                 </form>
             </div>
+
         </div>
-
-
+        <p id="no-product" style="text-align: left;margin-top:0px; font-size: 20px;display:none">Không tìm thấy sản phẩm
+        </p>
 
         <div class="container">
-            <div class="row">
+            <div class="row" id="product-table">
 
             </div>
         </div>
@@ -75,7 +72,7 @@
         <div
             style="background: #fff; padding-top: 0px;padding-top:0; border-radius: 0 15px 15px 0; width: 100%; box-shadow: none;margin-top:56px">
             <form id="searchForm" style="display: flex; width: 100%;" action="/admin/search">
-                <input type="text" name="tensanpham" placeholder="Nhập tên sản phẩm"
+                <input type="text" name="tensanpham" placeholder="Nhập tên sản phẩm" id="tensanpham"
                     style="flex: 1; padding: 12px; border: 1px solid #000000; border-right: none; border-radius: 0px; font-size: 16px;">
 
                 <button type="submit"
@@ -89,7 +86,7 @@
             </form>
 
             <div style="display: flex;  justify-content: right;">
-                <a class="button-27" href="" style="background-color: #ff5722; color: #fff;margin-top: 15px;
+                <a class="button-27" href="/admin/product" style="background-color: #ff5722; color: #fff;margin-top: 15px;
                      width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
                     Quản lý sản phẩm
                 </a>
@@ -114,7 +111,7 @@
                     Quản lý đơn hàng
                 </a>
             </div>
-            <div style="display: flex;  justify-content: right;">
+            <div style="display: flex;  justify-content: right;display:none">
                 <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
                      width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
                     Thống kê
@@ -125,19 +122,21 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-    });
-
     document.addEventListener("DOMContentLoaded", async () => {
+
+        const urlParams = new URLSearchParams(window.location.search) || "";
+        const sortValue = urlParams.get("sort");
         const token = localStorage.getItem("token") || "";
+        console.log(token)
         try {
-            const response = await fetch("http://localhost:3002/", {
+            const url = sortValue ? `http://localhost:3002/products?sort=${sortValue}` : `http://localhost:3002/products`
+            const response = await fetch(url, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
                 },
             });
+            console.log(url)
             const products = await response.json();
 
             const productContainer = document.querySelector(".row");
@@ -269,4 +268,116 @@
             alert(error)
         }
     }
+</script>
+
+<script>
+    document.getElementById("searchForm").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        try {
+            const product = document.getElementById("tensanpham").value.trim();
+            const token = localStorage.getItem("token");
+            const response = await fetch(`http://localhost:3002/products/${product}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            const products = await response.json();
+            if (products.length == 0) {
+                document.getElementById("no-product").style.display = "block";
+                return;
+            }
+            else {
+                document.getElementById("no-product").style.display = "none";
+            }
+
+            const productContainer = document.querySelector("#product-table");
+            productContainer.innerHTML = ""; // Clear existing content
+
+            products.forEach(product => {
+                const productHTML = `
+                <div class="col-md-4 mb-4">
+                    <div class="card product-card">
+                        <a href="/product/${product.product_id}" class="product-image">
+                            <img src="${product.mainImg}" class="img-fluid" alt="${product.name}">
+                        </a>
+                        <div class="card-body text-center">
+                            <p class="product-name">${product.name}</p>
+                            <p class="product-price">${Number(product.price).toLocaleString("vi-VN")}₫</p>
+                            <div class="product-buttons">
+                                <a href="/admin/product/${product.product_id}" class="edit-button">Sửa</a>
+                                <button data-bs-target="#xoa${product.product_id}" data-bs-toggle="modal"
+                                    class="delete-button">Xóa</button>
+                            </div>
+                        </div>
+
+                        <!-- Modal Xóa -->
+                        <div class="modal fade" id="xoa${product.product_id}" tabindex="-1"
+                            aria-labelledby="xoa${product.product_id}Label" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content"
+                                    style="position:relative; display: flex; align-items: center; justify-content: center;">
+                                    <span class="closex" data-product-id="${product.product_id}"
+                                        style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                                        &times;
+                                    </span>
+                                    <div id="changePasswordForm"
+                                        style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                        <h1
+                                            style="margin-bottom: 20px; text-align: center; color: #333;font-size: 37px;margin-left: 34px;margin-right: 36px;">
+                                            Bạn có chắc là muốn xóa sản phẩm này?</h1>
+                                        <div style="display:flex;justify-content:space-between;gap:10px">
+                                            <button type="button" class="button-27 closex"
+                                                data-product-id="${product.product_id}"
+                                                style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                Hủy
+                                            </button>
+                                            <button type="submit" class="button-27" onclick="xoa(${product.product_id})"
+                                                style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                Xác nhận
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+                productContainer.innerHTML += productHTML;
+            });
+        } catch (error) {
+            console.error("Error fetching products:", error);
+        }
+        document.querySelectorAll('.statusSelect').forEach(select => {
+            select.addEventListener('change', function () {
+                this.closest('.statusForm').submit();
+            });
+        });
+
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function () {
+                document.getElementById('sortValue').value = this.value;
+                document.getElementById('sortForm').submit();
+            });
+        });
+        const closeButtons = document.getElementsByClassName('closex');
+        Array.from(closeButtons).forEach(function (closeButton) {
+            closeButton.onclick = function () {
+                // Get the product_id from a data attribute on the button, or another way to associate the product ID
+                const productId = closeButton.getAttribute('data-product-id');
+                if (productId) {
+                    $(`#xoa${productId}`).modal('hide'); // Select the modal with the specific product_id
+                }
+            }
+        });
+        const closeButtonsxxx = document.querySelectorAll('.closexxx');
+        closeButtonsxxx.forEach(async function (button) {
+            button.onclick = function () {
+                $('#alertModal').modal('hide');
+            };
+        });
+
+    })
 </script>

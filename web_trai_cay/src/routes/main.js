@@ -3,6 +3,8 @@ const router=express.Router();
 let mainController = require('../app/controllers/mainController')
 
 router.get('/checkout', mainController.checkout);
+router.get('/search', mainController.search);
+router.get('/top', mainController.top);
 router.get('/', mainController.main);
 
 

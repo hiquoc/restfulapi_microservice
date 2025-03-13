@@ -1,7 +1,6 @@
 const axios = require('axios');
 
 const checkLoggedIn = async (req, res, next) => {
-
     try {
         const token = req.headers.authorization;
         const response = await axios.get("http://localhost:3001/loggedin", {
@@ -13,7 +12,7 @@ const checkLoggedIn = async (req, res, next) => {
             console.log("Vui lòng đăng nhập!")
             return res.status(401).json({ message: "Vui lòng đăng nhập!" });
         }
-        req.user = response.data.user;
+        req.user = response.data.user; 
         next();
     } catch (e) {
         console.error("Lỗi server:", e.response ? e.response.data : e.message);

@@ -29,8 +29,8 @@ module.exports = function (app) {
 
   app.put("/password", getInfo, accountController.changePassword); //doi mat khau
 
-  app.get("/accounts/:username", getInfo, accountController.findAccount); //tim tai khoan theo username
-  app.get("/accounts", getInfo, accountController.accountInfo); //lay thong tin nhieu tai khoan
+  app.get("/accounts/:username",checkAdmin, getInfo, accountController.findAccount); //tim tai khoan theo username
+  app.get("/accounts",checkAdmin, getInfo, accountController.accountInfo); //lay thong tin nhieu tai khoan
 
   app.patch("/role", getInfo, accountController.role); //cap nhat quyen khach hang
 

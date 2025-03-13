@@ -32,7 +32,8 @@
                         {{formatPrice product.price}}₫</p>
                 </div>
                 <div>
-                    <p style="font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic;">
+                    <p
+                        style="font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic;margin-top:10px">
                         {{product.sold}} lượt mua
                     </p>
                 </div>
@@ -91,13 +92,19 @@
                 </div>
 
             </div> --}}
-            <div style="display: flex;margin-top:-25px">
-                <p style="margin: 40px 62px 0 0;">Số lượng:</p>
-                <div class="quantity-container" style="margin-left:-45px">
-                    <button type="button" class="quantity-btn" onclick="decrementQuantity()">-</button>
-                    <input type="number" id="so-luong" name="soluong" value="1" min="1" max="10" readonly>
-                    <button type="button" class="quantity-btn" onclick="incrementQuantity()">+</button>
+            <div style="display: flex;margin-top:-25px;justify-content:space-between;">
+                <div style="display: flex;">
+                    <p style="margin: 40px 62px 0 0;">Số lượng:</p>
+                    <div class="quantity-container" style="margin-left:-45px">
+                        <button type="button" class="quantity-btn" onclick="decrementQuantity()">-</button>
+                        <input type="number" id="so-luong" name="soluong" value="1" min="1" max="10" readonly>
+                        <button type="button" class="quantity-btn" onclick="incrementQuantity()">+</button>
+                    </div>
                 </div>
+                <p
+                    style="font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic;margin-top:10px">
+                    {{product.stock}} trong kho
+                </p>
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 25px;">
 
@@ -124,7 +131,8 @@
                 <p style="white-space: pre-line;">{{product.description}}
                 </p>
             </div>
-            <p style="margin-top: 20px; cursor: pointer; color: rgb(0, 0, 0); position: relative; text-align: left; "
+            {{!--<p
+                style="margin-top: 20px; cursor: pointer; color: rgb(0, 0, 0); position: relative; text-align: left; "
                 onclick="toggleComment()">
                 <span>Bình luận và đánh giá</span>
                 <span id="toggleIcon1" style="position: absolute; right: 0;">+</span>
@@ -321,7 +329,7 @@
                 {{/if}}
 
                 {{/if}}
-            </div>
+            </div> --}}
         </div>
     </div>
 </div>
@@ -528,17 +536,15 @@
     <span style="border-top: 1px solid #696969; flex: 1;"></span>
 </div>
 
-<div style="position: relative; width: 100%; overflow: hidden;">
-    <!-- Previous Button -->
-    <button class="prev-btn" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%);
-        background: none; border: none; cursor: pointer; font-size: 36px; z-index: 10;">
-        <i class="bi bi-arrow-left-square"></i>
-    </button>
 
-    <div class="scroll-container" style="overflow-x: auto; scroll-behavior: smooth; white-space: nowrap;">
-        <div class="product-grid" style="display: flex; gap: 10px;">
-            {{#each other}}
-            <div class="product-card" style="display: inline-block; width: 220px;">
+<div class="slider-container" style="position:relative;">
+    <button class="prev-btn"  style="position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer; font-size: 36px; z-index: 10;">
+        <i class="bi bi-arrow-left-square"></i></button>
+    <div class="slider-wrapper">
+        {{#each other}}
+        <div class="slider-item">
+            <div class="product-card">
                 <a href="/product/{{this.product_id}}" class="product-image">
                     <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}">
                 </a>
@@ -550,34 +556,13 @@
                     </button>
                 </div>
             </div>
-            {{/each}}
         </div>
+        {{/each}}
     </div>
-
-    <!-- Next Button -->
     <button class="next-btn" style="position: absolute; right: 0; top: 50%; transform: translateY(-50%);
         background: none; border: none; cursor: pointer; font-size: 36px; z-index: 10;">
-        <i class="bi bi-arrow-right-square"></i>
-    </button>
+        <i class="bi bi-arrow-right-square"></i></button>
 </div>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const scrollContainer = document.querySelector(".scroll-container");
-        const prevBtn = document.querySelector(".prev-btn");
-        const nextBtn = document.querySelector(".next-btn");
-
-        const scrollAmount = 220; // Adjust based on product width
-
-        nextBtn.addEventListener("click", () => {
-            scrollContainer.scrollBy({ left: scrollAmount, behavior: "smooth" });
-        });
-
-        prevBtn.addEventListener("click", () => {
-            scrollContainer.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-        });
-    });
-</script>
 
 
 <div class="modal fade" id="alertModal" style="display: none;">
@@ -626,23 +611,7 @@
         }
     }
 </script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const productGrid = document.querySelector(".product-grid");
-        const prevBtn = document.querySelector(".prev-btn");
-        const nextBtn = document.querySelector(".next-btn");
 
-        const scrollAmount = 220; // Adjust based on product width
-
-        nextBtn.addEventListener("click", () => {
-            productGrid.scrollBy({ left: scrollAmount, behavior: "smooth" });
-        });
-
-        prevBtn.addEventListener("click", () => {
-            productGrid.scrollBy({ left: -scrollAmount, behavior: "smooth" });
-        });
-    });
-</script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Select all card elements
@@ -710,6 +679,9 @@
                     window.location.href = "/account/login";
                     return;
                 });
+            } else {
+                document.getElementById("alert-text").innerHTML = data.message;
+                $("#alertModal").modal("show");
             }
             await updateCart();
 
@@ -717,7 +689,7 @@
             alert("Error: " + e.message)
         }
     }
-    
+
     function incrementQuantity() {
         let quantityInput = document.getElementById("so-luong");
         let currentValue = parseInt(quantityInput.value);
@@ -772,6 +744,10 @@
                     return;
                 });
             }
+            else if (data.message == "Số lượng sản phẩm trong kho có hạn!") {
+                document.getElementById("alert-text").innerHTML = data.message;
+                $("#alertModal").modal("show");
+            }
             await updateCart()
         } catch (e) {
             alert("Error: " + e.message)
@@ -825,12 +801,12 @@
                                         <span style="color: red;font-size: 13px;font-weight: 600;">${item.price.toLocaleString('vi-VN')}₫</span>
                                     </p>
                                     <div class="quantity-container" style="display: flex;justify-content: center;align-items: center;gap: 3px;margin-top:0px;margin-top: -11px;margin-right: 15px;">
-                                        <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
+                                        <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
                                         <div style="display: flex; align-items: center; justify-content: center; height: 20px;">
                                             <input type="number" id="${item.cart_id}" name="soluong" value="${item.quantity}" min="1" max="10" readonly 
                                                 style="width: 30px; height: 20px; font-size: 12px; text-align: right; line-height: 20px; padding: 0;">
                                         </div>
-                                        <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
+                                        <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
                                     </div>
                                     </div>
                                     
@@ -887,5 +863,37 @@
                 }, 400);
             });
         });
+
+        ////////////////////////////////
+        let currentIndex = 0;
+        const itemsToShow = 5; // Show 5 items at a time
+        const itemWidth = 258; // 238px width + 10px margin
+        const sliderWrapper = document.querySelector('.slider-wrapper');
+        const totalSlides = document.querySelectorAll('.slider-item').length;
+
+        function showSlide(index) {
+            const maxIndex = Math.ceil(totalSlides / itemsToShow) - 1;
+
+            if (index > maxIndex) {
+                currentIndex = 0; // Loop back to first set
+            } else if (index < 0) {
+                currentIndex = maxIndex; // Loop to last set
+            } else {
+                currentIndex = index;
+            }
+
+            const offset = -currentIndex * (itemsToShow * itemWidth); // Move by 5 items
+            sliderWrapper.style.transform = `translateX(${offset}px)`;
+        }
+
+        function nextSlide() {
+            showSlide(currentIndex + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentIndex - 1);
+        }
+        document.querySelector(".next-btn").addEventListener("click", nextSlide);
+        document.querySelector(".prev-btn").addEventListener("click", prevSlide);
     });
 </script>

@@ -238,8 +238,8 @@ module.exports = {
           getAccountsSql += ` WHERE a.username LIKE ?`;
           params.push(`%${req.query.tentaikhoan}%`);
         }
-        const [rows] = await db.promise().query(getAccountsSql, params);
-        return res.status(200).json(rows);
+        const [accounts] = await db.promise().query(getAccountsSql, params);
+        return res.status(200).json(accounts);
       } catch (error) {
         console.error("Lỗi khi lấy danh sách tài khoản:", error.message);
         return res

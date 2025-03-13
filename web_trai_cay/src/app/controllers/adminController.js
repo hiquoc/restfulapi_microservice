@@ -23,6 +23,10 @@ class AccountController {
       res.status(500).json({ message: "Lỗi server" });
     }
   }
+
+  async order(req, res) {
+    res.render("admin/order", {layout: "admin" });
+}
 }
 
 module.exports = new AccountController();

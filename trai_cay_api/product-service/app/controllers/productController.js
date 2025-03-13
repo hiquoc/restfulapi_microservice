@@ -103,12 +103,85 @@ module.exports = {
       }
     }
     try {
-      let ProSql = "SELECT * FROM product";
+      let ProSql = "SELECT product_id,name,price FROM product";
+      let conditions = [];
+
       if (role == "user") {
-        ProSql += " WHERE status='con-hang'";
+        conditions.push("status='con-hang'");
+      }
+
+      if (req.query.sort) {
+        switch (req.query.sort) {
+          case "gio-trai-cay":
+            conditions.push("category=1");
+            break;
+          case "trai-cay":
+            conditions.push("category=2");
+            break;
+          case "rau-cu":
+            conditions.push("category=3");
+            break;
+        }
+      }
+      if (conditions.length > 0) {
+        ProSql += " WHERE " + conditions.join(" AND ");
       }
       ProSql += " ORDER BY product_id DESC";
+
       let [products] = await db.promise().query(ProSql);
+
+      const ImgSql = "SELECT product_id,image_url FROM product_image";
+      let [images] = await db.promise().query(ImgSql);
+
+      const productMap = {};
+      images.forEach((image) => {
+        const productId = image.product_id;
+        if (!productMap[productId]) {
+          productMap[productId] = { mainImg: null };
+        }
+
+        if (image.image_url.includes("/uploads/main")) {
+          productMap[productId].mainImg = image.image_url;
+        }
+      });
+
+      // Kết hợp sản phẩm với danh sách ảnh và ảnh chính
+      const Products = products.map((product) => ({
+        ...product,
+        mainImg: productMap[product.product_id]?.mainImg || null,
+        images: productMap[product.product_id]?.images || [],
+      }));
+      return res.status(200).json(Products);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Lỗi server!" });
+    }
+  },
+
+  findProduct: async (req, res) => {
+    let role = "user";
+    if (req.headers.authorization) {
+      try {
+        const token = req.headers.authorization;
+        const response = await axios.get("http://localhost:3001/admin", {
+          headers: { Authorization: `${token}` },
+        });
+        if (response.status != 401 || response.status != 403) {
+          role = "admin";
+        }
+      } catch (e) {
+        console.error("Lỗi server:", e.response ? e.response.data : e.message);
+      }
+    }
+    try {
+      let ProSql = "SELECT * FROM product WHERE name LIKE ?";
+      if (role == "user") {
+        ProSql += " AND status='con-hang'";
+      }
+      ProSql += " ORDER BY product_id DESC";
+      let [products] = await db
+        .promise()
+        .query(ProSql, [`%${req.params.product}%`]);
 
       const ImgSql = "SELECT * FROM product_image";
       let [images] = await db.promise().query(ImgSql);
@@ -358,7 +431,7 @@ module.exports = {
   top: async (req, res) => {
     try {
       const topProSql =
-        "SELECT * FROM product WHERE status='con-hang' ORDER BY sold DESC LIMIT 5";
+        "SELECT * FROM product WHERE status='con-hang' ORDER BY sold";
       const [products] = await db.promise().query(topProSql);
 
       const ImgSql = "SELECT * FROM product_image";
@@ -387,6 +460,105 @@ module.exports = {
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Lỗi server!" });
+    }
+  },
+
+  home: async (req, res) => {
+    try {
+      const topProSql =
+        "SELECT * FROM product WHERE status='con-hang' ORDER BY sold DESC LIMIT 5";
+      const [products] = await db.promise().query(topProSql);
+
+      const ImgSql = "SELECT * FROM product_image";
+      let [images] = await db.promise().query(ImgSql);
+
+      const productMap = {};
+      images.forEach((image) => {
+        const productId = image.product_id;
+        if (!productMap[productId]) {
+          productMap[productId] = { images: [], mainImg: null };
+        }
+
+        if (image.image_url.includes("/uploads/main")) {
+          productMap[productId].mainImg = image.image_url;
+        } else {
+          productMap[productId].images.push(image);
+        }
+      });
+
+      // Kết hợp sản phẩm với danh sách ảnh và ảnh chính
+      const Products = products.map((product) => ({
+        ...product,
+        mainImg: productMap[product.product_id]?.mainImg || null,
+      }));
+      // Chia sản phẩm theo danh mục (category)
+      const categorizedProducts = {};
+      Products.forEach((product) => {
+        const category = product.category || "Uncategorized"; // Đề phòng nếu category bị null
+        if (!categorizedProducts[category]) {
+          categorizedProducts[category] = [];
+        }
+        categorizedProducts[category].push(product);
+      });
+
+      return res.status(200).json(categorizedProducts);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Lỗi server!" });
+    }
+  },
+
+  orderAdd: async (req, res) => {
+    try {
+      const stockChangeValues = req.body;
+      const updateOrderSql = `
+    UPDATE product
+    SET 
+        stock = CASE 
+            ${stockChangeValues
+              .map(([id, qty]) => `WHEN product_id = ${id} THEN stock - ${qty}`)
+              .join(" ")}
+        END,
+        sold = CASE 
+            ${stockChangeValues
+              .map(([id, qty]) => `WHEN product_id = ${id} THEN sold + ${qty}`)
+              .join(" ")}
+        END
+    WHERE product_id IN (${stockChangeValues.map(([id]) => id).join(",")});
+`;
+      await db.promise().query(updateOrderSql, []);
+
+      res.status(200).json({ message: "Stock updated successfully!" });
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      res.status(500).json({ message: "Server error!" });
+    }
+  },
+
+  orderAbort: async (req, res) => {
+    try {
+      const stockChangeValues = req.body;
+      const updateOrderSql = `
+    UPDATE product
+    SET 
+        stock = CASE 
+            ${stockChangeValues
+              .map(([id, qty]) => `WHEN product_id = ${id} THEN stock + ${qty}`)
+              .join(" ")}
+        END,
+        sold = CASE 
+            ${stockChangeValues
+              .map(([id, qty]) => `WHEN product_id = ${id} THEN sold - ${qty}`)
+              .join(" ")}
+        END
+    WHERE product_id IN (${stockChangeValues.map(([id]) => id).join(",")});
+`;
+      await db.promise().query(updateOrderSql, []);
+
+      res.status(200).json({ message: "Stock updated successfully!" });
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      res.status(500).json({ message: "Server error!" });
     }
   },
 };

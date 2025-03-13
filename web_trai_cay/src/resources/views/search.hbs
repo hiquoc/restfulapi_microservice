@@ -2,10 +2,54 @@
     style="display: flex;flex-direction: row;font-size: 30px;gap:30px;text-align: center;padding: 20px 50px 0 50px; ">
     <div class="flex-item-left" style="padding: 0px; flex: 70%;">
         <div style="display: flex;align-items: center;justify-content:space-between">
-            <h2
-                style="text-align: left;font-weight:bolder;color: #f68d0e;font-family: 'Quicksand', sans-serif;margin-bottom:20px;margin-left:30px ">
-                {{name}}</h2>
-   
+            <div>
+                 <h2
+                style="text-align: left;font-weight:bolder;color: #f68d0e;font-family: 'Quicksand', sans-serif;margin-bottom:20px;margin-left:30px">
+                {{name}}
+            </h2>
+            {{#if products}}
+            {{else}}
+            <p style="text-align: left;margin-top:0px; font-size: 20px">Sản phẩm không tồn tại!</p>
+            {{/if}}
+            </div>
+
+            <div style=" display: flex; align-items: center;margin-right:6px;margin-bottom:6px">
+                <form class="dropdown" id="sortForm" method="GET">
+                    <button id="sortDropdown"
+                        style="background-color: #ffffff; border: 1px solid #000000; border-radius: px; color: #151515; padding: 10px; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%;"
+                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Sắp xếp
+                    </button>
+                    <input type="hidden" name="sort" id="sortValue" value="">
+                    <ul class="dropdown-menu" name="sort"
+                        style="position: absolute; left: 50%; transform: translate(-50%, 0); text-align: center; margin-top: 5px; padding: 0; border-radius: 5px; background-color: #ffffff; border: 1px solid #ddd; z-index: 1000; width: auto;">
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="thap-den-cao"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Thấp đến cao
+                            </button>
+                        </li>
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="cao-den-thap"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Cao đến thấp
+                            </button>
+                        </li>
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="moi-nhap"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Mới nhất
+                            </button>
+                        </li>
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="mua-nhieu"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Mua nhiều nhất
+                            </button>
+                        </li>
+                    </ul>
+                </form>
+            </div>
 
         </div>
         <div class="container">
@@ -98,7 +142,11 @@
         </div>
     </div>
 </div>
-
+<script>
+    function changeSort(selected) {
+        document.getElementById('sortDropdown').textContent = `Sắp xếp: ${selected}`;
+    }
+</script>
 <script>
     document.querySelectorAll('.dropdown-item').forEach(item => {
         item.addEventListener('click', function () {
@@ -176,7 +224,7 @@
                     return;
                 });
             }
-            else if(data.message=="Số lượng sản phẩm trong kho có hạn!") {
+            else if (data.message == "Số lượng sản phẩm trong kho có hạn!") {
                 document.getElementById("alert-text").innerHTML = data.message;
                 $("#alertModal").modal("show");
             }

@@ -1,102 +1,58 @@
 <div class="flex-container"
     style="display: flex;flex-direction: row;font-size: 30px;gap:50px;text-align: center;padding: 0px 50px 0 50px; ">
     <div class="flex-item-left" style="padding: 10px; flex: 70%;">
-        <h1 style="text-align: left;font-weight:bold ;">Đơn hàng</h1>
-        {{!-- {{#ifEqual length 0 }}
-        <p style="text-align: left;margin-top:10px; font-size: 20px">Bạn chưa thanh toán đơn hàng nào!</p>
-        {{/ifEqual}}
-        {{#each products}}
-        <div style="height: 250px; border: 1px solid #000; overflow: hidden;margin-bottom:30px;">
-            <div class="row g-0">
-                <a href="/product/{{this.product_id}}"
-                    class="col-md-4 d-flex align-items-center justify-content-center">
-                    <img src="../../../../{{this.mainImage}}" class="img-fluid " alt="..."
-                        style="width: 267px;aspect-ratio: 1/1;object-fit: cover;">
-                </a>
-                <div class="col-md-8" style="">
-                    <div class="card-body don-hang"
-                        style="height: 250px; padding: 20px; position: relative;background-color:white">
-                        <p
-                            style="overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-weight:bold;padding-right: 25px;">
-                            {{this.name}}
-                        </p>
-                        <div style="display: flex;gap:50px">
-                            <p style="">Size: {{this.size}}</p>
-                            <p style="">Màu: {{this.color}}</p>
-                        </div>
-
-                        <div style="display:flex;justify-content:space-between;">
-                            <p style="margin-top: -5px; color: red; font-weight: 600; ">
-                                {{formatPrice this.price}}₫</p>
-                            <p
-                                style="margin-top: 0px; font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic; ">
-                                {{this.ngay}}</p>
-                        </div>
-
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <select class="form-select" id="so-luong" name="sellist1" disabled
-                                style="width: 100px; height: 40px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 30px; box-sizing: border-box;">
-                                <option {{#ifEqual this.number 1 }}selected{{/ifEqual}}>1</option>
-                                <option {{#ifEqual this.number 2 }}selected{{/ifEqual}}>2</option>
-                                <option {{#ifEqual this.number 3 }}selected{{/ifEqual}}>3</option>
-                                <option {{#ifEqual this.number 4 }}selected{{/ifEqual}}>4</option>
-                            </select>
-                            {{#ifEqual this.status "đang giao hàng" }}
-                            <button id="statusButton" class="madonhang" data-bs-toggle="modal" data-id="{{thhis.id}}"
-                                data-bs-target="#huyModal{{this.id}}"
-                                style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;">
-                                <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đang giao
+        <div style="display: flex;justify-content:space-between">
+            <h1 style="text-align: left;font-weight:bold ;">Đơn hàng</h1>
+            <div style="display: flex; align-items: center;margin-right:0px;margin-bottom:6px">
+                <form class="dropdown" id="sortForm" method="GET" action="">
+                    <button id="sortDropdown"
+                        style="width:100px;background-color: #ffffff; border: 1px solid #000000; border-radius: px; color: #151515; padding: 10px; font-family: 'Arial', sans-serif; font-size: 16px; font-weight: bold; cursor: pointer; "
+                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Lọc
+                    </button>
+                    <input type="hidden" name="sort" id="sortValue" value="">
+                    <ul class="dropdown-menu" name="sort"
+                        style="position: absolute; left: 50%; transform: translate(-50%, 0); text-align: center; margin-top: 5px; padding: 0; border-radius: 5px; background-color: #ffffff; border: 1px solid #ddd; z-index: 1000; width: auto;">
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value=""
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Tất cả
                             </button>
-                            <div class="modal fade" id="huyModal{{this.id}}" tabindex="-1"
-                                aria-labelledby="huyModalLabel" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered">
-                                    <div class="modal-content"
-                                        style="position:relative; display: flex; align-items: center; justify-content: center;">
-                                        <span class="closex" data-id="{{this.id}}"
-                                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
-                                            &times;
-                                        </span>
-                                        <div
-                                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
-                                            <h1 style="margin-bottom: 20px; text-align: center; color: #333;">Bạn có
-                                                chắc là muốn hủy đơn hàng này?</h1>
-                                            <div style="display:flex;justify-content:space-between;gap:10px">
-                                                <button type="button" class="button-27 closex" data-id="{{this.id}}"
-                                                    style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                    Đóng
-                                                </button>
-                                                <button type="button" class="button-27 huy-btn" id="{{this.id}}"
-                                                    data-id="{{this.id}}"
-                                                    style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                    Xác nhận
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                            {{else}}
-                            {{#ifEqual this.status "đã giao"}}
-                            <button class="madonhang"
-                                style="background-color: #4caf50; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;">
-                                <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> {{this.status}}
+                        </li>
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="dang-xu-ly"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Đang xử lý
                             </button>
-                            {{/ifEqual}}
-                            {{#ifEqual this.status "đã hủy"}}
-                            <button
-                                style="background-color: #ff0000; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none; border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;">
-                                <i class="bi bi-x-circle" style="margin-right: 8px; font-size: 20px;"></i>
-                                {{this.status}}
+                        </li>
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="dang-giao"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Đang giao
                             </button>
-                            {{/ifEqual}}
-                            {{/ifEqual}}
-                        </div>
-                    </div>
-                </div>
+                        </li>
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="da-giao"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Đã giao
+                            </button>
+                        </li>
+                        <li style="list-style: none;">
+                            <button class="dropdown-item" value="da-huy"
+                                style="padding: 10px 15px; display: block; text-decoration: none; color: #333;">
+                                Đã hủy
+                            </button>
+                        </li>
+                    </ul>
+                </form>
             </div>
         </div>
-        {{/each}} --}}
+        <p id="empty" style="text-align: left;margin-top:10px; font-size: 20px;display:none">Đơn hàng rỗng!</p>
+
+        <div id="order-item-div">
+
+        </div>
+
     </div>
 
 
@@ -296,44 +252,7 @@
     }
 </script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const button = document.querySelectorAll("#statusButton");
-        button.forEach(btn => {
-            if (btn.textContent.includes("Đang giao")) {
-                btn.onmouseover = function () {
-                    this.innerHTML = '<i class="bi bi-x-circle" style="margin-right: 8px; font-size: 20px;"></i> Hủy đơn hàng';
-                    this.style.backgroundColor = '#ff0000';
-                };
-                btn.onmouseout = function () {
-                    this.innerHTML = '<i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đang giao';
-                    this.style.backgroundColor = '#ff5722';
-                };
-            }
-        })
-        // Check if the button text includes "Đang giao"
 
-        document.getElementById('closex').onclick = function () {
-            $('#changepasswordModal').modal('hide');
-        }
-    });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const closeButtons = document.getElementsByClassName('closex');
-
-        Array.from(closeButtons).forEach(function (closeButton) {
-            closeButton.onclick = function () {
-                // Get the modal ID from the button's 'data-id' or the button's own id
-                const modalId = `#huyModal${closeButton.getAttribute('data-id')}`;
-
-                // Hide the modal dynamically
-                $(modalId).modal('hide');
-            }
-        });
-    });
-
-</script>
 {{!-- Kiem tra thong tin --}}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -433,7 +352,6 @@
     })
 </script>
 
-
 {{!-- Thong tin khach hang --}}
 <script>
     document.addEventListener("DOMContentLoaded", async (event) => {
@@ -484,7 +402,7 @@
                 $("#alertModal").modal("show");
                 return;
             }
-            if (sdtval.length< 8) {
+            if (sdtval.length < 8) {
                 alerttext.innerHTML = "Số điện thoại không hợp lệ!";
                 $("#alertModal").modal("show");
                 return;
@@ -556,7 +474,7 @@
 
 </script>
 
-{{!-- Them sua dia Chi --}}
+{{!-- Them sua dia chi khach hang--}}
 <script>
     document.addEventListener("DOMContentLoaded", (event) => {
         const token = localStorage.getItem("token") || "";
@@ -600,4 +518,243 @@
                 });
         })
     })
+</script>
+
+{{!-- lay danh sach don hang --}}
+<script>
+    document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sortValue = urlParams.get("sort");
+        const token = localStorage.getItem("token");
+
+        try {
+            const url = sortValue ? `http://localhost:3003/order?sort=${sortValue}` : `http://localhost:3003/order`
+            const response = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                }
+            });
+
+            if (!response.ok) throw new Error("Lỗi khi tải đơn hàng");
+
+            const data = await response.json();
+            const orders = data.orderItems || [];
+            if (orders.length == 0) {
+                document.getElementById("empty").style.display = "block";
+            }
+
+            const orderItemDiv = document.getElementById("order-item-div");
+            orderItemDiv.innerHTML = ""; // Xóa nội dung cũ
+
+            orders.forEach(order => {
+                const div = document.createElement("div");
+                div.style = "height: 250px; border: 1px solid #000; overflow: hidden; margin-bottom: 30px;";
+                div.innerHTML = `
+                <div class="row g-0">
+                    <a href="/product/${order.product_id}" class="col-md-4 d-flex align-items-center justify-content-center">
+                        <img src="${order.mainImg}" class="img-fluid" alt="..." style="width: 267px; aspect-ratio: 1/1; object-fit: cover;">
+                    </a>
+                    <div class="col-md-8">
+                        <div class="card-body don-hang" style="height: 250px; padding: 20px; position: relative; background-color:white">
+                            <h5 style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;overflow: hidden;
+                            text-overflow: ellipsis; white-space: normal; margin: 0;  text-align: left; font-size: 21px;
+                            margin-bottom: 5px; margin-top: 5px; font-weight: 600;">
+                                ${order.name}
+                            </h5>
+                            <div style="display: flex; justify-content: space-between;">
+                                <p class="card-text" style="margin-top: 10px; text-align: center; font-size: 18px;">
+                                        <span style="color: red;font-size: 18px;font-weight: 700;">${order.total_price.toLocaleString('vi-VN')}₫</span>
+                                </p>
+                                <p style="margin-top: 16px; font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic;">
+                                    <span class="created-at" data-date="${order.created_at}"></span>
+                                </p>  
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div class="quantity-container" style="display: flex; justify-content: center; align-items: center; gap: 3px; margin-top: 10px; margin-right: 15px;">
+                                    <button type="button" class="quantity-btn" style="width: 26px; height: 26px; padding: 0; font-size: 12px;" disabled>-</button>
+                                    <div style="display: flex; align-items: center; justify-content: center; height: 26px;">
+                                        <input type="number" name="soluong" value="${order.quantity}" min="1" max="10" readonly style="width: 30px; height: 26px; font-size: 12px; text-align: right; line-height: 26px; padding: 0;">
+                                    </div>
+                                    <button type="button" class="quantity-btn" disabled style="width: 26px; height: 26px; padding: 0; font-size: 12px;">+</button>
+                                </div>
+                                
+                            </div>
+                            <button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#huyModal${order.order_item_id}" 
+                                    style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
+                                     border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
+                                    <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
+                                </button>
+                                <!-- Modal hủy đơn -->
+                                <div class="modal fade" id="huyModal${order.order_item_id}" tabindex="-1" aria-labelledby="huyModalLabel${order.order_item_id}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="position: relative; display: flex; align-items: center; justify-content: center;">
+                                            <span class="close-modal" data-product-id="${order.order_item_id}" 
+                                                style="position: absolute; right: 10px; top: 5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                                                &times;
+                                            </span>
+                                            <div style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                                <h1 style="margin-bottom: 20px; text-align: center; color: #000000;font-size: 33px;font-weight: 500;">Bạn có chắc là muốn hủy đơn hàng này?</h1>
+                                                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                                                    <button type="button" class="button-27 close-modal" data-product-id="${order.order_item_id}" 
+                                                        style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                        Hủy
+                                                    </button>
+                                                    <button type="button" class="button-27 confirm-cancel" data-product-id="${order.order_item_id}" onclick="huy(${order.order_item_id})"
+                                                        style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                        Xác nhận
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                        </div>
+                    </div>
+                </div>
+            `;
+                orderItemDiv.appendChild(div);
+            });
+            updateOrderStatusButtons()
+
+        } catch (error) {
+            console.error("Lỗi:", error);
+        }
+        document.querySelectorAll(".created-at").forEach(element => {
+            const rawDate = element.getAttribute("data-date");
+
+            if (rawDate) {
+                const date = new Date(rawDate);
+                const formattedDate = date.toLocaleString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+
+                }).replace(",", "");
+
+                element.textContent = formattedDate;
+            }
+        });
+    });
+
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        // Lắng nghe sự kiện click trên tất cả các nút có id="closex"
+        document.querySelectorAll("#closex").forEach(button => {
+            button.addEventListener("click", () => {
+                $("#huyModal").modal("hide");
+            });
+        });
+        document.querySelectorAll('.dropdown-item').forEach(item => {
+            item.addEventListener('click', function () {
+                const sort = this.value;
+                document.getElementById('sortValue').value = sort;
+
+                // Submit the form to send both 'text' and 'sort' parameters
+                document.getElementById('sort-form').submit();
+            });
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("click", function (event) {
+        if (event.target.classList.contains("close-modal")) {
+            let product_id = event.target.getAttribute("data-product-id");
+            let modalId = `#huyModal${product_id}`;
+
+            $(modalId).modal("hide");
+        }
+    });
+    function updateOrderStatusButtons() {
+        document.querySelectorAll(".statusButton").forEach(button => {
+            let status = button.textContent.trim().toLowerCase(); // Chuyển thành chữ thường để tránh lỗi
+            if (status === "da-giao") {
+                button.innerHTML = `<i class="bi bi-check-circle" style="margin-right: 8px; font-size: 20px;"></i> Đã giao`;
+                button.style.backgroundColor = "#4CAF50"; // Xanh lá
+                button.style.cursor = "default";
+                button.removeAttribute("data-bs-toggle"); // Không mở modal
+                button.removeAttribute("data-bs-target");
+                button.onclick = null; // Xóa sự kiện onclick
+            } else if (status === "dang-xu-ly") {
+                button.innerHTML = `<i class="bi bi-hourglass-split" style="margin-right: 8px; font-size: 20px;"></i> Chờ xác nhận`;
+                button.style.backgroundColor = "#FF9800"; // Cam
+                // Hiệu ứng hover chuyển thành "Hủy Đơn Hàng"
+                button.addEventListener("mouseenter", function () {
+                    this.innerHTML = `<i class="bi bi-x-circle" style="margin-right: 8px; font-size: 20px;"></i> Hủy Đơn Hàng`;
+                    this.style.backgroundColor = "#f44336"; // Đỏ
+                });
+                button.addEventListener("mouseleave", function () {
+                    this.innerHTML = `<i class="bi bi-hourglass-split" style="margin-right: 8px; font-size: 20px;"></i> Chờ xác nhận`;
+                    this.style.backgroundColor = "#FF9800"; // Cam
+                })
+            }
+            else if (status === "dang-giao") {
+                button.innerHTML = `<i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đang giao`;
+                button.style.backgroundColor = "#4CAF50"; // Cam
+                button.style.cursor = "default";
+                button.removeAttribute("data-bs-toggle"); // Không mở modal
+                button.removeAttribute("data-bs-target");
+                button.onclick = null; // Xóa sự kiện onclick
+            }
+            else if (status === "da-huy") {
+                button.innerHTML = `<i class="bi bi-x-circle" style="margin-right: 8px; font-size: 20px;"></i> Đã huỷ`;
+                button.style.backgroundColor = "#f44336"; // Đỏ
+                button.style.cursor = "default";
+                button.removeAttribute("data-bs-toggle"); // Không mở modal
+                button.removeAttribute("data-bs-target");
+                button.onclick = null; // Xóa sự kiện onclick
+            }
+        });
+    }
+
+    // Hàm xử lý hủy đơn hàng
+    async function huy(order_item_id) {
+        console.log(`🔹 Gọi API hủy đơn hàng với ID: ${order_item_id}`);
+
+        const token = localStorage.getItem("token");
+        if (!token) {
+            console.error("Không tìm thấy token!");
+            return;
+        }
+
+        try {
+            const response = await fetch(`http://localhost:3003/order/huy/${order_item_id}`, {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("API trả về lỗi:", errorData);
+                document.getElementById("alert-text").innerHTML = errorData.message || "Lỗi khi hủy đơn hàng!";
+                $("#alertModal").modal("show");
+                return;
+            }
+
+            const data = await response.json();
+            console.log("✅ API trả về:", data);
+
+            document.getElementById("alert-text").innerHTML = data.message || "Hủy đơn hàng thành công!";
+            $("#alertModal").modal("show");
+
+            $("#alertModal").on("hidden.bs.modal", function () {
+                window.location.reload();
+            });
+
+        } catch (error) {
+            console.error("❌ Lỗi khi gọi API:", error);
+            document.getElementById("alert-text").innerHTML = "Lỗi kết nối đến server!";
+            $("#alertModal").modal("show");
+        }
+    }
+
 </script>

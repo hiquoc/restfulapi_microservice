@@ -2,7 +2,7 @@
     <span style="border-top: 1px solid #696969;flex:0.05 "></span>
     <h1
         style="margin: 0; padding: 0 10px; white-space: nowrap; font-size: 30px; color: #f6290e;font-family: 'Quicksand', sans-serif;font-weight:bold">
-        Đang giảm giá
+        Mua nhiều nhất
     </h1>
     <span style="border-top: 1px solid #696969; flex: 1;"></span>
 </div>
@@ -30,14 +30,14 @@
         <span style="border-top: 1px solid #696969;flex:0.05 "></span>
         <h1
             style="margin: 0; padding: 0 10px; white-space: nowrap; font-size: 30px; color: #f68d0e;font-family: 'Quicksand', sans-serif;font-weight:bold">
-            Mua nhiều nhất
+            Giỏ trái cây
         </h1>
         <span style="border-top: 1px solid #696969; flex: 1;"></span>
     </div>
 </div>
 <div>
     <div class="product-grid">
-        {{#each hots}}
+        {{#each gio_trai_cay}}
         <div class="product-card">
             <a href="/product/{{this.product_id}}" class="product-image">
                 <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}">
@@ -65,7 +65,7 @@
 
 <div>
     <div class="product-grid">
-        {{#each hots}}
+        {{#each trai_cay}}
         <div class="product-card">
             <a href="/product/{{this.product_id}}" class="product-image">
                 <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}">
@@ -92,34 +92,7 @@
 
 <div>
     <div class="product-grid">
-        {{#each hots}}
-        <div class="product-card">
-            <a href="/product/{{this.product_id}}" class="product-image">
-                <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}">
-            </a>
-            <div class="product-body">
-                <p class="product-name">{{this.name}}</p>
-                <p class="product-price">{{formatPrice this.price}}₫</p>
-                <button class="buy-button" onclick="themNhanh({{this.product_id}})">
-                    <i class="fas fa-shopping-bag"></i> THÊM VÀO GIỎ
-                </button>
-            </div>
-        </div>
-        {{/each}}
-    </div>
-</div>
-<div style="display: flex; align-items: center; width: 100%; margin: 20px 0;padding-top:10px">
-    <span style="border-top: 1px solid #696969;flex:0.05 "></span>
-    <h1
-        style="margin: 0; padding: 0 10px; white-space: nowrap; font-size: 30px; color: #f68d0e;font-family: 'Quicksand', sans-serif;font-weight:bold">
-        Giỏ trái cây
-    </h1>
-    <span style="border-top: 1px solid #696969; flex: 1;"></span>
-</div>
-
-<div>
-    <div class="product-grid">
-        {{#each hots}}
+        {{#each rau_cu}}
         <div class="product-card">
             <a href="/product/{{this.product_id}}" class="product-image">
                 <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}">
@@ -199,12 +172,14 @@
             if (data.message === "Vui lòng đăng nhập!") {
                 document.getElementById("alert-text").innerHTML = "Vui lòng đăng nhập!";
                 $("#alertModal").modal("show");
-
                 $("#alertModal").on("hidden.bs.modal", function () {
                     window.location.href = "/account/login";
                 });
-
                 return; // Không gọi updateCart nếu chưa đăng nhập
+            }
+            else if(data.message=="Số lượng sản phẩm trong kho có hạn!") {
+                document.getElementById("alert-text").innerHTML = data.message;
+                $("#alertModal").modal("show");
             }
 
             await updateCart();
@@ -229,7 +204,6 @@
                 return { items: data.cartItems, sum: data.sum };
             })
             .then(({ items, sum }) => {
-                console.log(items)
                 cartItems.innerHTML = "";
                 if (items.length === 0) {
                     cartItems.innerHTML = `<hr style="border: none; border-top: 1px solid #ccc; margin: 10px 0;">
@@ -261,12 +235,12 @@
                                         <span style="color: red;font-size: 13px;font-weight: 600;">${item.price.toLocaleString('vi-VN')}₫</span>
                                     </p>
                                     <div class="quantity-container" style="display: flex;justify-content: center;align-items: center;gap: 3px;margin-top:0px;margin-top: -11px;margin-right: 15px;">
-                                        <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
+                                        <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
                                         <div style="display: flex; align-items: center; justify-content: center; height: 20px;">
                                             <input type="number" id="${item.cart_id}" name="soluong" value="${item.quantity}" min="1" max="10" readonly 
                                                 style="width: 30px; height: 20px; font-size: 12px; text-align: right; line-height: 20px; padding: 0;">
                                         </div>
-                                        <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
+                                        <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
                                     </div>
                                     </div>
                                     
