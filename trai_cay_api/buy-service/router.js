@@ -6,7 +6,6 @@ module.exports = function (app) {
   let getProducts = require("./app/middleware/getProducts");
   let getAccounts = require("./app/middleware/getAccounts");
 
-  app.route("/test").post(getProduct);
   app
     .route("/cart/:cart_id")
     .delete(checkLoggedIn, buyController.cartDelete) //xoa 1sp khoi danh sach gio hang

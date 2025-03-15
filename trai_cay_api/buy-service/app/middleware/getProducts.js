@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const getProductPrice = async (req, res, next) => {
   try {
-    const products = await axios.get(`http://localhost:3002/products`, {});
+    const products = await axios.get(`http://localhost:3002/productsAll`, {});
     req.products = products.data;
     next();
   } catch (e) {

@@ -33,6 +33,7 @@ module.exports = function (app) {
   app.route("/products/:product").get(productController.findProduct);
 
   app.route("/products").get(productController.products); //lay danh sach san pham
+  app.route("/productsAll").get(productController.productsAll); //lay danh sach san pham bao gom da het hang
 
   app
     .route("/:product_id")
