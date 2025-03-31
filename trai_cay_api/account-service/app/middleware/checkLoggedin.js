@@ -18,7 +18,7 @@ const checkLoggedIn = async (req, res, next) => {
     const [rows] = await db.promise().query(sql, [decoded.username]);
 
     if (rows.length === 0) {
-      return res.status(401).json({ message: "Token không hợp lệ" });
+      return res.status(401).json({ message: "Vui lòng đăng nhập" });
     }
     req.user = rows[0]; // Lưu thông tin user vào `req.user`
     next();
@@ -27,7 +27,7 @@ const checkLoggedIn = async (req, res, next) => {
     console.error("Lỗi xác thực token:", error);
     return res
       .status(403)
-      .json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+      .json({ message: "Vui lòng đăng nhập lại" });
   }
 };
 

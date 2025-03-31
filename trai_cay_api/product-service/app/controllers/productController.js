@@ -4,7 +4,10 @@ const path = require("path");
 const fs = require("fs");
 module.exports = {
   upload: async (req, res) => {
+    const connection = await db.promise().getConnection(); // Lấy kết nối
     try {
+      await connection.beginTransaction(); // Bắt đầu transaction
+
       if (
         !req.files ||
         (req.files["images"] && req.files["images"].length === 0)
@@ -13,6 +16,7 @@ module.exports = {
           .status(400)
           .json({ message: "Vui lòng tải ít nhất một ảnh!" });
       }
+
       const { name, price, category, stock, status, details } = req.body;
 
       const mainImage = req.files["mainImage"]
@@ -23,32 +27,39 @@ module.exports = {
         ? req.files["images"].map((file) => `/uploads/${file.filename}`)
         : [];
 
-      // Nếu có ảnh chính, thêm vào danh sách ảnh đầu tiên
       if (mainImage) {
         uploadedImages.unshift(mainImage);
       }
 
       const newProSql =
-        "INSERT INTO product (name, description, price, stock, category,status) VALUES (?, ?, ?, ?, ?,?)";
-      const [proResult] = await db
-        .promise()
-        .query(newProSql, [name, details, price, stock, category, status]);
+        "INSERT INTO product (name, description, price, stock, category, status) VALUES (?, ?, ?, ?, ?,?)";
+      const [proResult] = await connection.query(newProSql, [
+        name,
+        details,
+        price,
+        stock,
+        category,
+        status,
+      ]);
       const productId = proResult.insertId;
 
       const values = uploadedImages.map((path) => [productId, path]);
       const newImgSql =
         "INSERT INTO product_image (product_id, image_url) VALUES ?";
-      await db.promise().query(newImgSql, [values]);
+      await connection.query(newImgSql, [values]);
 
-      return res.status(201).json({
-        message: "Đăng thành công!",
-      });
+      await connection.commit();
+      connection.release();
+
+      return res.status(201).json({ message: "Đăng thành công!" });
     } catch (error) {
+      await connection.rollback();
+      connection.release();
+
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
   },
-
   product: async (req, res) => {
     const product_id = req.params.product_id;
     try {
@@ -174,7 +185,7 @@ module.exports = {
       }
     }
     try {
-      let ProSql = "SELECT product_id,name,price FROM product";
+      let ProSql = "SELECT product_id,name,price,stock FROM product";
       let conditions = [];
 
       if (req.query.sort) {
@@ -293,8 +304,12 @@ module.exports = {
   },
 
   edit1: async (req, res) => {
+    const connection = await db.promise().getConnection();
     const product_id = req.params.product_id;
+
     try {
+      await connection.beginTransaction();
+
       if (
         !req.files ||
         (req.files["images"] && req.files["images"].length === 0)
@@ -303,6 +318,7 @@ module.exports = {
           .status(400)
           .json({ message: "Vui lòng tải ít nhất một ảnh!" });
       }
+
       const { name, price, category, stock, status, details } = req.body;
       const mainImage = req.files["mainImage"]
         ? `/uploads/${req.files["mainImage"][0].filename}`
@@ -312,34 +328,28 @@ module.exports = {
         ? req.files["images"].map((file) => `/uploads/${file.filename}`)
         : [];
 
-      // Nếu có ảnh chính, thêm vào danh sách ảnh đầu tiên
       if (mainImage) {
         uploadedImages.unshift(mainImage);
       }
 
       const updateProSql =
-        "UPDATE product SET name=?,description=?,price=?,stock=?,category=?,status=? WHERE product_id=?";
-      await db
-        .promise()
-        .query(updateProSql, [
-          name,
-          details,
-          price,
-          stock,
-          category,
-          status,
-          product_id,
-        ]);
+        "UPDATE product SET name=?, description=?, price=?, stock=?, category=?, status=? WHERE product_id=?";
+      await connection.query(updateProSql, [
+        name,
+        details,
+        price,
+        stock,
+        category,
+        status,
+        product_id,
+      ]);
 
-      const values = uploadedImages.map((path) => [product_id, path]);
-
-      //Xóa ảnh
+      // Lấy danh sách ảnh cũ
       const getOldImagesSql =
         "SELECT image_url FROM product_image WHERE product_id = ?";
-      const [oldImages] = await db
-        .promise()
-        .query(getOldImagesSql, [product_id]);
+      const [oldImages] = await connection.query(getOldImagesSql, [product_id]);
 
+      // Xóa ảnh cũ khỏi thư mục uploads
       oldImages.forEach((img) => {
         const filePath = path.join(__dirname, "../../", img.image_url);
         if (fs.existsSync(filePath)) {
@@ -350,44 +360,62 @@ module.exports = {
         }
       });
 
+      // Xóa ảnh cũ khỏi database
       const deleteImgSql = "DELETE FROM product_image WHERE product_id=?";
-      await db.promise().query(deleteImgSql, [product_id]);
+      await connection.query(deleteImgSql, [product_id]);
 
+      // Thêm ảnh mới vào database
+      const values = uploadedImages.map((path) => [product_id, path]);
       const newImgSql =
         "INSERT INTO product_image (product_id, image_url) VALUES ?";
-      await db.promise().query(newImgSql, [values]);
+      await connection.query(newImgSql, [values]);
+
+      await connection.commit();
+      connection.release();
 
       return res.status(201).json({
         message: "Cập nhật thành công!",
       });
     } catch (error) {
+      await connection.rollback();
+      connection.release();
+
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
   },
 
   edit2: async (req, res) => {
-    const product_id = req.params.product_id;
+    const connection = await db.promise().getConnection(); // Lấy kết nối
+
     try {
+      await connection.beginTransaction(); // Bắt đầu transaction
+
+      const product_id = req.params.product_id;
       const { name, price, category, stock, status, details } = req.body;
+
       const updateProSql =
-        "UPDATE product SET name=?,description=?,price=?,stock=?,category=?,status=? WHERE product_id=?";
-      await db
-        .promise()
-        .query(updateProSql, [
-          name,
-          details,
-          price,
-          stock,
-          category,
-          status,
-          product_id,
-        ]);
+        "UPDATE product SET name=?, description=?, price=?, stock=?, category=?, status=? WHERE product_id=?";
+      await connection.query(updateProSql, [
+        name,
+        details,
+        price,
+        stock,
+        category,
+        status,
+        product_id,
+      ]);
+
+      await connection.commit(); // Commit nếu thành công
+      connection.release(); // Giải phóng kết nối
 
       return res.status(201).json({
         message: "Cập nhật thành công!",
       });
     } catch (error) {
+      await connection.rollback(); // Rollback nếu có lỗi
+      connection.release(); // Giải phóng kết nối
+
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
@@ -576,82 +604,110 @@ module.exports = {
   },
 
   orderAdd: async (req, res) => {
+    const connection = await db.promise().getConnection();
+
     try {
+      await connection.beginTransaction();
+
       const stockChangeValues = req.body;
       const updateOrderSql = `
-        UPDATE product
-        SET 
-            stock = CASE 
-                ${stockChangeValues
-                  .map(
-                    ([id, qty]) => `WHEN product_id = ${id} THEN stock - ${qty}`
-                  )
-                  .join(" ")}
-            END,
-            sold = CASE 
-                ${stockChangeValues
-                  .map(
-                    ([id, qty]) => `WHEN product_id = ${id} THEN sold + ${qty}`
-                  )
-                  .join(" ")}
-            END,
-            status = CASE 
-                ${stockChangeValues
-                  .map(
-                    ([id]) =>
-                      `WHEN product_id = ${id} AND stock - ${
-                        stockChangeValues.find((v) => v[0] === id)[1]
-                      } <= 0 THEN 'het-hang'`
-                  )
-                  .join(" ")}
-            END
-        WHERE product_id IN (${stockChangeValues.map(([id]) => id).join(",")});
+            UPDATE product
+            SET 
+                stock = CASE 
+                    ${stockChangeValues
+                      .map(
+                        ([id, qty]) =>
+                          `WHEN product_id = ${id} THEN stock - ${qty}`
+                      )
+                      .join(" ")}
+                END,
+                sold = CASE 
+                    ${stockChangeValues
+                      .map(
+                        ([id, qty]) =>
+                          `WHEN product_id = ${id} THEN sold + ${qty}`
+                      )
+                      .join(" ")}
+                END,
+                status = CASE 
+                    ${stockChangeValues
+                      .map(
+                        ([id]) =>
+                          `WHEN product_id = ${id} AND stock - ${
+                            stockChangeValues.find((v) => v[0] === id)[1]
+                          } <= 0 THEN 'het-hang'`
+                      )
+                      .join(" ")}
+                      ELSE status
+                END
+            WHERE product_id IN (${stockChangeValues
+              .map(([id]) => id)
+              .join(",")});
         `;
 
-      await db.promise().query(updateOrderSql, []);
+      await connection.query(updateOrderSql, []);
+      await connection.commit();
+      connection.release();
+
       res.status(200).json({ message: "Stock updated successfully!" });
     } catch (error) {
+      await connection.rollback();
+      connection.release();
+
       console.error("Error updating stock:", error);
       res.status(500).json({ message: "Server error!" });
     }
   },
-
   orderAbort: async (req, res) => {
+    const connection = await db.promise().getConnection();
     try {
+      await connection.beginTransaction();
+
       const stockChangeValues = req.body;
       const updateOrderSql = `
-      UPDATE product
-      SET 
-          stock = CASE 
-              ${stockChangeValues
-                .map(
-                  ([id, qty]) => `WHEN product_id = ${id} THEN stock + ${qty}`
-                )
-                .join(" ")}
-          END,
-          sold = CASE 
-              ${stockChangeValues
-                .map(
-                  ([id, qty]) => `WHEN product_id = ${id} THEN sold - ${qty}`
-                )
-                .join(" ")}
-          END,
-          status = CASE 
-              ${stockChangeValues
-                .map(
-                  ([id]) =>
-                    `WHEN product_id = ${id} AND stock + ${
-                      stockChangeValues.find((v) => v[0] === id)[1]
-                    } > 0 THEN 'con-hang'`
-                )
-                .join(" ")}
-          END
-      WHERE product_id IN (${stockChangeValues.map(([id]) => id).join(",")});
+          UPDATE product
+          SET 
+              stock = CASE 
+                  ${stockChangeValues
+                    .map(
+                      ([id, qty]) =>
+                        `WHEN product_id = ${id} THEN stock + ${qty}`
+                    )
+                    .join(" ")}
+              END,
+              sold = CASE 
+                  ${stockChangeValues
+                    .map(
+                      ([id, qty]) =>
+                        `WHEN product_id = ${id} THEN sold - ${qty}`
+                    )
+                    .join(" ")}
+              END,
+              status = CASE 
+                  ${stockChangeValues
+                    .map(
+                      ([id]) =>
+                        `WHEN product_id = ${id} AND stock + ${
+                          stockChangeValues.find((v) => v[0] === id)[1]
+                        } > 0 THEN 'con-hang'`
+                    )
+                    .join(" ")}
+                    ELSE status
+              END
+          WHERE product_id IN (${stockChangeValues
+            .map(([id]) => id)
+            .join(",")});
       `;
 
-      await db.promise().query(updateOrderSql, []);
+      await connection.query(updateOrderSql, []);
+      await connection.commit();
+      connection.release();
+
       res.status(200).json({ message: "Stock updated successfully!" });
     } catch (error) {
+      await connection.rollback();
+      connection.release();
+
       console.error("Error updating stock:", error);
       res.status(500).json({ message: "Server error!" });
     }

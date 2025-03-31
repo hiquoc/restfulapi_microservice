@@ -17,17 +17,14 @@ module.exports = function (app) {
 
   app
     .route("/orders/:account_id")
-    .get(checkAdmin, getAccounts, getProducts, buyController.ordersGet1); //lay danh sach don hang cho admin
+    .get(checkAdmin, getAccounts, getProducts, buyController.ordersGet1); //lay danh sach don hang 1 tai khoan cho admin
   app
     .route("/orders")
     .get(checkAdmin, getAccounts, getProducts, buyController.ordersGet); //lay danh sach don hang cho admin
 
   app
-    .route("/order/huy/:order_item_id")
-    .patch(checkLoggedIn, buyController.orderHuy); //huy don hang
-  app
-    .route("/order/xacnhan/:order_item_id")
-    .patch(checkLoggedIn, buyController.orderXacnhan); //xac nhan don hang
+    .route("/order/status/:order_item_id")
+    .patch(checkLoggedIn, buyController.orderUpdateStatus); //thay doi trang thai don hang
   app
     .route("/order")
     .post(checkLoggedIn, getProducts, buyController.orderPost) //dat hang

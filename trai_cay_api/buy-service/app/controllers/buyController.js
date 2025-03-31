@@ -128,63 +128,88 @@ module.exports = {
     const account_id = req.user.account_id;
     const products = req.products;
     let total_price = 0;
+
+    const connection = await db.promise().getConnection(); // lấy connection riêng
     try {
+      await connection.beginTransaction(); // bắt đầu transaction
+
       const cartSql = "SELECT * FROM cart WHERE account_id=?";
-      const [cartItems] = await db.promise().query(cartSql, [account_id]);
-      if (account_id != cartItems[0].account_id) {
+      const [cartItems] = await connection.query(cartSql, [account_id]);
+
+      if (!cartItems.length || account_id != cartItems[0].account_id) {
+        await connection.rollback();
         return res.status(403).json({ message: "Bạn không có quyền!" });
       }
 
+      // Kiểm tra stock
+      for (let cartItem of cartItems) {
+        const product = products.find(
+          (p) => p.product_id === cartItem.product_id
+        );
+        if (product && product.stock < cartItem.quantity) {
+          await connection.rollback();
+          return res.status(403).json({ message: "Sản phẩm đã hết hàng!" });
+        }
+      }
+
+      // Tính tổng tiền
       const cartItemsMap = cartItems.map((cartItem) => {
         total_price += cartItem.price;
         if (cartItem.product_id)
           return [cartItem.product_id, cartItem.quantity, cartItem.price];
       });
 
+      // Tạo đơn hàng
       const orderSql =
-        "INSERT INTO `order` (account_id, total_price) VALUES (?,?)";
-      const [order] = await db
-        .promise()
-        .query(orderSql, [account_id, total_price]);
+        "INSERT INTO `order` (account_id, total_price) VALUES (?, ?)";
+      const [order] = await connection.query(orderSql, [
+        account_id,
+        total_price,
+      ]);
       const order_id = order.insertId;
 
+      // Chèn các sản phẩm vào order_item
       const orderItemsValues = cartItemsMap.map((item) => [order_id, ...item]);
       const orderItemsSql =
         "INSERT INTO order_item (order_id, product_id, quantity, price) VALUES ?";
-      await db.promise().query(orderItemsSql, [orderItemsValues]);
+      console.log(orderItemsValues);
+      await connection.query(orderItemsSql, [orderItemsValues]);
 
+      // Xoá giỏ hàng
       const deleteCartSql = "DELETE FROM cart WHERE account_id=?";
-      await db.promise().query(deleteCartSql, [account_id]);
+      await connection.query(deleteCartSql, [account_id]);
 
-      const stockChangeValues = orderItemsValues.map((item) => {
-        console.log("Processing item:", item); // Debugging line
-        return [item[1], item[2]]; // Ensure correct indexes
-      });
+      // Commit trước khi gọi service bên ngoài
+      await connection.commit();
 
-      //cap nhat stock va sold
+      // Cập nhật stock bên service khác
+      const stockChangeValues = orderItemsValues.map((item) => [
+        item[1],
+        item[2],
+      ]);
       try {
         const token = req.headers.authorization;
-        const response = await axios.patch(
-          "http://localhost:3002/orderAdd",
-          stockChangeValues,
-          {
-            headers: {
-              Authorization: `${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        await axios.patch("http://localhost:3002/orderAdd", stockChangeValues, {
+          headers: {
+            Authorization: `${token}`,
+            "Content-Type": "application/json",
+          },
+        });
       } catch (error) {
         console.error(
           "Error updating stock:",
           error.response ? error.response.data : error.message
         );
+        await connection.rollback();
       }
 
       res.status(200).json({ message: "Đơn hàng được tạo!", order_id });
     } catch (err) {
-      console.error("Error:", err);
-      return res.status(500).json({ message: err.message });
+      await connection.rollback();
+      console.error("Transaction Error:", err);
+      return res.status(500).json({ message: "Tạo đơn hàng thất bại!" });
+    } finally {
+      connection.release();
     }
   },
 
@@ -192,7 +217,7 @@ module.exports = {
     const account_id = req.user.account_id;
     const products = req.products;
     try {
-      let orderSql = `SELECT  oi.order_item_id,o.account_id, o.total_price, oi.status, o.created_at, oi.product_id, oi.quantity
+      let orderSql = `SELECT  oi.order_item_id,o.account_id, oi.price, oi.status, o.created_at, oi.product_id, oi.quantity
                         FROM buy_db.order o
                         JOIN buy_db.order_item oi ON o.order_id = oi.order_id
                         WHERE o.account_id = ?
@@ -222,82 +247,63 @@ module.exports = {
     }
   },
 
-  orderHuy: async (req, res) => {
-    const order_item_id = req.params.order_item_id;
+  orderUpdateStatus: async (req, res) => {
+    const { order_item_id } = req.params;
+    const { status } = req.body; // Nhận trạng thái từ body ('da-huy' hoặc 'dang-giao' hoặc 'da-giao')
+
     try {
       const orderSql = "SELECT * FROM `order_item` WHERE order_item_id=?";
       const [orderItems] = await db.promise().query(orderSql, [order_item_id]);
 
-      const orderItemsMap = orderItems.map((orderItem) => {
-        if (orderItem.product_id)
-          return [orderItem.product_id, orderItem.quantity];
-      });
-
-      const stockChangeValues = orderItemsMap.map((item) => {
-        return [item[0], item[1]];
-      });
-
-      //cap nhat stock va sold
-      try {
-        const token = req.headers.authorization;
-        const response = await axios.patch(
-          "http://localhost:3002/orderAbort",
-          stockChangeValues,
-          {
-            headers: {
-              Authorization: `${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      } catch (error) {
-        console.error(
-          "Error updating stock:",
-          error.response ? error.response.data : error.message
-        );
+      if (orderItems.length === 0) {
+        return res.status(404).json({ message: "Không tìm thấy đơn hàng!" });
       }
-      const UpdateOrderSql =
-        "UPDATE `order_item` SET status='da-huy' WHERE order_item_id=?";
-      await db.promise().query(UpdateOrderSql, [order_item_id]);
 
-      return res.status(200).json({ message: "Hủy thành công!" });
+      // Chuẩn bị dữ liệu cập nhật stock nếu trạng thái là 'da-huy'
+      if (status === "da-huy") {
+        const stockChangeValues = orderItems
+          .filter((item) => item.product_id)
+          .map((item) => [item.product_id, item.quantity]);
+
+        try {
+          const token = req.headers.authorization;
+          await axios.patch(
+            "http://localhost:3002/orderAbort",
+            stockChangeValues,
+            {
+              headers: {
+                Authorization: `${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+        } catch (error) {
+          console.error(
+            "Error updating stock:",
+            error.response ? error.response.data : error.message
+          );
+          return res.status(500).json({ message: "Lỗi khi cập nhật stock!" });
+        }
+      }
+
+      // Cập nhật trạng thái đơn hàng
+      const updateOrderSql =
+        "UPDATE `order_item` SET status=? WHERE order_item_id=?";
+      await db.promise().query(updateOrderSql, [status, order_item_id]);
+
+      return res
+        .status(200)
+        .json({ message: `Cập nhật đơn hàng thành công!` });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
   },
-
-  orderXacnhan: async (req, res) => {
-    const order_item_id = req.params.order_item_id;
-    try {
-      const orderSql = "SELECT * FROM `order_item` WHERE order_item_id=?";
-      const [orderItems] = await db.promise().query(orderSql, [order_item_id]);
-
-      const orderItemsMap = orderItems.map((orderItem) => {
-        if (orderItem.product_id)
-          return [orderItem.product_id, orderItem.quantity];
-      });
-
-      const stockChangeValues = orderItemsMap.map((item) => {
-        return [item[0], item[1]];
-      });
-
-      const UpdateOrderSql =
-        "UPDATE `order_item` SET status='dang-giao' WHERE order_item_id=?";
-      await db.promise().query(UpdateOrderSql, [order_item_id]);
-
-      return res.status(200).json({ message: "Xác nhận thành công!" });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Lỗi server!" });
-    }
-  },
-
   ordersGet: async (req, res) => {
     const products = req.products;
     const accounts = req.users;
     try {
-      let orderSql = `SELECT  oi.order_item_id,o.account_id, o.total_price, oi.status, o.created_at, oi.product_id, oi.quantity
+      let orderSql = `SELECT  oi.order_item_id,o.account_id, oi.price, oi.status, o.created_at, oi.product_id, oi.quantity
                         FROM buy_db.order o
                         JOIN buy_db.order_item oi ON o.order_id = oi.order_id
                         `;
@@ -339,7 +345,7 @@ module.exports = {
     const products = req.products;
     const accounts = req.users;
     try {
-      let orderSql = `SELECT  oi.order_item_id,o.account_id, o.total_price, oi.status, o.created_at, oi.product_id, oi.quantity
+      let orderSql = `SELECT  oi.order_item_id,o.account_id, oi.price, oi.status, o.created_at, oi.product_id, oi.quantity
                         FROM buy_db.order o
                         JOIN buy_db.order_item oi ON o.order_id = oi.order_id
                         WHERE account_id=?

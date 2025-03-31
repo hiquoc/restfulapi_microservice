@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const getProductPrice = async (req, res, next) => {
+const getProduct = async (req, res, next) => {
   try {
     const products = await axios.get(`http://localhost:3002/productsAll`, {});
     req.products = products.data;
@@ -14,4 +14,4 @@ const getProductPrice = async (req, res, next) => {
   }
 };
 
-module.exports = getProductPrice;
+module.exports = getProduct;

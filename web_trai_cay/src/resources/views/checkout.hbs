@@ -29,6 +29,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.min.css" rel="stylesheet" />
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet">
 
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- Bootstrap Bundle (Bao gồm cả Popper.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
 </head>
@@ -453,7 +457,7 @@
                 //kiem tra va cap nhat thong tin tai khoan
                 info.addEventListener('click', async (e) => {
                     e.preventDefault();
-                    let check = true; 
+                    let check = true;
 
                     const hovatenval = document.getElementById("hovaten").value.trim();
                     const emailval = document.getElementById("email").value.trim();

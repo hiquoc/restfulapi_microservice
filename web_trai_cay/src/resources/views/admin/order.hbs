@@ -173,7 +173,7 @@
             let status = button.textContent.trim().toLowerCase(); // Chuyển thành chữ thường để tránh lỗi
             if (status === "da-giao") {
                 button.innerHTML = `<i class="bi bi-check-circle" style="margin-right: 8px; font-size: 20px;"></i> Đã giao`;
-                button.style.backgroundColor = "#4CAF50"; // Xanh lá
+                button.style.backgroundColor = "#ff5722";
                 button.style.cursor = "default";
                 button.removeAttribute("data-bs-toggle"); // Không mở modal
                 button.removeAttribute("data-bs-target");
@@ -193,11 +193,16 @@
             }
             else if (status === "dang-giao") {
                 button.innerHTML = `<i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đang giao`;
-                button.style.backgroundColor = "#4CAF50"; // Cam
-                button.style.cursor = "default";
-                button.removeAttribute("data-bs-toggle"); // Không mở modal
-                button.removeAttribute("data-bs-target");
-                button.onclick = null; // Xóa sự kiện onclick
+                button.style.backgroundColor = "#4CAF50"; // Xanh lá
+                // Hiệu ứng hover chuyển thành "Đã giao"
+                button.addEventListener("mouseenter", function () {
+                    this.innerHTML = `<i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đã giao`;
+                    this.style.backgroundColor = "#ff5722";
+                });
+                button.addEventListener("mouseleave", function () {
+                    this.innerHTML = `<i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> Đang giao`;
+                    this.style.backgroundColor = "#4CAF50"; // Xanh lá
+                })
             }
             else if (status === "da-huy") {
                 button.innerHTML = `<i class="bi bi-x-circle" style="margin-right: 8px; font-size: 20px;"></i> Đã huỷ`;
@@ -252,8 +257,8 @@
                 const selectedUser = order.role === "user" ? "selected" : "";
                 const selectedAdmin = order.role === "admin" ? "selected" : "";
 
-                let xbtn = ""
-                if (order.status != "dang-giao" && order.status != "da-huy") {
+                let xbtn = "",btn="";
+                if (order.status == "dang-xu-ly") {
                     xbtn = `<i class="bi bi-x"  data-bs-toggle="modal" data-bs-target="#huyModal${order.order_item_id}"></i>
                                 <!-- Modal hủy đơn -->
                                 <div class="modal fade" id="huyModal${order.order_item_id}" tabindex="-1" aria-labelledby="huyModalLabel${order.order_item_id}" aria-hidden="true">
@@ -279,7 +284,84 @@
                                         </div>
                                     </div>
                                 </div>`
+                    btn=`<button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#xacnhanModal${order.order_item_id}" 
+                                    style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
+                                     border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
+                                    <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
+                            </button>
+                            <!-- Modal xac nhan don hang -->
+                                <div class="modal fade" id="xacnhanModal${order.order_item_id}" tabindex="-1" aria-labelledby="xacnhanModalLabel${order.order_item_id}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="position: relative; display: flex; align-items: center; justify-content: center;">
+                                            <span class="close-modal" data-product-id="${order.order_item_id}" 
+                                                style="position: absolute; right: 10px; top: 5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                                                &times;
+                                            </span>
+                                            <div style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                                <h1 style="margin-bottom: 20px; text-align: center; color: #000000;font-size: 33px;font-weight: 500;">Xác nhận đơn hàng?</h1>
+                                                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                                                    <button type="button" class="button-27 close-modal" data-product-id="${order.order_item_id}" 
+                                                        style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                        Hủy
+                                                    </button>
+                                                    <button type="button" class="button-27 confirm-cancel" data-product-id="${order.order_item_id}" onclick="xacnhan(${order.order_item_id})"
+                                                        style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                        Xác nhận
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`
                 }
+                else if (order.status=="dang-giao"){
+                     btn = `<button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#tcongnModal${order.order_item_id}" 
+                                    style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
+                                     border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
+                                    <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
+                            </button>
+                            <!-- Modal xac nhan don hang -->
+                                <div class="modal fade" id="tcongnModal${order.order_item_id}" tabindex="-1" aria-labelledby="tcongnModalLabel${order.order_item_id}" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content" style="position: relative; display: flex; align-items: center; justify-content: center;">
+                                            <span class="close-modal" data-product-id="${order.order_item_id}" 
+                                                style="position: absolute; right: 10px; top: 5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                                                &times;
+                                            </span>
+                                            <div style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                                                <h1 style="margin-bottom: 20px; text-align: center; color: #000000;font-size: 33px;font-weight: 500;">Xác nhận đơn hàng?</h1>
+                                                <div style="display: flex; justify-content: space-between; gap: 10px;">
+                                                    <button type="button" class="button-27 close-modal" data-product-id="${order.order_item_id}" 
+                                                        style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                        Hủy
+                                                    </button>
+                                                    <button type="button" class="button-27 confirm-cancel" data-product-id="${order.order_item_id}" onclick="tcong(${order.order_item_id})"
+                                                        style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                                        Xác nhận
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`
+                }
+                else if (order.status=="da-huy"){
+                     btn = `<button class="madonhang statusButton" data-bs-toggle="modal" 
+                                    style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
+                                     border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
+                                    <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
+                            </button>
+                            `
+                }
+                else if (order.status=="da-giao"){
+                     btn = `<button class="madonhang statusButton" data-bs-toggle="modal" 
+                                    style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
+                                     border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
+                                    <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
+                            </button>
+                            `
+                }
+ 
                 const div = document.createElement("div");
                 div.style = "height: 250px; border: 1px solid #000; overflow: hidden; margin-bottom: 30px;";
                 div.innerHTML = `
@@ -296,7 +378,7 @@
                             </h5>
                             <div style="display: flex; justify-content: space-between;">
                                 <p class="card-text" style="margin-top: 10px; text-align: center; font-size: 18px;">
-                                        <span style="color: red;font-size: 18px;font-weight: 700;">${order.total_price.toLocaleString('vi-VN')}₫</span>
+                                        <span style="color: red;font-size: 18px;font-weight: 700;">${order.price.toLocaleString('vi-VN')}₫</span>
                                 </p>
                                 <p style="margin-top: 16px; font-weight: 100; font-family: 'Arial', sans-serif; font-size: 12px; font-style: italic;">
                                     <span class="created-at" data-date="${order.created_at}"></span>
@@ -437,35 +519,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#xacnhanModal${order.order_item_id}" 
-                                    style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
-                                     border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
-                                    <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
-                            </button>
-                            <!-- Modal xac nhan don hang -->
-                                <div class="modal fade" id="xacnhanModal${order.order_item_id}" tabindex="-1" aria-labelledby="xacnhanModalLabel${order.order_item_id}" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered">
-                                        <div class="modal-content" style="position: relative; display: flex; align-items: center; justify-content: center;">
-                                            <span class="close-modal" data-product-id="${order.order_item_id}" 
-                                                style="position: absolute; right: 10px; top: 5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
-                                                &times;
-                                            </span>
-                                            <div style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
-                                                <h1 style="margin-bottom: 20px; text-align: center; color: #000000;font-size: 33px;font-weight: 500;">Xác nhận đơn hàng?</h1>
-                                                <div style="display: flex; justify-content: space-between; gap: 10px;">
-                                                    <button type="button" class="button-27 close-modal" data-product-id="${order.order_item_id}" 
-                                                        style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                        Hủy
-                                                    </button>
-                                                    <button type="button" class="button-27 confirm-cancel" data-product-id="${order.order_item_id}" onclick="xacnhan(${order.order_item_id})"
-                                                        style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                        Xác nhận
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                            ${btn}
                             ${xbtn}
 
                         </div>
@@ -499,15 +553,15 @@
     });
 
     async function huy(order_item_id) {
-        console.log("huy", order_item_id)
         const token = localStorage.getItem("token")
         try {
-            const response = await fetch(`http://localhost:3003/order/huy/${order_item_id}`, {
+            const response = await fetch(`http://localhost:3003/order/status/${order_item_id}`, {
                 method: "PATCH",
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
-                }
+                },
+                body: JSON.stringify({ status: "da-huy" })
             });
 
             if (!response.ok) {
@@ -538,12 +592,13 @@
         console.log("xacnhan", order_item_id)
         const token = localStorage.getItem("token")
         try {
-            const response = await fetch(`http://localhost:3003/order/xacnhan/${order_item_id}`, {
+            const response = await fetch(`http://localhost:3003/order/status/${order_item_id}`, {
                 method: "PATCH",
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
-                }
+                },
+                body: JSON.stringify({ status: "dang-giao" })
             });
 
             if (!response.ok) {
@@ -570,4 +625,42 @@
         }
     }
 
+    async function tcong(order_item_id) {
+        console.log("dagiao")
+        const token = localStorage.getItem("token")
+        try {
+            const response = await fetch(`http://localhost:3003/order/status/${order_item_id}`, {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ status: "da-giao" })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error("API trả về lỗi:", errorData);
+                document.getElementById("alert-text").innerHTML = errorData.message || "Lỗi khi xác nhận đơn hàng!";
+                $("#alertModal").modal("show");
+                return;
+            }
+
+            const data = await response.json();
+            console.log("✅ API trả về:", data);
+
+            document.getElementById("alert-text").innerHTML = data.message || "Xác nhận đơn hàng thành công!";
+            $("#alertModal").modal("show");
+            $("#alertModal").on("hidden.bs.modal", function () {
+                window.location.reload();
+            });
+
+        } catch (error) {
+            console.error("❌ Lỗi khi gọi API:", error);
+            document.getElementById("alert-text").innerHTML = "Lỗi kết nối đến server!";
+            $("#alertModal").modal("show");
+        }
+    }
+
+    
 </script>
