@@ -56,7 +56,7 @@ CREATE TABLE `category` (
 INSERT INTO category (name) VALUES("Giỏ trái cây"),("Trái cây"),("Rau củ")
 
 //buy
-CREATE TABLE cart (
+CREATE TABLE carts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     account_id INT NOT NULL,
     product_id INT NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE cart (
     UNIQUE(account_id, product_id)
 );
 
-CREATE TABLE order (
+CREATE TABLE orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     account_id INT NOT NULL,
     total_price DECIMAL(10,2) NOT NULL,
@@ -73,7 +73,7 @@ CREATE TABLE order (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE order_item (
+CREATE TABLE order_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_id INT NOT NULL,
     product_id INT NOT NULL,
