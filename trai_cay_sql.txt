@@ -39,7 +39,7 @@ CREATE TABLE `product` (
   PRIMARY KEY (`product_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `product_images` (
+CREATE TABLE `product_image` (
   `image_id` INT NOT NULL AUTO_INCREMENT,
   `product_id` INT NOT NULL,
   `image_url` TEXT NOT NULL,
