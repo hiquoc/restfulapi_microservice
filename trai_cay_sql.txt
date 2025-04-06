@@ -40,10 +40,17 @@ CREATE TABLE `products` (
   PRIMARY KEY (`product_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
 
+<<<<<<< HEAD
 CREATE TABLE `product_images` (
   `image_id` int NOT NULL AUTO_INCREMENT,
   `product_id` int NOT NULL,
   `image_url` text NOT NULL,
+=======
+CREATE TABLE `product_image` (
+  `image_id` INT NOT NULL AUTO_INCREMENT,
+  `product_id` INT NOT NULL,
+  `image_url` TEXT NOT NULL,
+>>>>>>> adb9d0e95814e6379043639e2ae8f3a30738becd
   PRIMARY KEY (`image_id`),
   KEY `product_id` (`product_id`),
   CONSTRAINT `product_images_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`product_id`) ON DELETE CASCADE
@@ -58,6 +65,17 @@ CREATE TABLE `categories` (
 INSERT INTO category (name) VALUES("Giỏ trái cây"),("Trái cây"),("Rau củ")
 
 //buy
+<<<<<<< HEAD
+=======
+CREATE TABLE carts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    account_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(account_id, product_id)
+);
+>>>>>>> adb9d0e95814e6379043639e2ae8f3a30738becd
 
 CREATE TABLE `carts` (
   `cart_id` int NOT NULL AUTO_INCREMENT,
