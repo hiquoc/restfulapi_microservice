@@ -7,7 +7,7 @@ module.exports = {
     try {
       const { username, password } = req.body;
 
-      const sql = "SELECT password FROM account WHERE username = ?";
+      const sql = "SELECT password FROM accounts WHERE username = ?";
       const [results] = await db.promise().query(sql, [username]);
 
       if (results.length === 0) {
@@ -43,7 +43,7 @@ module.exports = {
 
       // Kiểm tra username đã tồn tại chưa
       const checkUserSql =
-        "SELECT * FROM account WHERE username = ? OR phone = ? OR email = ?";
+        "SELECT * FROM accounts WHERE username = ? OR phone = ? OR email = ?";
       const [existingUsers] = await db
         .promise()
         .query(checkUserSql, [username, sdt, email]);
@@ -75,7 +75,7 @@ module.exports = {
 
       // Chèn dữ liệu vào database
       const insertSql =
-        "INSERT INTO account (username, password, fullname, phone, email) VALUES (?, ?, ?, ?, ?)";
+        "INSERT INTO accounts (username, password, fullname, phone, email) VALUES (?, ?, ?, ?, ?)";
       await db
         .promise()
         .query(insertSql, [username, hashedPassword, hovaten, sdt, email]);
@@ -104,7 +104,7 @@ module.exports = {
     const { hovatenval, emailval, sdtval } = req.body;
     try {
       const checkExitSql =
-        "SELECT * FROM account WHERE (phone=? OR email=?) AND account_id!=?";
+        "SELECT * FROM accounts WHERE (phone=? OR email=?) AND account_id!=?";
       const [results] = await db
         .promise()
         .query(checkExitSql, [sdtval, emailval, account_id]);
@@ -124,7 +124,7 @@ module.exports = {
         }
       }
       const sql =
-        "UPDATE account SET fullname=?, email=?, phone=? WHERE account_id=?";
+        "UPDATE accounts SET fullname=?, email=?, phone=? WHERE account_id=?";
       await db.promise().query(sql, [hovatenval, emailval, sdtval, account_id]);
       return res.status(200).json({ message: "Lưu thành công!" });
     } catch (error) {
@@ -139,7 +139,7 @@ module.exports = {
     const account_id = req.user.account_id;
     try {
       //Kiem tra co dia chi chua
-      const checkAddressSql = "SELECT * FROM address WHERE account_id=?";
+      const checkAddressSql = "SELECT * FROM addresses WHERE account_id=?";
       const [results] = await db.promise().query(checkAddressSql, [account_id]);
       if (results.length > 0) {
         const address = results[0];
@@ -165,11 +165,11 @@ module.exports = {
     try {
       //Kiem tra co dia chi chua
       const checkAddressSql =
-        "SELECT address_id FROM address WHERE account_id=?";
+        "SELECT address_id FROM addresses WHERE account_id=?";
       const [results] = await db.promise().query(checkAddressSql, [account_id]);
       if (results.length > 0) {
         const updateAdressSql =
-          "UPDATE address SET tinh=?, quan=?, phuong=?, nha=?, ghichu=? WHERE account_id=?";
+          "UPDATE addresses SET tinh=?, quan=?, phuong=?, nha=?, ghichu=? WHERE account_id=?";
         await db
           .promise()
           .query(updateAdressSql, [
@@ -183,7 +183,7 @@ module.exports = {
         return res.status(200).json({ message: "Lưu thành công!" });
       }
       const sql =
-        "INSERT INTO address (account_id, tinh, quan, phuong, nha, ghichu) VALUES(?,?,?,?,?,?)";
+        "INSERT INTO addresses (account_id, tinh, quan, phuong, nha, ghichu) VALUES(?,?,?,?,?,?)";
       await db
         .promise()
         .query(sql, [account_id, tinh, quan, phuong, nha, ghichu]);
@@ -201,7 +201,7 @@ module.exports = {
     const newpw = req.body.newpw;
     const account_id = req.user.account_id;
     try {
-      const checkPwSql = "SELECT password FROM account WHERE account_id=?";
+      const checkPwSql = "SELECT password FROM accounts WHERE account_id=?";
       const [results] = await db.promise().query(checkPwSql, [account_id]);
       const user = results[0];
 
@@ -210,7 +210,7 @@ module.exports = {
         return res.status(401).json({ message: "Mật khẩu không chính xác!" });
       }
 
-      const sql = "UPDATE account SET password=? WHERE account_id=?";
+      const sql = "UPDATE accounts SET password=? WHERE account_id=?";
       const hashedPassword = await bcrypt.hash(newpw, 10);
       await db.promise().query(sql, [hashedPassword, account_id]);
       return res.status(200).json({ message: "Đổi thành công!" });
@@ -230,8 +230,8 @@ module.exports = {
                     COALESCE(a.account_id, ad.account_id) AS account_id, 
                     a.username, a.password, a.role, a.fullname, a.phone, a.email,
                     ad.address_id, ad.tinh, ad.quan, ad.phuong, ad.nha, ad.ghichu
-                FROM account a
-                LEFT JOIN address ad ON a.account_id = ad.account_id`;
+                FROM accounts a
+                LEFT JOIN addresses ad ON a.account_id = ad.account_id`;
 
         let params = [];
         if (req.query.tentaikhoan) {
@@ -259,8 +259,8 @@ module.exports = {
                     COALESCE(a.account_id, ad.account_id) AS account_id, 
                     a.username, a.password, a.role, a.fullname, a.phone, a.email,
                     ad.address_id, ad.tinh, ad.quan, ad.phuong, ad.nha, ad.ghichu
-                FROM account a
-                LEFT JOIN address ad ON a.account_id = ad.account_id `;
+                FROM accounts a
+                LEFT JOIN addresses ad ON a.account_id = ad.account_id `;
 
         let params = [];
         if (req.params.username) {
@@ -298,7 +298,7 @@ module.exports = {
       }
 
       const RoleSql = `
-          UPDATE account 
+          UPDATE accounts
             SET role = CASE 
                 WHEN role = 'admin' THEN 'user' 
                 WHEN role = 'user' THEN 'admin'
@@ -327,7 +327,7 @@ module.exports = {
     }
     const account_id = req.body.account_id;
     try {
-      const deleteSql = "DELETE FROM account WHERE account_id=?";
+      const deleteSql = "DELETE FROM accounts WHERE account_id=?";
       await db.promise().query(deleteSql, [account_id]);
       return res.status(200).json({ message: "Xóa thành công!" });
     } catch (err) {

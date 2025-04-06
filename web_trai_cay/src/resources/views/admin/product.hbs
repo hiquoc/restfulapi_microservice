@@ -145,9 +145,9 @@
             products.forEach(product => {
                 const productHTML = `
                 <div class="col-md-4 mb-4">
-                    <div class="card product-card">
-                        <a href="/product/${product.product_id}" class="product-image">
-                            <img src="${product.mainImg}" class="img-fluid" alt="${product.name}">
+                    <div class="card product-card" style="height:100%">
+                        <a href="/product/${product.product_id}" class="product-image" style="height:100%">
+                            <img style="height: 100%;width:100%" src="${product.mainImg}" class="img-fluid" alt="${product.name}">
                         </a>
                         <div class="card-body text-center">
                             <p class="product-name">${product.name}</p>
@@ -246,14 +246,14 @@
                 },
             })
             const data = await response.json();
-            if (data.message = "Xóa thành công!") {
+            if (data.message == "Xóa thành công!") {
                 document.getElementById("alert-text").innerHTML = data.message;
                 $("#alertModal").modal("show");
                 $("#alertModal").on("hidden.bs.modal", function () {
                     window.location.href = "/admin/product";
                 });
             }
-            else if (data.message = "Vui lòng đăng nhập!") {
+            else if (data.message == "Vui lòng đăng nhập!") {
                 document.getElementById("alert-text").innerHTML = data.message;
                 $("#alertModal").modal("show");
                 $("#alertModal").on("hidden.bs.modal", function () {

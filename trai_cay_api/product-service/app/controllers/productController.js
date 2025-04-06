@@ -1,13 +1,13 @@
 const db = require("../config/mysql");
 const axios = require("axios");
-const path = require("path");
-const fs = require("fs");
+const cloudinary = require("cloudinary").v2;
 module.exports = {
   upload: async (req, res) => {
-    const connection = await db.promise().getConnection(); // Lấy kết nối
+    const connection = await db.promise().getConnection();
     try {
       await connection.beginTransaction(); // Bắt đầu transaction
 
+      // Kiểm tra nếu không có file nào được tải lên
       if (
         !req.files ||
         (req.files["images"] && req.files["images"].length === 0)
@@ -17,22 +17,27 @@ module.exports = {
           .json({ message: "Vui lòng tải ít nhất một ảnh!" });
       }
 
+      // Lấy thông tin từ body request
       const { name, price, category, stock, status, details } = req.body;
 
+      // Xử lý ảnh chính (mainImage) và lấy URL của ảnh từ Cloudinary
       const mainImage = req.files["mainImage"]
-        ? `/uploads/${req.files["mainImage"][0].filename}`
+        ? req.files["mainImage"][0].path // Đảm bảo ảnh chính có URL Cloudinary
         : null;
 
+      // Xử lý các ảnh phụ (images) và lấy URL của các ảnh từ Cloudinary
       const uploadedImages = req.files["images"]
-        ? req.files["images"].map((file) => `/uploads/${file.filename}`)
+        ? req.files["images"].map((file) => file.path) // Đảm bảo các ảnh phụ có URL Cloudinary
         : [];
 
+      // Thêm ảnh chính vào đầu danh sách ảnh phụ nếu có
       if (mainImage) {
         uploadedImages.unshift(mainImage);
       }
 
+      // Insert thông tin sản phẩm vào bảng product
       const newProSql =
-        "INSERT INTO product (name, description, price, stock, category, status) VALUES (?, ?, ?, ?, ?,?)";
+        "INSERT INTO products (name, description, price, stock, category, status) VALUES (?, ?, ?, ?, ?,?)";
       const [proResult] = await connection.query(newProSql, [
         name,
         details,
@@ -43,11 +48,13 @@ module.exports = {
       ]);
       const productId = proResult.insertId;
 
-      const values = uploadedImages.map((path) => [productId, path]);
+      // Insert danh sách URL ảnh vào bảng product_image
+      const values = uploadedImages.map((url) => [productId, url]);
       const newImgSql =
-        "INSERT INTO product_image (product_id, image_url) VALUES ?";
+        "INSERT INTO product_images (product_id, image_url) VALUES ?";
       await connection.query(newImgSql, [values]);
 
+      // Commit transaction và trả kết quả thành công
       await connection.commit();
       connection.release();
 
@@ -63,10 +70,10 @@ module.exports = {
   product: async (req, res) => {
     const product_id = req.params.product_id;
     try {
-      const ProSql = "SELECT * FROM product WHERE product_id =?";
+      const ProSql = "SELECT * FROM products WHERE product_id =?";
       let [products] = await db.promise().query(ProSql, [product_id]);
 
-      const ImgSql = "SELECT * FROM product_image WHERE product_id =?";
+      const ImgSql = "SELECT * FROM product_images WHERE product_id =?";
       let [images] = await db.promise().query(ImgSql, [product_id]);
 
       const productMap = {};
@@ -103,7 +110,7 @@ module.exports = {
     if (req.headers.authorization) {
       try {
         const token = req.headers.authorization;
-        const response = await axios.get("http://localhost:3001/admin", {
+        const response = await axios.get("http://account-service:3001/admin", {
           headers: { Authorization: `${token}` },
         });
         if (response.status != 401 || response.status != 403) {
@@ -114,7 +121,7 @@ module.exports = {
       }
     }
     try {
-      let ProSql = "SELECT product_id,name,price FROM product";
+      let ProSql = "SELECT product_id,name,price FROM products";
       let conditions = [];
 
       if (role == "user") {
@@ -141,7 +148,7 @@ module.exports = {
 
       let [products] = await db.promise().query(ProSql);
 
-      const ImgSql = "SELECT product_id,image_url FROM product_image";
+      const ImgSql = "SELECT product_id,image_url FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
       const productMap = {};
@@ -174,7 +181,7 @@ module.exports = {
     if (req.headers.authorization) {
       try {
         const token = req.headers.authorization;
-        const response = await axios.get("http://localhost:3001/admin", {
+        const response = await axios.get("http://account-service:3001/admin", {
           headers: { Authorization: `${token}` },
         });
         if (response.status != 401 || response.status != 403) {
@@ -185,7 +192,7 @@ module.exports = {
       }
     }
     try {
-      let ProSql = "SELECT product_id,name,price,stock FROM product";
+      let ProSql = "SELECT product_id,name,price,stock FROM products";
       let conditions = [];
 
       if (req.query.sort) {
@@ -208,7 +215,7 @@ module.exports = {
 
       let [products] = await db.promise().query(ProSql);
 
-      const ImgSql = "SELECT product_id,image_url FROM product_image";
+      const ImgSql = "SELECT product_id,image_url FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
       const productMap = {};
@@ -241,7 +248,7 @@ module.exports = {
     if (req.headers.authorization) {
       try {
         const token = req.headers.authorization;
-        const response = await axios.get("http://localhost:3001/admin", {
+        const response = await axios.get("http://account-service:3001/admin", {
           headers: { Authorization: `${token}` },
         });
         if (response.status != 401 || response.status != 403) {
@@ -252,7 +259,7 @@ module.exports = {
       }
     }
     try {
-      let ProSql = "SELECT * FROM product WHERE name LIKE ?";
+      let ProSql = "SELECT * FROM products WHERE name LIKE ?";
       if (role == "user") {
         ProSql += " AND status='con-hang'";
       }
@@ -261,7 +268,7 @@ module.exports = {
         .promise()
         .query(ProSql, [`%${req.params.product}%`]);
 
-      const ImgSql = "SELECT * FROM product_image";
+      const ImgSql = "SELECT * FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
       const productMap = {};
@@ -293,9 +300,11 @@ module.exports = {
 
   categories: async (req, res) => {
     try {
-      const CateSql = "SELECT * FROM category";
+      const CateSql = "SELECT * FROM categories";
       let [categories] = await db.promise().query(CateSql);
 
+      // Set proper content type with charset
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
       return res.status(200).json(categories);
     } catch (error) {
       console.error(error);
@@ -306,10 +315,10 @@ module.exports = {
   edit1: async (req, res) => {
     const connection = await db.promise().getConnection();
     const product_id = req.params.product_id;
-
+  
     try {
       await connection.beginTransaction();
-
+  
       if (
         !req.files ||
         (req.files["images"] && req.files["images"].length === 0)
@@ -318,22 +327,24 @@ module.exports = {
           .status(400)
           .json({ message: "Vui lòng tải ít nhất một ảnh!" });
       }
-
+  
       const { name, price, category, stock, status, details } = req.body;
-      const mainImage = req.files["mainImage"]
-        ? `/uploads/${req.files["mainImage"][0].filename}`
-        : null;
-
-      const uploadedImages = req.files["images"]
-        ? req.files["images"].map((file) => `/uploads/${file.filename}`)
-        : [];
-
-      if (mainImage) {
-        uploadedImages.unshift(mainImage);
+  
+      const uploadedImages = [];
+  
+      if (req.files["mainImage"]) {
+        uploadedImages.push(req.files["mainImage"][0].path); // Đường dẫn Cloudinary
       }
-
+  
+      if (req.files["images"]) {
+        req.files["images"].forEach((file) => {
+          uploadedImages.push(file.path); // Đường dẫn Cloudinary
+        });
+      }
+  
+      // --- Cập nhật sản phẩm ---
       const updateProSql =
-        "UPDATE product SET name=?, description=?, price=?, stock=?, category=?, status=? WHERE product_id=?";
+        "UPDATE products SET name=?, description=?, price=?, stock=?, category=?, status=? WHERE product_id=?";
       await connection.query(updateProSql, [
         name,
         details,
@@ -343,48 +354,67 @@ module.exports = {
         status,
         product_id,
       ]);
-
-      // Lấy danh sách ảnh cũ
+  
+      // --- Lấy danh sách ảnh cũ từ DB ---
       const getOldImagesSql =
-        "SELECT image_url FROM product_image WHERE product_id = ?";
+        "SELECT image_url FROM product_images WHERE product_id = ?";
       const [oldImages] = await connection.query(getOldImagesSql, [product_id]);
-
-      // Xóa ảnh cũ khỏi thư mục uploads
-      oldImages.forEach((img) => {
-        const filePath = path.join(__dirname, "../../", img.image_url);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.log(`Đã xóa: ${filePath}`);
-        } else {
-          console.log(`Không tìm thấy ảnh: ${filePath}`);
+  
+      // --- Xóa ảnh cũ trên Cloudinary ---
+      for (const img of oldImages) {
+        const imageUrl = img.image_url;
+  
+        const match = imageUrl.match(/\/uploads\/(.+?)\./);
+        const public_id = match ? `uploads/${match[1]}` : null;
+  
+        if (!public_id) {
+          console.log(`Không thể trích xuất public_id từ URL: ${imageUrl}`);
+          continue;
         }
-      });
-
-      // Xóa ảnh cũ khỏi database
-      const deleteImgSql = "DELETE FROM product_image WHERE product_id=?";
+  
+        try {
+          const result = await cloudinary.uploader.destroy(public_id);
+          console.log("Kết quả xóa ảnh từ Cloudinary:", result);
+  
+          if (result.result === "ok") {
+            console.log(`Đã xóa ảnh: ${public_id}`);
+          } else {
+            console.log(`Không thể xóa ảnh: ${public_id}`);
+          }
+        } catch (error) {
+          console.log(`Lỗi xóa ảnh trên Cloudinary: ${error}`);
+          await connection.rollback();
+          connection.release();
+          return res.status(500).json({ message: "Lỗi khi xóa ảnh Cloudinary" });
+        }
+      }
+  
+      // --- Xóa ảnh cũ khỏi DB ---
+      const deleteImgSql = "DELETE FROM product_images WHERE product_id=?";
       await connection.query(deleteImgSql, [product_id]);
-
-      // Thêm ảnh mới vào database
-      const values = uploadedImages.map((path) => [product_id, path]);
+  
+      // --- Thêm ảnh mới vào DB ---
+      const values = uploadedImages.map((url) => [product_id, url]);
       const newImgSql =
-        "INSERT INTO product_image (product_id, image_url) VALUES ?";
+        "INSERT INTO product_images (product_id, image_url) VALUES ?";
       await connection.query(newImgSql, [values]);
-
+  
+      // --- Commit ---
       await connection.commit();
       connection.release();
-
+  
       return res.status(201).json({
         message: "Cập nhật thành công!",
       });
     } catch (error) {
       await connection.rollback();
       connection.release();
-
+  
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
-  },
-
+  },  
+  
   edit2: async (req, res) => {
     const connection = await db.promise().getConnection(); // Lấy kết nối
 
@@ -395,7 +425,7 @@ module.exports = {
       const { name, price, category, stock, status, details } = req.body;
 
       const updateProSql =
-        "UPDATE product SET name=?, description=?, price=?, stock=?, category=?, status=? WHERE product_id=?";
+        "UPDATE products SET name=?, description=?, price=?, stock=?, category=?, status=? WHERE product_id=?";
       await connection.query(updateProSql, [
         name,
         details,
@@ -423,28 +453,62 @@ module.exports = {
 
   delete: async (req, res) => {
     const product_id = req.params.product_id;
+    const conn = await db.promise().getConnection();
     try {
-      //Xóa ảnh
-      const getImagesSql =
-        "SELECT image_url FROM product_image WHERE product_id = ?";
-      const [oldImages] = await db.promise().query(getImagesSql, [product_id]);
-
-      oldImages.forEach((img) => {
-        const filePath = path.join(__dirname, "../../", img.image_url);
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.log(`Đã xóa: ${filePath}`);
-        } else {
-          console.log(`Không tìm thấy ảnh: ${filePath}`);
-        }
+      const token = req.headers.authorization;
+      const response = await axios.get("http://buy-service:3003/orders", {
+        headers: { Authorization: `${token}` },
       });
-
-      const deleteProSql = "DELETE FROM product WHERE product_id=?";
-      await db.promise().query(deleteProSql, [product_id]);
+  
+      const isProductOrdered = response.data.orderItems.some(
+        (item) => item.product_id == product_id
+      );
+  
+      if (isProductOrdered) {
+        return res.status(400).json({ message: "Sản phẩm đã được mua!" });
+      }
+  
+      // Bắt đầu transaction
+      await conn.beginTransaction();
+  
+      // Lấy thông tin ảnh từ DB
+      const getImagesSql = "SELECT image_url FROM product_images WHERE product_id = ?";
+      const [oldImages] = await conn.query(getImagesSql, [product_id]);
+  
+      // Xóa ảnh trên Cloudinary
+      for (const img of oldImages) {
+        const imageUrl = img.image_url;
+        const match = imageUrl.match(/\/uploads\/(.+?)\./);
+        const public_id = match ? `uploads/${match[1]}` : null;
+  
+        try {
+          const result = await cloudinary.uploader.destroy(public_id);
+          if (result.result === "ok") {
+            console.log(`Đã xóa ảnh: ${public_id}`);
+          } else {
+            console.log(`Không thể xóa ảnh: ${public_id}`);
+          }
+        } catch (error) {
+          console.log(`Lỗi xóa ảnh trên Cloudinary: ${error}`);
+        }
+      }
+  
+      // Xóa ảnh khỏi bảng product_image
+      await conn.query("DELETE FROM product_images WHERE product_id = ?", [product_id]);
+  
+      // Xóa sản phẩm
+      await conn.query("DELETE FROM products WHERE product_id = ?", [product_id]);
+  
+      // Commit transaction
+      await conn.commit();
       return res.status(200).json({ message: "Xóa thành công!" });
+  
     } catch (error) {
-      console.error(error);
+      await conn.rollback(); // Rollback nếu lỗi
+      console.error("Lỗi server:", error);
       return res.status(500).json({ message: "Lỗi server!" });
+    } finally {
+      conn.release(); // Giải phóng kết nối
     }
   },
 
@@ -452,10 +516,10 @@ module.exports = {
     const product_id = req.params.product_id;
     try {
       const randomProSql =
-        "SELECT * FROM product WHERE product_id != ? AND status='con-hang' ORDER BY RAND() LIMIT 10";
+        "SELECT * FROM products WHERE product_id != ? AND status='con-hang' ORDER BY RAND() LIMIT 10";
       const [products] = await db.promise().query(randomProSql, [product_id]);
 
-      const ImgSql = "SELECT * FROM product_image WHERE product_id !=?";
+      const ImgSql = "SELECT * FROM product_images WHERE product_id !=?";
       let [images] = await db.promise().query(ImgSql, [product_id]);
 
       const productMap = {};
@@ -491,10 +555,10 @@ module.exports = {
     const category = req.params.category;
     try {
       const randomProSql =
-        "SELECT * FROM product WHERE status='con-hang' AND category=?";
+        "SELECT * FROM products WHERE status='con-hang' AND category=?";
       const [products] = await db.promise().query(randomProSql, [category]);
 
-      const ImgSql = "SELECT * FROM product_image";
+      const ImgSql = "SELECT * FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
       const productMap = {};
@@ -526,10 +590,10 @@ module.exports = {
   top: async (req, res) => {
     try {
       const topProSql =
-        "SELECT * FROM product WHERE status='con-hang' ORDER BY sold";
+        "SELECT * FROM products WHERE status='con-hang' ORDER BY sold";
       const [products] = await db.promise().query(topProSql);
 
-      const ImgSql = "SELECT * FROM product_image";
+      const ImgSql = "SELECT * FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
       const productMap = {};
@@ -561,10 +625,10 @@ module.exports = {
   home: async (req, res) => {
     try {
       const topProSql =
-        "SELECT * FROM product WHERE status='con-hang' ORDER BY sold DESC LIMIT 5";
+        "SELECT * FROM products WHERE status='con-hang' ORDER BY sold DESC LIMIT 5";
       const [products] = await db.promise().query(topProSql);
 
-      const ImgSql = "SELECT * FROM product_image";
+      const ImgSql = "SELECT * FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
       const productMap = {};
@@ -611,7 +675,7 @@ module.exports = {
 
       const stockChangeValues = req.body;
       const updateOrderSql = `
-            UPDATE product
+            UPDATE products
             SET 
                 stock = CASE 
                     ${stockChangeValues
@@ -665,7 +729,7 @@ module.exports = {
 
       const stockChangeValues = req.body;
       const updateOrderSql = `
-          UPDATE product
+          UPDATE products
           SET 
               stock = CASE 
                   ${stockChangeValues

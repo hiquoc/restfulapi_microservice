@@ -724,12 +724,13 @@
         }
 
         try {
-            const response = await fetch(`http://localhost:3003/order/huy/${order_item_id}`, {
+            const response = await fetch(`http://localhost:3003/order/status/${order_item_id}`, {
                 method: "PATCH",
                 headers: {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
-                }
+                },
+                body: JSON.stringify({ status: "da-huy" })
             });
 
             if (!response.ok) {

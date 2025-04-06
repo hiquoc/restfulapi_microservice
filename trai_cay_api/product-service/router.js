@@ -1,6 +1,6 @@
 module.exports = function (app) {
   let productController = require("./app/controllers/productController");
-  let upload = require("./app/middleware/multer");
+  let upload = require("./app/middleware/cloud");
   let checkAdmin = require("./app/middleware/checkAdmin");
   let checkLoggedIn = require("./app/middleware/checkLoggedIn");
 
@@ -40,6 +40,7 @@ module.exports = function (app) {
     .get(productController.product) //lay thong tin 1 san pham
     .delete(checkAdmin, productController.delete); //xoa san pham
 
+
   app.route("/").post(
     checkAdmin,
     upload.fields([
@@ -48,4 +49,5 @@ module.exports = function (app) {
     ]),
     productController.upload //dang san pham moi
   );
+  
 };

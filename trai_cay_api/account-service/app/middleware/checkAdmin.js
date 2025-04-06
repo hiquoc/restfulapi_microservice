@@ -16,7 +16,7 @@ const checkAdmin = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, "huy");
 
-    const sql = "SELECT role FROM account WHERE username = ?";
+    const sql = "SELECT role FROM accounts WHERE username = ?";
     const [rows] = await db.promise().query(sql, [decoded.username]);
 
     if (rows.length === 0) {

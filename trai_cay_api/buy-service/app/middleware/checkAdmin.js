@@ -2,7 +2,7 @@ const axios = require('axios');
 const checkAdmin = async (req, res, next) => {
     try {
         const token = req.headers.authorization;
-        const response = await axios.get("http://localhost:3001/admin", {
+        const response = await axios.get("http://account-service:3001/admin", {
           headers: { Authorization: `${token}` }, // Đúng cấu trúc
           validateStatus: () => true
         });

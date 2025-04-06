@@ -14,7 +14,7 @@ const checkLoggedIn = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, "huy");
 
-    const sql = "SELECT account_id FROM account WHERE username = ?";
+    const sql = "SELECT account_id FROM accounts WHERE username = ?";
     const [rows] = await db.promise().query(sql, [decoded.username]);
 
     if (rows.length === 0) {

@@ -10,7 +10,7 @@ module.exports = {
 
     try {
       const checkStockSql =
-        "SELECT quantity FROM cart WHERE account_id = ? AND product_id = ?";
+        "SELECT quantity FROM carts WHERE account_id = ? AND product_id = ?";
       const [quantityResult] = await db
         .promise()
         .query(checkStockSql, [account_id, product_id]);
@@ -25,7 +25,7 @@ module.exports = {
       }
 
       const cartSql = `
-            INSERT INTO cart (account_id, product_id, quantity, price) 
+            INSERT INTO carts (account_id, product_id, quantity, price) 
             VALUES (?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE 
                 quantity = quantity + VALUES(quantity), 
@@ -52,7 +52,7 @@ module.exports = {
     const products = req.products;
     let sum = 0;
     try {
-      const cartSql = "SELECT * FROM cart WHERE account_id=?";
+      const cartSql = "SELECT * FROM carts WHERE account_id=?";
       const [cartItems] = await db.promise().query(cartSql, [account_id]);
 
       const productMap = new Map(
@@ -80,12 +80,12 @@ module.exports = {
     const account_id = req.user.account_id;
     const cart_id = req.params.cart_id;
     try {
-      const getAccIdSql = "SELECT account_id FROM cart WHERE cart_id=?";
+      const getAccIdSql = "SELECT account_id FROM carts WHERE cart_id=?";
       const [result] = await db.promise().query(getAccIdSql, [cart_id]);
       if (account_id != result[0].account_id) {
         return res.status(403).json({ message: "Bạn không có quyền!" });
       }
-      const delCartSql = "DELETE FROM cart WHERE cart_id=?";
+      const delCartSql = "DELETE FROM carts WHERE cart_id=?";
       await db.promise().query(delCartSql, [cart_id]);
       return res.status(200).json({ message: "Xóa thành công!" });
     } catch (err) {
@@ -108,14 +108,14 @@ module.exports = {
       }
 
       const getAccIdSql =
-        "SELECT account_id,price,quantity FROM cart WHERE cart_id=?";
+        "SELECT account_id,price,quantity FROM carts WHERE cart_id=?";
       const [result] = await db.promise().query(getAccIdSql, [cart_id]);
       if (account_id != result[0].account_id) {
         return res.status(403).json({ message: "Bạn không có quyền!" });
       }
       const unit_price = result[0].price / result[0].quantity;
       const new_price = unit_price * quantity;
-      const delCartSql = "UPDATE cart SET quantity=?, price=? WHERE cart_id=?";
+      const delCartSql = "UPDATE carts SET quantity=?, price=? WHERE cart_id=?";
       await db.promise().query(delCartSql, [quantity, new_price, cart_id]);
       return res.status(200).json({ message: "Cập nhật thành công!" });
     } catch (err) {
@@ -133,7 +133,7 @@ module.exports = {
     try {
       await connection.beginTransaction(); // bắt đầu transaction
 
-      const cartSql = "SELECT * FROM cart WHERE account_id=?";
+      const cartSql = "SELECT * FROM carts WHERE account_id=?";
       const [cartItems] = await connection.query(cartSql, [account_id]);
 
       if (!cartItems.length || account_id != cartItems[0].account_id) {
@@ -161,7 +161,7 @@ module.exports = {
 
       // Tạo đơn hàng
       const orderSql =
-        "INSERT INTO `order` (account_id, total_price) VALUES (?, ?)";
+        "INSERT INTO orders (account_id, total_price) VALUES (?, ?)";
       const [order] = await connection.query(orderSql, [
         account_id,
         total_price,
@@ -171,12 +171,12 @@ module.exports = {
       // Chèn các sản phẩm vào order_item
       const orderItemsValues = cartItemsMap.map((item) => [order_id, ...item]);
       const orderItemsSql =
-        "INSERT INTO order_item (order_id, product_id, quantity, price) VALUES ?";
+        "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES ?";
       console.log(orderItemsValues);
       await connection.query(orderItemsSql, [orderItemsValues]);
 
       // Xoá giỏ hàng
-      const deleteCartSql = "DELETE FROM cart WHERE account_id=?";
+      const deleteCartSql = "DELETE FROM carts WHERE account_id=?";
       await connection.query(deleteCartSql, [account_id]);
 
       // Commit trước khi gọi service bên ngoài
@@ -189,7 +189,7 @@ module.exports = {
       ]);
       try {
         const token = req.headers.authorization;
-        await axios.patch("http://localhost:3002/orderAdd", stockChangeValues, {
+        await axios.patch("http://product-service:3002/orderAdd", stockChangeValues, {
           headers: {
             Authorization: `${token}`,
             "Content-Type": "application/json",
@@ -218,8 +218,8 @@ module.exports = {
     const products = req.products;
     try {
       let orderSql = `SELECT  oi.order_item_id,o.account_id, oi.price, oi.status, o.created_at, oi.product_id, oi.quantity
-                        FROM buy_db.order o
-                        JOIN buy_db.order_item oi ON o.order_id = oi.order_id
+                        FROM buy_db.orders o
+                        JOIN buy_db.order_items oi ON o.order_id = oi.order_id
                         WHERE o.account_id = ?
                      `;
       if (req.query.sort) {
@@ -252,7 +252,7 @@ module.exports = {
     const { status } = req.body; // Nhận trạng thái từ body ('da-huy' hoặc 'dang-giao' hoặc 'da-giao')
 
     try {
-      const orderSql = "SELECT * FROM `order_item` WHERE order_item_id=?";
+      const orderSql = "SELECT * FROM order_items WHERE order_item_id=?";
       const [orderItems] = await db.promise().query(orderSql, [order_item_id]);
 
       if (orderItems.length === 0) {
@@ -268,7 +268,7 @@ module.exports = {
         try {
           const token = req.headers.authorization;
           await axios.patch(
-            "http://localhost:3002/orderAbort",
+            "http://product-service:3002/orderAbort",
             stockChangeValues,
             {
               headers: {
@@ -288,7 +288,7 @@ module.exports = {
 
       // Cập nhật trạng thái đơn hàng
       const updateOrderSql =
-        "UPDATE `order_item` SET status=? WHERE order_item_id=?";
+        "UPDATE order_items SET status=? WHERE order_item_id=?";
       await db.promise().query(updateOrderSql, [status, order_item_id]);
 
       return res
@@ -304,8 +304,8 @@ module.exports = {
     const accounts = req.users;
     try {
       let orderSql = `SELECT  oi.order_item_id,o.account_id, oi.price, oi.status, o.created_at, oi.product_id, oi.quantity
-                        FROM buy_db.order o
-                        JOIN buy_db.order_item oi ON o.order_id = oi.order_id
+                        FROM buy_db.orders o
+                        JOIN buy_db.order_items oi ON o.order_id = oi.order_id
                         `;
       if (req.query.sort) {
         orderSql += ` WHERE oi.status ='${req.query.sort}'`;
@@ -346,8 +346,8 @@ module.exports = {
     const accounts = req.users;
     try {
       let orderSql = `SELECT  oi.order_item_id,o.account_id, oi.price, oi.status, o.created_at, oi.product_id, oi.quantity
-                        FROM buy_db.order o
-                        JOIN buy_db.order_item oi ON o.order_id = oi.order_id
+                        FROM buy_db.orders o
+                        JOIN buy_db.order_items oi ON o.order_id = oi.order_id
                         WHERE account_id=?
                         `;
       if (req.query.sort) {

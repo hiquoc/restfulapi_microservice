@@ -3,7 +3,7 @@ const axios = require('axios');
 const checkLoggedIn = async (req, res, next) => {
     try {
         const token = req.headers.authorization;
-        const response = await axios.get("http://localhost:3001/loggedin", {
+        const response = await axios.get("http://account-service:3001/loggedin", {
             headers: { Authorization: `${token}` },
             validateStatus: () => true // Prevent axios from throwing an error on 4xx/5xx responses
         });

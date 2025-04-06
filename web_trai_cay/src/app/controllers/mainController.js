@@ -3,44 +3,19 @@ const axios = require("axios");
 class accountController {
   async main(req, res) {
     try {
-      const { data:hots } = await axios.get(`http://localhost:3002/top`);
-      const topFive = hots.slice(0, 5);
-      const { data: categoriesResponse } = await axios.get(
-        `http://localhost:3002/categories`
-      );
+      let { data:hots } = await axios.get(`http://localhost:3002/top`);
+      hots = hots.slice(0, 5);
 
-      // Ensure categories is always an array
-      const categories = Array.isArray(categoriesResponse)
-        ? categoriesResponse
-        : [];
-      let gio_trai_cay = [],
-        trai_cay = [],
-        rau_cu = [];
+      let { data:gio_trai_cay } = await axios.get(`http://localhost:3002/category/1`);
+      gio_trai_cay = gio_trai_cay.slice(0, 5);
+      let { data:trai_cay } = await axios.get(`http://localhost:3002/category/2`);
+      trai_cay = trai_cay.slice(0, 5);
+      let { data:rau_cu } = await axios.get(`http://localhost:3002/category/3`);
+      rau_cu = rau_cu.slice(0, 5);
 
-      const categoryRequests = categories.map((category) => {
-        const url = `http://localhost:3002/category/${encodeURIComponent(
-          category.category_id
-        )}`;
-        return axios.get(url).then((res) => {
-          switch (category.name) {
-            case "Giỏ trái cây":
-              gio_trai_cay = res.data.slice(0, 10);
-              break;
-            case "Trái cây":
-              trai_cay = res.data.slice(0,10)
-              break;
-            case "Rau củ":
-              rau_cu = res.data.slice(0, 10);
-              break;
-          }
-        });
-      });
-
-      await Promise.all(categoryRequests);
-
-      res.render("home", { hots:topFive, gio_trai_cay, trai_cay, rau_cu });
+      res.render("home", { hots, gio_trai_cay, trai_cay, rau_cu });
     } catch (e) {
-      console.error("Lỗi khi lấy sản phẩm", e);
+      console.error("Lỗi khi lấy sản phẩm");
       res.status(500).json({ message: "Lỗi server" });
     }
   }

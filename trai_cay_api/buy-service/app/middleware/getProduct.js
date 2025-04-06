@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const getProductPrice = async (req, res, next) => {
   try {
-    const product = await axios.get(`http://localhost:3002/${req.body.product_id}`, {});
+    const product = await axios.get(`http://product-service:3002/${req.body.product_id}`, {});
     req.product = product.data[0];
     next();
   } catch (e) {

@@ -2,7 +2,7 @@ const axios = require("axios");
 
 const getProduct = async (req, res, next) => {
   try {
-    const products = await axios.get(`http://localhost:3002/productsAll`, {});
+    const products = await axios.get(`http://product-service:3002/productsAll`, {});
     req.products = products.data;
     next();
   } catch (e) {

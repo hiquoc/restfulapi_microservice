@@ -1,0 +1,104 @@
+version: '3.8'  
+
+services:
+  account-service:
+    build: ./account-service
+    ports:
+      - "3001:3001"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=account_db
+    networks:
+      - traicay-network
+    depends_on:
+      mysql-account:
+        condition: service_healthy
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "3002:3002"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=product_db
+    depends_on:
+      mysql-product:
+        condition: service_healthy
+    networks:
+      - traicay-network
+
+  buy-service:
+    build: ./buy-service
+    ports:
+      - "3003:3003"
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=buy_db
+    networks:
+      - traicay-network
+    depends_on:
+      mysql-buy:
+        condition: service_healthy
+
+  mysql-account:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=account_db
+    ports:
+      - "4001:3306"
+    volumes:
+      - mysql-account-data:/var/lib/mysql
+      - ./account-service/initdb:/docker-entrypoint-initdb.d
+    networks:
+      - traicay-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mysql-product:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=product_db
+    ports:
+      - "4002:3306"
+    volumes:
+      - mysql-product-data:/var/lib/mysql
+      - ./product-service/initdb:/docker-entrypoint-initdb.d
+    networks:
+      - traicay-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mysql-buy:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=123456
+      - MYSQL_DATABASE=buy_db
+    ports:
+      - "4003:3306"
+    volumes:
+      - mysql-buy-data:/var/lib/mysql
+      - ./buy-service/initdb:/docker-entrypoint-initdb.d
+    networks:
+      - traicay-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mysql-account-data:
+  mysql-product-data:
+  mysql-buy-data:
+
+networks:
+  traicay-network:
+    name: traicay-network
