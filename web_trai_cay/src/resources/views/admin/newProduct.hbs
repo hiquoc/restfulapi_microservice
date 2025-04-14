@@ -73,9 +73,8 @@
 
                 <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 20px">
                     <button type="button" class="button-27"
-                        style="background-color: #ff5722; color: #fff; width: 18%; display: flex; align-items: center; justify-content: center; border: none;"
-                        onclick="clearForm()">
-                        Hủy
+                        style="background-color: #ff5722; color: #fff; width: 18%; display: flex; align-items: center; justify-content: center; border: none;">
+                        <a href="/admin/product">Hủy</a>
                     </button>
                     <button type="submit" class="button-27"
                         style="background-color: #000; color: #fff; width: 27%; display: flex; align-items: center; justify-content: center; border: none;">
@@ -129,7 +128,7 @@
                     Quản lý đơn hàng
                 </a>
             </div>
-            <div style="display: flex;  justify-content: right;display:none">
+            <div style="display: flex;  justify-content: right">
                 <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
                      width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
                     Thống kê
@@ -182,14 +181,14 @@
             categories.forEach(category => {
                 const option = document.createElement("option");
                 option.value = category.category_id;
-                if(category.category_id==1){
-                    option.textContent = "Giỏ trái cây"; 
-                } 
-                if(category.category_id==2){
-                    option.textContent = "Trái cây"; 
+                if (category.category_id == 1) {
+                    option.textContent = "Giỏ trái cây";
                 }
-                if(category.category_id==3){
-                    option.textContent = "Rau củ"; 
+                if (category.category_id == 2) {
+                    option.textContent = "Trái cây";
+                }
+                if (category.category_id == 3) {
+                    option.textContent = "Rau củ";
                 }
                 category_select.appendChild(option);
             })

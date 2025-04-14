@@ -11,7 +11,7 @@ CREATE TABLE `products` (
   `category` varchar(65) NOT NULL,
   `status` varchar(65) NOT NULL DEFAULT 'Còn hàng',
   `comment_id` varchar(45) DEFAULT NULL,
-  `discount_price` int DEFAULT NULL,
+  `discount` int DEFAULT '0',
   PRIMARY KEY (`product_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 

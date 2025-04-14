@@ -20,20 +20,23 @@
 
                 <div style="margin-bottom: 15px; display: flex; justify-content: space-between;align-items:center">
                     <input type="text" name="price" placeholder="Giá" value="{{product.price}}"
-                        style="width: 24%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                        style="width: 21%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
                         required maxlength="10" pattern="\d*" title="Chỉ nhận số (không quá 10 chữ số)">
+                    <input type="text" name="discount" placeholder="Giảm giá (%)" value="{{product.discount}}"
+                        style="width: 18%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                        required maxlength="3" pattern="\d*" title="Chỉ nhận số (không quá 3 chữ số)">
 
                     <select class="form-select" id="category" name="category"
-                        style="width: 24%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 0px; box-sizing: border-box;"
+                        style="width: 22%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 0px; box-sizing: border-box;"
                         required>
                         <option value="">Danh mục</option>
                     </select>
                     <input type="text" style="display: none;" id="product_category" value="{{product.category}}">
                     <input type="text" name="stock" placeholder="Số lượng" value="{{product.stock}}"
-                        style="width: 24%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
+                        style="width: 15%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;"
                         required maxlength="10" pattern="\d*" title="Chỉ nhận chữ số">
                     <select class="form-select statusSelect" name="status"
-                        style="width: 24%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 0px; box-sizing: border-box;"
+                        style="width: 21%; height: 49.6px; border: 1px solid #000000; font-size: 16px; border-radius: 0; margin-top: 0px; box-sizing: border-box;"
                         required>
                         <option value="con-hang" {{#ifEqual product.status "con-hang" }}selected{{/ifEqual}}>Còn
                             hàng</option>
@@ -82,9 +85,8 @@
 
                 <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 20px">
                     <button type="button" class="button-27"
-                        style="background-color: #ff5722; color: #fff; width: 18%; display: flex; align-items: center; justify-content: center; border: none;"
-                        onclick="clearForm()">
-                        Hủy
+                        style="background-color: #ff5722; color: #fff; width: 18%; display: flex; align-items: center; justify-content: center; border: none;">
+                        <a href="/admin/product">Hủy</a>
                     </button>
                     <button type="submit" class="button-27"
                         style="background-color: #000; color: #fff; width: 27%; display: flex; align-items: center; justify-content: center; border: none;">
@@ -138,8 +140,8 @@
                     Quản lý đơn hàng
                 </a>
             </div>
-            <div style="display: flex;  justify-content: right;display:none">
-                    <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
+            <div style="display: flex;  justify-content: right;">
+                <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
                      width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
                     Thống kê
                 </a>
@@ -188,11 +190,19 @@
             // Populate the select dropdown
             categories.forEach(category => {
                 const option = document.createElement("option");
-                option.value = category.category_id;  // Set category_id as value
-                option.textContent = category.name; // Set category name as text
-                if (product_category == category.category_id) {
-                    option.selected = true;
+                option.value = category.category_id;
+                if (category.category_id == 1) {
+                    option.textContent = "Giỏ trái cây";
                 }
+                if (category.category_id == 2) {
+                    option.textContent = "Trái cây";
+                }
+                if (category.category_id == 3) {
+                    option.textContent = "Rau củ";
+                }
+                if (category.category_id == product_category) {
+                option.selected = true;
+            }
                 category_select.appendChild(option);
             })
         } catch (error) {

@@ -6,9 +6,9 @@ module.exports= mysql.createPool({
     port: "3306", //4003 3306
     user: "root",
     password: "123456",
-    database: "buy_db", // Ensure this line is present and correct
+    database: "buy_db",
     charset: 'utf8mb4',
-    collation: 'utf8mb4_0900_ai_ci', // Or a compatible collation
+    collation: 'utf8mb4_0900_ai_ci',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0

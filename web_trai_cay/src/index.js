@@ -15,6 +15,9 @@ app.engine(
   engine({
     extname: ".hbs",
     helpers: {
+      eq: function(a,b){
+        return a===b;
+      },
       ifEqual: function (arg1, arg2, options) {
         return arg1 === arg2 ? options.fn(this) : options.inverse(this);
       },
@@ -87,6 +90,12 @@ app.engine(
       },
       lte: function (a, b) {
         return a <= b;
+      },
+      calcDiscount: function (price, discount) {
+        if (discount && discount !== 0) {
+          return Math.round((price * (100 - discount)) / 100);
+        }
+        return price;
       },
     },
   })

@@ -9,6 +9,7 @@ router.get('/order/:acount_id', adminController.order);
 router.get('/order', adminController.order); 
 router.get('/product/:product_id', adminController.editProduct); 
 router.get('/product', adminController.product); 
+router.get('/doanh-thu', adminController.doanhThu); 
 
 
 

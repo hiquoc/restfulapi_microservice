@@ -1,32 +1,33 @@
-const jwt = require("jsonwebtoken");
 const db = require("../config/mysql");
 const bcrypt = require("bcryptjs");
+const accountFactory = require("../factories/accountFactory");
+const addressFactory = require("../factories/addressFactory");
 
 module.exports = {
   login: async (req, res) => {
     try {
       const { username, password } = req.body;
 
-      const sql = "SELECT password FROM accounts WHERE username = ?";
-      const [results] = await db.promise().query(sql, [username]);
+      const account = await accountFactory.findByUsername(db, username);
 
-      if (results.length === 0) {
+      if (!account) {
         return res
           .status(401)
           .json({ message: "Sai tài khoản hoặc mật khẩu!" });
       }
 
-      const user = results[0];
-      const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch = await accountFactory.verifyPassword(
+        password,
+        account.password
+      );
       if (!isMatch) {
         return res
           .status(401)
           .json({ message: "Sai tài khoản hoặc mật khẩu!" });
       }
 
-      const token = jwt.sign({ username }, "huy", {
-        expiresIn: "1h",
-      });
+      // Tạo token
+      const token = accountFactory.generateToken(username);
 
       return res.json({ message: "Đăng nhập thành công!", token });
     } catch (err) {
@@ -41,44 +42,36 @@ module.exports = {
     try {
       const { username, password, hovaten, sdt, email } = req.body;
 
-      // Kiểm tra username đã tồn tại chưa
-      const checkUserSql =
-        "SELECT * FROM accounts WHERE username = ? OR phone = ? OR email = ?";
-      const [existingUsers] = await db
-        .promise()
-        .query(checkUserSql, [username, sdt, email]);
-      if (existingUsers.length > 0) {
-        const existingUser = existingUsers.find(
-          (user) =>
-            user.username === username ||
-            user.phone === sdt ||
-            user.email === email
-        );
+      const newAccount = accountFactory.create({
+        username,
+        password, // password gốc, sẽ được hash sau
+        fullname: hovaten,
+        phone: sdt,
+        email,
+      });
 
-        if (existingUser.username === username) {
-          return res.status(400).json({ message: "Username đã tồn tại!" });
-        }
-        if (existingUser.phone === sdt) {
-          return res
-            .status(400)
-            .json({ message: "Số điện thoại đã được sử dụng để đăng kí!" });
-        }
-        if (existingUser.email === email) {
-          return res
-            .status(400)
-            .json({ message: "Email đã được sử dụng để đăng kí!" });
-        }
+      // Validate dữ liệu
+      const validation = newAccount.validate();
+      if (!validation.isValid) {
+        return res.status(400).json({ message: validation.errors.join(", ") });
       }
 
-      // Hash mật khẩu trước khi lưu
-      const hashedPassword = await bcrypt.hash(password, 10);
+      // Kiểm tra tài khoản đã tồn tại
+      const existingCheck = await accountFactory.checkExisting(db, {
+        username,
+        phone: sdt,
+        email,
+      });
 
-      // Chèn dữ liệu vào database
-      const insertSql =
-        "INSERT INTO accounts (username, password, fullname, phone, email) VALUES (?, ?, ?, ?, ?)";
-      await db
-        .promise()
-        .query(insertSql, [username, hashedPassword, hovaten, sdt, email]);
+      if (existingCheck.exists) {
+        return res.status(400).json({ message: existingCheck.message });
+      }
+
+      // Hash mật khẩu
+      newAccount.password = await accountFactory.hashPassword(password);
+
+      // Lưu vào database
+      await accountFactory.saveToDatabase(db, newAccount);
 
       return res.status(201).json({ message: "Đăng ký thành công!" });
     } catch (error) {
@@ -100,99 +93,117 @@ module.exports = {
   },
 
   infoPost: async (req, res) => {
-    const account_id = req.user.account_id;
-    const { hovatenval, emailval, sdtval } = req.body;
     try {
-      const checkExitSql =
-        "SELECT * FROM accounts WHERE (phone=? OR email=?) AND account_id!=?";
-      const [results] = await db
-        .promise()
-        .query(checkExitSql, [sdtval, emailval, account_id]);
-      if (results.length > 0) {
-        const existingAcc = results.find(
-          (acc) => acc.phone === sdtval || acc.email === emailval
-        );
-        if (existingAcc.phone === sdtval) {
-          return res
-            .status(400)
-            .json({ message: "Số điện thoại đã được sử dụng để đăng kí!" });
-        }
-        if (existingAcc.email === emailval) {
-          return res
-            .status(400)
-            .json({ message: "Email đã được sử dụng để đăng kí!" });
-        }
+      const account_id = req.user.account_id;
+      const { hovatenval, emailval, sdtval } = req.body;
+
+      // Tạo dữ liệu cập nhật
+      const updateData = {
+        fullname: hovatenval,
+        email: emailval,
+        phone: sdtval,
+        role: "user", // Mặc định, không thay đổi role
+      };
+
+      const result = await accountFactory.updateInDatabase(
+        db,
+        account_id,
+        updateData
+      );
+      if (result.exists == true) {
+        return res.status(400).json({ message: result.message });
       }
-      const sql =
-        "UPDATE accounts SET fullname=?, email=?, phone=? WHERE account_id=?";
-      await db.promise().query(sql, [hovatenval, emailval, sdtval, account_id]);
-      return res.status(200).json({ message: "Lưu thành công!" });
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật thông tin thành công",
+      });
     } catch (error) {
-      console.log("Lỗi khi thêm/cập nhật thông tin: " + error);
-      return res
-        .status(500)
-        .json({ message: "Lỗi server", error: error.message });
+      console.error("Lỗi khi cập nhật thông tin:", error);
+
+      if (error.message.startsWith("Validation failed")) {
+        return res.status(400).json({
+          success: false,
+          message: "Dữ liệu không hợp lệ",
+          errors: error.message.replace("Validation failed: ", "").split(", "),
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: "Đã xảy ra lỗi hệ thống",
+        error:
+          process.env.NODE_ENV === "development" ? error.message : undefined,
+      });
     }
   },
 
   addressGet: async (req, res) => {
-    const account_id = req.user.account_id;
     try {
-      //Kiem tra co dia chi chua
-      const checkAddressSql = "SELECT * FROM addresses WHERE account_id=?";
-      const [results] = await db.promise().query(checkAddressSql, [account_id]);
-      if (results.length > 0) {
-        const address = results[0];
-        res.json({
-          tinh: address.tinh,
-          quan: address.quan,
-          phuong: address.phuong,
-          nha: address.nha,
-          ghichu: address.ghichu,
+      const account_id = req.user.account_id;
+      const address = await addressFactory.findByAccountId(db, account_id);
+
+      if (!address) {
+        return res.status(404).json({
+          success: false,
+          message: "Không tìm thấy địa chỉ",
         });
       }
+
+      res.json({
+        tinh: address.tinh,
+        quan: address.quan,
+        phuong: address.phuong,
+        nha: address.nha,
+        ghichu: address.ghichu,
+      });
     } catch (error) {
-      console.log("Lỗi khi tìm địa chỉ: " + error);
-      return res
-        .status(500)
-        .json({ message: "Lỗi server", error: error.message });
+      console.error("Lỗi khi lấy địa chỉ:", error);
+      res.status(500).json({
+        success: false,
+        message: "Lỗi server",
+        error: error.message,
+      });
     }
   },
 
   addressPost: async (req, res) => {
-    const account_id = req.user.account_id;
-    const { tinh, quan, phuong, nha, ghichu } = req.body;
     try {
-      //Kiem tra co dia chi chua
-      const checkAddressSql =
-        "SELECT address_id FROM addresses WHERE account_id=?";
-      const [results] = await db.promise().query(checkAddressSql, [account_id]);
-      if (results.length > 0) {
-        const updateAdressSql =
-          "UPDATE addresses SET tinh=?, quan=?, phuong=?, nha=?, ghichu=? WHERE account_id=?";
-        await db
-          .promise()
-          .query(updateAdressSql, [
-            tinh,
-            quan,
-            phuong,
-            nha,
-            ghichu,
-            account_id,
-          ]);
-        return res.status(200).json({ message: "Lưu thành công!" });
-      }
-      const sql =
-        "INSERT INTO addresses (account_id, tinh, quan, phuong, nha, ghichu) VALUES(?,?,?,?,?,?)";
-      await db
-        .promise()
-        .query(sql, [account_id, tinh, quan, phuong, nha, ghichu]);
-      return res.status(201).json({ message: "Lưu thành công!" });
+      const account_id = req.user.account_id;
+      const { tinh, quan, phuong, nha, ghichu } = req.body;
+
+      const address = addressFactory.create({
+        account_id,
+        tinh,
+        quan,
+        phuong,
+        nha,
+        ghichu,
+      });
+
+      // Lưu địa chỉ
+      const result = await addressFactory.save(db, address);
+
+      res.status(result.action === "created" ? 201 : 200).json({
+        success: true,
+        message: "Lưu địa chỉ thành công",
+      });
     } catch (error) {
-      console.log("Lỗi khi thêm/cập nhật địa chỉ: " + error);
-      return res
-        .status(500)
-        .json({ message: "Lỗi server", error: error.message });
+      console.error("Lỗi khi lưu địa chỉ:", error);
+
+      if (error.message.startsWith("Validation failed")) {
+        return res.status(400).json({
+          success: false,
+          message: "Dữ liệu không hợp lệ",
+          errors: error.message.replace("Validation failed: ", "").split(", "),
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: "Lỗi server",
+        error: error.message,
+      });
     }
   },
 

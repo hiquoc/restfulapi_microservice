@@ -550,7 +550,7 @@ a:active {
   transition: transform 0.3s ease-in-out;
   width: fit-content;
   gap: 20px;
-    padding-top: 10px;
+  padding-top: 10px;
 }
 
 .slider-item {
@@ -572,4 +572,17 @@ a:active {
   transform: translateY(-50%);
   z-index: 1000;
 }
-
+.discount-tag {
+  position: absolute;
+  top: 7px;
+  right: -12px;
+  background-color: red;
+  color: white;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 4px;
+  transform: rotate(45deg);
+  white-space: nowrap;
+  z-index: 1;
+}

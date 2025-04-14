@@ -9,12 +9,15 @@ class AccountController {
     res.render("admin/newProduct", { layout: "admin" });
   }
   async product(req, res) {
-      res.render("admin/product", {layout: "admin" });
+    res.render("admin/product", { layout: "admin" });
   }
   async editProduct(req, res) {
-    const product_id=req.params.product_id;
+    const product_id = req.params.product_id;
     try {
-      const response = await axios.get(`http://localhost:3002/${product_id}`, {});
+      const response = await axios.get(
+        `http://localhost:3002/${product_id}`,
+        {}
+      );
 
       const product = response.data[0];
       res.render(`admin/edit`, { product, layout: "admin" });
@@ -25,8 +28,11 @@ class AccountController {
   }
 
   async order(req, res) {
-    res.render("admin/order", {layout: "admin" });
-}
+    res.render("admin/order", { layout: "admin" });
+  }
+  async doanhThu(req, res) {
+    res.render("admin/doanhthu", { layout: "admin" });
+  }
 }
 
 module.exports = new AccountController();

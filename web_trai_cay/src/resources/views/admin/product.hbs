@@ -111,7 +111,7 @@
                     Quản lý đơn hàng
                 </a>
             </div>
-            <div style="display: flex;  justify-content: right;display:none">
+            <div style="display: flex;  justify-content: right;">
                 <a class="button-27" href="/admin/doanh-thu" style="background-color: #000000; color: #fff;margin-top: 15px;
                      width: 100%; display: flex; align-items: center; justify-content: center; border: none;">
                     Thống kê
@@ -144,55 +144,70 @@
 
             products.forEach(product => {
                 const productHTML = `
-                <div class="col-md-4 mb-4">
-                    <div class="card product-card" style="height:100%">
-                        <a href="/product/${product.product_id}" class="product-image" style="height:100%">
-                            <img style="height: 100%;width:100%" src="${product.mainImg}" class="img-fluid" alt="${product.name}">
-                        </a>
-                        <div class="card-body text-center">
-                            <p class="product-name">${product.name}</p>
-                            <p class="product-price">${Number(product.price).toLocaleString("vi-VN")}₫</p>
-                            <div class="product-buttons">
-                                <a href="/admin/product/${product.product_id}" class="edit-button">Sửa</a>
-                                <button data-bs-target="#xoa${product.product_id}" data-bs-toggle="modal"
-                                    class="delete-button">Xóa</button>
-                            </div>
-                        </div>
+    <div class="col-md-4 mb-4">
+        <div class="card product-card" style="height:100%">
+            <a href="/product/${product.product_id}" class="product-image" style="height:100%; position: relative;">
+                <img style="height: 100%;width:100%" src="${product.mainImg}" class="img-fluid" alt="${product.name}">
+                ${product.discount > 0 ? `
+                    <div class="discount-tag" style="position: absolute; top: 3px; right: -10px;">
+                        -${product.discount}%
+                    </div>
+                ` : ''}
+            </a>
+            <div class="card-body text-center">
+                <p class="product-name">${product.name}</p>
+                ${product.discount !== 0 ? `
+                    <p class="product-price" style="text-decoration: line-through; color: #888;">
+                        ${Number(product.price).toLocaleString("vi-VN")}₫
+                    </p>
+                    <p class="product-price" style="color: red; font-weight: bold; margin-top: -10px;">
+                        ${Number(product.afterDiscount).toLocaleString("vi-VN")}₫
+                    </p>
+                ` : `
+                    <p class="product-price" style="font-weight: bold;">
+                        ${Number(product.price).toLocaleString("vi-VN")}₫
+                    </p>
+                `}
+                <div class="product-buttons">
+                    <a href="/admin/product/${product.product_id}" class="edit-button">Sửa</a>
+                    <button data-bs-target="#xoa${product.product_id}" data-bs-toggle="modal"
+                        class="delete-button">Xóa</button>
+                </div>
+            </div>
 
-                        <!-- Modal Xóa -->
-                        <div class="modal fade" id="xoa${product.product_id}" tabindex="-1"
-                            aria-labelledby="xoa${product.product_id}Label" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content"
-                                    style="position:relative; display: flex; align-items: center; justify-content: center;">
-                                    <span class="closex" data-product-id="${product.product_id}"
-                                        style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
-                                        &times;
-                                    </span>
-                                    <div id="changePasswordForm"
-                                        style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
-                                        <h1
-                                            style="margin-bottom: 20px; text-align: center; color: #333;font-size: 37px;margin-left: 34px;margin-right: 36px;">
-                                            Bạn có chắc là muốn xóa sản phẩm này?</h1>
-                                        <div style="display:flex;justify-content:space-between;gap:10px">
-                                            <button type="button" class="button-27 closex"
-                                                data-product-id="${product.product_id}"
-                                                style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                Hủy
-                                            </button>
-                                            <button type="submit" class="button-27" onclick="xoa(${product.product_id})"
-                                                style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                Xác nhận
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+            <!-- Modal Xóa -->
+            <div class="modal fade" id="xoa${product.product_id}" tabindex="-1"
+                aria-labelledby="xoa${product.product_id}Label" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content"
+                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                        <span class="closex" data-product-id="${product.product_id}"
+                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                            &times;
+                        </span>
+                        <div id="changePasswordForm"
+                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                            <h1
+                                style="margin-bottom: 20px; text-align: center; color: #333;font-size: 37px;margin-left: 34px;margin-right: 36px;">
+                                Bạn có chắc là muốn xóa sản phẩm này?</h1>
+                            <div style="display:flex;justify-content:space-between;gap:10px">
+                                <button type="button" class="button-27 closex"
+                                    data-product-id="${product.product_id}"
+                                    style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                    Hủy
+                                </button>
+                                <button type="submit" class="button-27" onclick="xoa(${product.product_id})"
+                                    style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                    Xác nhận
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            `;
-                productContainer.innerHTML += productHTML;
+            </div>
+        </div>
+    </div>
+`; productContainer.innerHTML += productHTML;
             });
         } catch (error) {
             console.error("Error fetching products:", error);
@@ -297,55 +312,70 @@
 
             products.forEach(product => {
                 const productHTML = `
-                <div class="col-md-4 mb-4">
-                    <div class="card product-card">
-                        <a href="/product/${product.product_id}" class="product-image">
-                            <img src="${product.mainImg}" class="img-fluid" alt="${product.name}">
-                        </a>
-                        <div class="card-body text-center">
-                            <p class="product-name">${product.name}</p>
-                            <p class="product-price">${Number(product.price).toLocaleString("vi-VN")}₫</p>
-                            <div class="product-buttons">
-                                <a href="/admin/product/${product.product_id}" class="edit-button">Sửa</a>
-                                <button data-bs-target="#xoa${product.product_id}" data-bs-toggle="modal"
-                                    class="delete-button">Xóa</button>
-                            </div>
-                        </div>
+    <div class="col-md-4 mb-4">
+        <div class="card product-card" style="height:100%">
+            <a href="/product/${product.product_id}" class="product-image" style="height:100%; position: relative;">
+                <img style="height: 100%;width:100%" src="${product.mainImg}" class="img-fluid" alt="${product.name}">
+                ${product.discount > 0 ? `
+                    <div class="discount-tag" style="position: absolute; top: 3px; right: -10px;">
+                        -${product.discount}%
+                    </div>
+                ` : ''}
+            </a>
+            <div class="card-body text-center">
+                <p class="product-name">${product.name}</p>
+                ${product.discount !== 0 ? `
+                    <p class="product-price" style="text-decoration: line-through; color: #888;">
+                        ${Number(product.price).toLocaleString("vi-VN")}₫
+                    </p>
+                    <p class="product-price" style="color: red; font-weight: bold; margin-top: -10px;">
+                        ${Number(product.afterDiscount).toLocaleString("vi-VN")}₫
+                    </p>
+                ` : `
+                    <p class="product-price" style="font-weight: bold;">
+                        ${Number(product.price).toLocaleString("vi-VN")}₫
+                    </p>
+                `}
+                <div class="product-buttons">
+                    <a href="/admin/product/${product.product_id}" class="edit-button">Sửa</a>
+                    <button data-bs-target="#xoa${product.product_id}" data-bs-toggle="modal"
+                        class="delete-button">Xóa</button>
+                </div>
+            </div>
 
-                        <!-- Modal Xóa -->
-                        <div class="modal fade" id="xoa${product.product_id}" tabindex="-1"
-                            aria-labelledby="xoa${product.product_id}Label" aria-hidden="true">
-                            <div class="modal-dialog modal-dialog-centered">
-                                <div class="modal-content"
-                                    style="position:relative; display: flex; align-items: center; justify-content: center;">
-                                    <span class="closex" data-product-id="${product.product_id}"
-                                        style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
-                                        &times;
-                                    </span>
-                                    <div id="changePasswordForm"
-                                        style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
-                                        <h1
-                                            style="margin-bottom: 20px; text-align: center; color: #333;font-size: 37px;margin-left: 34px;margin-right: 36px;">
-                                            Bạn có chắc là muốn xóa sản phẩm này?</h1>
-                                        <div style="display:flex;justify-content:space-between;gap:10px">
-                                            <button type="button" class="button-27 closex"
-                                                data-product-id="${product.product_id}"
-                                                style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                Hủy
-                                            </button>
-                                            <button type="submit" class="button-27" onclick="xoa(${product.product_id})"
-                                                style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
-                                                Xác nhận
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+            <!-- Modal Xóa -->
+            <div class="modal fade" id="xoa${product.product_id}" tabindex="-1"
+                aria-labelledby="xoa${product.product_id}Label" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content"
+                        style="position:relative; display: flex; align-items: center; justify-content: center;">
+                        <span class="closex" data-product-id="${product.product_id}"
+                            style="position:absolute; right:10px; top:5px; font-size: 30px; cursor: pointer; transition: color 0.3s;">
+                            &times;
+                        </span>
+                        <div id="changePasswordForm"
+                            style="background: #fff; padding: 40px; border-radius: 20px; width: 100%; height: auto; display: flex; flex-direction: column; justify-content: center;">
+                            <h1
+                                style="margin-bottom: 20px; text-align: center; color: #333;font-size: 37px;margin-left: 34px;margin-right: 36px;">
+                                Bạn có chắc là muốn xóa sản phẩm này?</h1>
+                            <div style="display:flex;justify-content:space-between;gap:10px">
+                                <button type="button" class="button-27 closex"
+                                    data-product-id="${product.product_id}"
+                                    style="margin-top: 15px; background-color: #000000; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                    Hủy
+                                </button>
+                                <button type="submit" class="button-27" onclick="xoa(${product.product_id})"
+                                    style="margin-top: 15px; background-color: #fd1818; color: #fff; padding: 14px; border-radius: 10px; border: none; cursor: pointer; width: 100%; font-size: 16px;">
+                                    Xác nhận
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            `;
-                productContainer.innerHTML += productHTML;
+            </div>
+        </div>
+    </div>
+`; productContainer.innerHTML += productHTML;
             });
         } catch (error) {
             console.error("Error fetching products:", error);

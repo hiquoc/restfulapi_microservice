@@ -460,11 +460,7 @@
                     nha.value = data.nha || "";
                     ghichu.value = data.ghichu || "";
                 } else {
-                    alerttext.innerHTML = "Vui lòng đăng nhập!";
-                    $("#alertModal").modal("show");
-                    $("#alertModal").on("hidden.bs.modal", function () {
-                        window.location.href = "/account/login";
-                    });
+                    console.log("Lỗi khi lấy địa chỉ")
                 }
             })
             .catch((error) => {

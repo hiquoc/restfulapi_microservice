@@ -23,7 +23,7 @@ module.exports = function (app) {
     .get(checkAdmin, getAccounts, getProducts, buyController.ordersGet); //lay danh sach don hang cho admin
 
   app
-    .route("/order/status/:order_item_id")
+    .route("/order/status/:order_item_id")                          
     .patch(checkLoggedIn, buyController.orderUpdateStatus); //thay doi trang thai don hang
   app
     .route("/order")

@@ -3,14 +3,14 @@
     <div class="flex-item-left" style="padding: 0px; flex: 70%;">
         <div style="display: flex;align-items: center;justify-content:space-between">
             <div>
-                 <h2
-                style="text-align: left;font-weight:bolder;color: #f68d0e;font-family: 'Quicksand', sans-serif;margin-bottom:20px;margin-left:30px">
-                {{name}}
-            </h2>
-            {{#if products}}
-            {{else}}
-            <p style="text-align: left;margin-top:0px; font-size: 20px">Sản phẩm không tồn tại!</p>
-            {{/if}}
+                <h2
+                    style="text-align: left;font-weight:bolder;color: #f68d0e;font-family: 'Quicksand', sans-serif;margin-bottom:20px;margin-left:30px">
+                    {{name}}
+                </h2>
+                {{#if products}}
+                {{else}}
+                <p style="text-align: left;margin-top:0px; font-size: 20px">Sản phẩm không tồn tại!</p>
+                {{/if}}
             </div>
 
             <div style=" display: flex; align-items: center;margin-right:6px;margin-bottom:6px">
@@ -56,14 +56,46 @@
             <div class="row">
                 {{#each products}}
                 <div class="col-md-4 mb-4">
-                    <div class="card product-card">
-                        <a href="/product/{{this.product_id}}" class="product-image">
-                            <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}">
+                    <div class="card product-card"
+                        style="display: flex; flex-direction: column; height: 100%; position: relative;">
+                        <a href="/product/{{this.product_id}}" class="product-image"
+                            style="height: 250px; overflow: hidden; position: relative;">
+                            <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+
+                            {{#if this.discount}}
+                            {{#unless (eq this.discount 0)}}
+                            <div class="discount-tag" style="top:5px;right:-15px">
+                                -{{this.discount}}%
+                            </div>
+                            {{/unless}}
+                            {{/if}}
                         </a>
-                        <div class="card-body text-center">
-                            <p class="product-name">{{this.name}}</p>
-                            <p class="product-price">{{formatPrice this.price}}₫</p>
-                            <button class="buy-button" onclick="themNhanh({{this.product_id}})">
+
+                        <div class="product-body"
+                            style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; height: 160px; position: relative; padding-bottom: 40px;">
+                            <div>
+                                <p class="product-name" style="text-align: center; font-size: 16px;margin-top:-5px">
+                                    {{this.name}}</p>
+
+                                {{#if this.discount}}
+                                <p class="product-price"
+                                    style="text-decoration: line-through; color: #888; text-align: center;">
+                                    {{formatPrice this.price}}₫
+                                </p>
+                                <p class="product-price"
+                                    style="color: red; font-weight: bold; margin-top: -10px; text-align: center;">
+                                    {{formatPrice this.afterDiscount}}₫
+                                </p>
+                                {{else}}
+                                <p class="product-price" style="text-align: center; font-size: 14px;">
+                                    {{formatPrice this.price}}₫
+                                </p>
+                                {{/if}}
+                            </div>
+
+                            <button class="buy-button" onclick="themNhanh({{this.product_id}})"
+                                style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); width: calc(100% - 20px);">
                                 <i class="fas fa-shopping-bag"></i> THÊM VÀO GIỎ
                             </button>
                         </div>
@@ -72,6 +104,8 @@
                 {{/each}}
             </div>
         </div>
+
+
 
 
     </div>
@@ -85,41 +119,65 @@
         <div>
             {{#each tops}}
             <div style="text-decoration: none; color: inherit;">
-                <div class="card mb-3" style="max-width: 540px; height: 100px; margin-top: 10px; overflow: hidden; border: none; background: #fff;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
+                <div class="card mb-3"
+                    style="max-width: 540px; height: 120px; margin-top: 10px; overflow: hidden; border: none; background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
                     <div class="row g-0 h-100">
                         <a href="/product/{{this.product_id}}"
-                            class="col-md-4 d-flex justify-content-center align-items-center">
-                            <img src="{{this.mainImg}}" class="img-fluid" alt="Image"
-                                style="height: 100px; width: auto; object-fit: fill; border-radius: 0; border: none;">
+                            class="col-md-4 d-flex justify-content-center align-items-center"
+                            style="position: relative; display: block;">
+                            <!-- Image Container with Discount -->
+                            <div style="position: relative; display: inline-block; width: 100%; height: 100%;">
+                                <!-- Image -->
+                                <img src="{{this.mainImg}}" class="img-fluid" alt="Image"
+                                    style="height: 100%; width: 100%; object-fit: contain; border-radius: 0; border: none;">
+
+                                <!-- Discount Tag -->
+                                {{#if this.discount}}
+                                {{#unless (eq this.discount 0)}}
+                                <div class="discount-tag" style="position: absolute;top: 9px;right: 0px;padding: 5px 10px;font-size: 12px;rotate: -45deg;">
+                                    -{{this.discount}}%
+                                </div>
+                                {{/unless}}
+                                {{/if}}
+                            </div>
                         </a>
                         <div class="col-md-8">
                             <div class="card-body text-start"
-                                style="padding: 5px; height: 100px; display: flex; flex-direction: column; justify-content: flex-start;">
+                                style="padding: 5px; display: flex; flex-direction: column; justify-content: space-evenly; margin-top: 10px;">
                                 <h5 class="card-title"
                                     style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal; margin: 0; text-align: center; font-size: 14px;">
                                     {{this.name}}
                                 </h5>
+
+                                {{#if this.discount}}
+                                <p class="card-text"
+                                    style="margin-top: 5px; text-align: center; font-size: 12px; text-decoration: line-through; color: #888;">
+                                    {{formatPrice this.price}}₫
+                                </p>
+                                <p class="card-text"
+                                    style="margin-top: -5px; text-align: center; font-size: 12px; color: red; font-weight: bold;">
+                                    {{formatPrice this.afterDiscount}}₫
+                                </p>
+                                {{else}}
                                 <p class="card-text" style="margin-top: 10px; text-align: center; font-size: 12px;">
                                     <span style="color: red;">{{formatPrice this.price}}₫</span>
                                 </p>
-                                <div style="display: flex; justify-content: center; align-items: center;">
+                                {{/if}}
+
+                                <div class="text-center"
+                                    style="position: absolute; bottom: 10px; width: 100%; left: 17%;">
                                     <button class="buy-button" onclick="themNhanh({{this.product_id}})"
-                                        style="font-size: 12px; padding: 6px 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 155px;">
-                                        <i class="fas fa-shopping-bag" style="font-size: 14px; margin-right: 5px;"></i>
-                                        THÊM VÀO GIỎ
+                                        style="font-size: 12px; padding: 6px 10px; width: 155px; margin: 0 auto;">
+                                        <i class="fas fa-shopping-bag" style="margin-right: 5px;"></i>
+                                        Thêm nhanh
                                     </button>
                                 </div>
-
                             </div>
-
                         </div>
                     </div>
                 </div>
             </div>
             {{/each}}
-
-
         </div>
     </div>
 </div>
@@ -263,39 +321,57 @@
                     const div = document.createElement("div");
                     div.classList.add("cart-item");
                     div.innerHTML = `
-                    <div  style="text-decoration: none; color: inherit;border: none; background: #fff;
-                            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-top: 10px;border-radius: 10px;padding:3px;position: relative;">
+                    <div style="text-decoration: none; color: inherit; border: none; background: #fff;
+                                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); margin-top: 10px; border-radius: 10px; padding: 3px; position: relative;">
                         <div class="row g-0 h-100">
-                            <a href="/product/${item.product_id}" class="col-md-4 d-flex justify-content-center align-items-center;">
-                                <img src="${item.mainImg}" class="img-fluid" alt="Image" style="height: 100px; width: auto; object-fit: fill; border-radius: 0; border: none;">
+                            <a href="/product/${item.product_id}" class="col-md-4 d-flex justify-content-center align-items-center" style="position: relative;">
+                                <img src="${item.mainImg}" class="img-fluid" alt="Image"
+                                    style="height: 100px; width: auto; object-fit: fill; border-radius: 0; border: none;">
+                                
+                                ${item.discount !== 0 ? `
+                                    <div style="position: absolute; top: 1px; right: 9px; background-color: red; color: white;
+                                                font-size: 11px; font-weight: bold; padding: 3px 6px; border-radius: 4px;">
+                                        -${item.discount}%
+                                    </div>
+                                ` : ''}
                             </a>
                             <div class="col-md-8">
                                 <div class="card-body text-start" style="padding: 5px; height: 100px; display: flex; flex-direction: column; justify-content: center;">
                                     <h5 class="card-title"
                                         style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; white-space: normal; margin: 0;
-                                        text-align: left; font-size: 15px;margin-bottom: 5px;margin-top:5px;font-weight: 600;">
+                                            text-align: left; font-size: 15px; margin-bottom: 5px; margin-top: 5px; font-weight: 600;">
                                         ${item.name}
                                     </h5>
-                                    <div style="display:flex;justify-content:space-between">
-                                    <p class="card-text" style="margin-top: 10px; text-align: center; font-size: 12px;">
-                                        <span style="color: red;font-size: 13px;font-weight: 600;">${item.price.toLocaleString('vi-VN')}₫</span>
-                                    </p>
-                                    <div class="quantity-container" style="display: flex;justify-content: center;align-items: center;gap: 3px;margin-top:0px;margin-top: -11px;margin-right: 15px;">
-                                        <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
-                                        <div style="display: flex; align-items: center; justify-content: center; height: 20px;">
-                                            <input type="number" id="${item.cart_id}" name="soluong" value="${item.quantity}" min="1" max="10" readonly 
-                                                style="width: 30px; height: 20px; font-size: 12px; text-align: right; line-height: 20px; padding: 0;">
-                                        </div>
-                                        <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
+                                    <div style="display:flex; justify-content:space-between; align-items: center;">
+                                        <p class="card-text" style="margin-top: 10px; text-align: center; font-size: 12px;">
+                                            ${item.discount !== 0 ? `
+                                                <span style="color: #888; font-size: 12px; text-decoration: line-through; margin-right: 5px;">
+                                                    ${(item.beforeDiscount * item.quantity).toLocaleString('vi-VN')}₫
+                                                </span>
+                                                <span style="color: red; font-size: 13px; font-weight: 600;">
+                                                    ${item.price.toLocaleString('vi-VN')}₫
+                                                </span>
+                                            ` : `
+                                                <span style="color: red; font-size: 13px; font-weight: 600;">
+                                                    ${item.price.toLocaleString('vi-VN')}₫
+                                                </span>
+                                            `}
+                                        </p>
+                                        <div class="quantity-container" style="display: flex;justify-content: center;align-items: center;gap: 3px;margin-top:0px;margin-top: -11px;margin-right: 15px;">
+                                                        <button type="button" class="quantity-btn" onclick="decrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px; height: 20px; padding: 0;font-size: 12px;">-</button>
+                                                        <div style="display: flex; align-items: center; justify-content: center; height: 20px;">
+                                                            <input type="number" id="${item.cart_id}" name="soluong" value="${item.quantity}" min="1" max="10" readonly 
+                                                                style="width: 30px; height: 20px; font-size: 12px; text-align: right; line-height: 20px; padding: 0;">
+                                                        </div>
+                                                        <button type="button" class="quantity-btn" onclick="incrementQuantityCart(${item.cart_id},${item.product_id})" style="width: 20px;height: 20px;padding: 0;font-size: 12px;">+</button>
+                                                    </div>
                                     </div>
-                                    </div>
-                                    
                                 </div>
                             </div>
                             <i class="bi bi-x"  onclick=xoa(${item.cart_id})></i>
                         </div>
                     </div>`;
-                    cartItems.appendChild(div);
+                     cartItems.appendChild(div);
                 });
                 const tongGia = document.createElement("div");
                 tongGia.innerHTML = `

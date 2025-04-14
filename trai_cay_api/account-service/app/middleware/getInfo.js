@@ -26,7 +26,7 @@ const getInfo = async (req, res, next) => {
         next();
     } catch (error) {
         console.error("Lỗi xác thực token:", error);
-        return res.status(403).json({ message: "Token không hợp lệ hoặc đã hết hạn" });
+        return res.status(403).json({ message: "Vui lòng đăng nhập lại!" });
     }
 };
 
