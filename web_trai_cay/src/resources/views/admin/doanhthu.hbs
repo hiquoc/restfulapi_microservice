@@ -1,92 +1,17 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="flex-container"
     style="display: flex;flex-direction: row;font-size: 30px;gap:50px;text-align: center;padding: 0px 50px 0 50px; ">
     <div class="flex-item-left" style="padding: 10px; flex: 70%;">
         <div style="display: flex;align-items:center;justify-content:space-between">
-            <h1 style="text-align: left;font-weight:bold ;">Doanh thu</h1>
+            <h1 style="text-align: left;font-weight:bold ;">Thống Kê</h1>
 
         </div>
         <div>
-
-            <h2>Danh mục được mua nhiều</h2>
-            <canvas id="salesByCategoryChart" width="300" height="250" style="display: block; max-width: 70%; height: auto;margin:20px auto"></canvas>
-
-            <h2 style="padding-top:30px">Doanh thu theo tuần</h2>
-            <canvas id="monthlySalesRevenueChart" width="600" height="350" style="display: block; max-width: 100%; height: auto;"></canvas>
-
-
-            <script>
-                // Sales by Category Chart
-                const pieData = {{{ pie }}}; 
-                const categoryNames = pieData.map(item => item.danhmuc);
-                const purchaseCounts = pieData.map(item => item.luotmua);
-
-                const salesByCategoryCtx = document.getElementById('salesByCategoryChart').getContext('2d');
-                const salesByCategoryChart = new Chart(salesByCategoryCtx, {
-                    type: 'pie',
-                    data: {
-                        labels: categoryNames,
-                        datasets: [{
-                            label: 'Lượt mua',
-                            data: purchaseCounts, 
-                            backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffcd56', '#4bc0c0']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                position: 'top',
-                                labels: { font: { size: 12 } }
-                            }
-                        }
-                    }
-                });
-
-
-                const doanhthutheotuanthang = {{{ doanhthu }}}; 
-
-                function getEndDateOfWeek(year, week) {
-                    // Set the date to the first day of the year
-                    const firstDayOfYear = new Date(year, 0, 1);
-                    // Calculate the days to reach the first day of the desired week
-                    const daysToAdd = (week - 1) * 7 + (8 - firstDayOfYear.getDay()); // Go to end of week
-                    const endDate = new Date(firstDayOfYear.setDate(firstDayOfYear.getDate() + daysToAdd));
-                    return endDate.toISOString().split('T')[0]; // Format as "YYYY-MM-DD"
-                }
-
-                const labels = doanhthutheotuanthang.map(item => {
-                    const [year, week] = item.tuan.split('-'); // Split "YYYY-WW" into year and week
-                    return getEndDateOfWeek(parseInt(year), parseInt(week)); // Get last date of the week
-                });
-
-                const revenueData = doanhthutheotuanthang.map(item => item.doanhthu);
-
-                // Monthly Sales and Revenue Trend Chart
-                const monthlySalesRevenueCtx = document.getElementById('monthlySalesRevenueChart').getContext('2d');
-                const monthlySalesRevenueChart = new Chart(monthlySalesRevenueCtx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [
-                            {
-                                label: 'Tổng doanh thu',
-                                data: revenueData,
-                                borderColor: '#36a2eb',
-                                fill: false
-                            }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
-                });
-            </script>
+            <canvas id="productsChart" style="margin-bottom: 30px;"></canvas>
+            <canvas id="ordersChart" style="margin-bottom: 30px;"></canvas>
+            <canvas id="revenueChart" style="margin-bottom: 30px;"></canvas>
+            <canvas id="revenueByMonthChart"></canvas>
         </div>
 
     </div>
@@ -145,3 +70,124 @@
     </div>
 </div>
 
+<script>
+    document.addEventListener("DOMContentLoaded", async function () {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = "/";
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:3003/thongke', {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+            });
+
+            const data = await response.json();
+            const { products, orders, revenue, revenueByMonth } = data;
+
+            // ================= TOP SẢN PHẨM ====================
+            const productLabels = products.map(p => p.name.length > 20 ? p.name.substring(0, 17) + '...' : p.name);
+            const productValues = products.map(p => p.sold);
+
+            new Chart(document.getElementById('productsChart'), {
+                type: 'bar',
+                data: {
+                    labels: productLabels,
+                    datasets: [{
+                        label: 'Lượt mua',
+                        data: productValues,
+                        backgroundColor: 'rgba(75, 192, 192, 0.7)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Top 10 sản phẩm bán chạy' }
+                    }
+                }
+            });
+
+            // ================= ĐƠN HÀNG THEO NGÀY ====================
+            const orderLabels = orders.map(o => {
+                const date = new Date(o.date);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            });
+            const orderValues = orders.map(o => o.total);
+
+            new Chart(document.getElementById('ordersChart'), {
+                type: 'line',
+                data: {
+                    labels: orderLabels,
+                    datasets: [{
+                        label: 'Số đơn hàng',
+                        data: orderValues,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        fill: false,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Số đơn hàng theo ngày' }
+                    }
+                }
+            });
+
+            // ================= DOANH THU THEO NGÀY ====================
+            const revenueLabels = revenue.map(o => {
+                const date = new Date(o.date);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            });
+
+            // Dữ liệu doanh thu giữ nguyên giá trị số để vẽ đồ thị
+            const revenueValues = revenue.map(r => r.total);
+
+            // Tạo biểu đồ doanh thu
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: revenueLabels,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: revenueValues,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        fill: false,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: { display: true, text: 'Doanh thu theo ngày' },
+                        tooltip: {
+                            callbacks: {
+                                // Tùy chỉnh cách hiển thị tooltip
+                                label: function (tooltipItem) {
+                                    // Định dạng số tiền thành VND khi hiển thị trên tooltip
+                                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(tooltipItem.raw);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+
+        } catch (err) {
+            console.error("Lỗi khi lấy dữ liệu thống kê:", err);
+            alert("Lỗi khi lấy biểu đồ!");
+        }
+    });
+</script>

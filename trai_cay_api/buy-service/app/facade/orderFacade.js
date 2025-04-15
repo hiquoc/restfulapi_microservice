@@ -1,6 +1,6 @@
 const Order = require("../models/order");
 const OrderItem = require("../models/orderItem");
-const OrderFactory = {
+const OrderFacade = {
   create: (data) => {
     return new Order(data);
   },
@@ -71,14 +71,16 @@ const OrderFactory = {
       await connection.commit();
 
       return {
-        order: OrderFactory.fromDB({
+        order: OrderFacade
+      .fromDB({
           order_id,
           account_id,
           total_price,
           status: "pending",
         }),
         items: orderItems.map((item) =>
-          OrderFactory.createItem({
+          OrderFacade
+      .createItem({
             order_id,
             product_id: item[0],
             quantity: item[1],
@@ -117,11 +119,13 @@ const OrderFactory = {
     const ordersMap = new Map();
     results.forEach((row) => {
       if (!ordersMap.has(row.order_id)) {
-        ordersMap.set(row.order_id, OrderFactory.fromDB(row));
+        ordersMap.set(row.order_id, OrderFacade
+        .fromDB(row));
       }
       const order = ordersMap.get(row.order_id);
       if (!order.items) order.items = [];
-      order.items.push(OrderFactory.fromDBItem(row));
+      order.items.push(OrderFacade
+      .fromDBItem(row));
     });
 
     return Array.from(ordersMap.values());
@@ -141,4 +145,4 @@ const OrderFactory = {
     return items;
   },
 }
-module.exports = OrderFactory;
+module.exports = OrderFacade;

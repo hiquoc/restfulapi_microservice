@@ -1,6 +1,6 @@
 const Cart = require("../models/cart");
 
-const CartFactory = {
+const CartFacade = {
   create: (data) => {
     return new Cart(data);
   },
@@ -31,14 +31,14 @@ const CartFactory = {
 
   // Thêm hoặc cập nhật giỏ hàng
   addOrUpdateItem: async (db, cartData, stock) => {
-    const cart = CartFactory.create(cartData);
+    const cart = CartFacade.create(cartData);
     const validation = cart.validate(stock);
 
     if (!validation.isValid) {
       throw new Error(validation.errors.join(", "));
     }
 
-    await CartFactory.checkStock(
+    await CartFacade.checkStock(
       db,
       cart.account_id,
       cart.product_id,
@@ -69,14 +69,14 @@ const CartFactory = {
   findByAccountId: async (db, account_id) => {
     const sql = "SELECT * FROM carts WHERE account_id = ?";
     const [results] = await db.promise().query(sql, [account_id]);
-    return results.map((cart) => CartFactory.fromDB(cart));
+    return results.map((cart) => CartFacade.fromDB(cart));
   },
 
   // Tìm giỏ hàng theo cart_id
   findByCartId: async (db, cart_id) => {
     const sql = "SELECT * FROM carts WHERE cart_id = ?";
     const [results] = await db.promise().query(sql, [cart_id]);
-    return results.length > 0 ? CartFactory.fromDB(results[0]) : null;
+    return results.length > 0 ? CartFacade.fromDB(results[0]) : null;
   },
 
   // Cập nhật số lượng
@@ -85,7 +85,7 @@ const CartFactory = {
       throw new Error("Số lượng sản phẩm trong kho có hạn!");
     }
 
-    const cart = await CartFactory.findByCartId(db, cart_id);
+    const cart = await CartFacade.findByCartId(db, cart_id);
     if (!cart) {
       throw new Error("Không tìm thấy giỏ hàng");
     }
@@ -105,7 +105,7 @@ const CartFactory = {
 
   // Xóa item khỏi giỏ hàng
   removeItem: async (db, cart_id, account_id) => {
-    const cart = await CartFactory.findByCartId(db, cart_id);
+    const cart = await CartFacade.findByCartId(db, cart_id);
     if (!cart) {
       throw new Error("Không tìm thấy giỏ hàng");
     }
@@ -121,7 +121,7 @@ const CartFactory = {
   },
 
   cartGet: async (db, account_id, products) => {
-    const cartItems = await CartFactory.findByAccountId(db, account_id);
+    const cartItems = await CartFacade.findByAccountId(db, account_id);
     const productMap = new Map(
       products.map((product) => [
         product.product_id,
@@ -154,4 +154,4 @@ const CartFactory = {
   },
 };
 
-module.exports = CartFactory;
+module.exports = CartFacade;

@@ -1,17 +1,16 @@
 module.exports = function (app) {
   let accountController = require("./app/controllers/accountController");
   let getInfo = require("./app/middleware/getInfo");
-  let checkAdmin = require("./app/middleware/checkAdmin");
-  const checkLoggedIn = require("./app/middleware/checkLoggedin");
+  const authProxy = require("./app/middleware/authProxy");
 
   //check admin cho buy-service, product-service
-  app.route("/admin").get(checkAdmin, (req, res) => {
+  app.route("/admin").get(authProxy.checkAdmin, (req, res) => {
     res
       .status(200)
       .json({ status: "success", message: "Admin access granted" });
   });
   //check logged in cho buy-service, product-service
-  app.route("/loggedin").get(checkLoggedIn, (req, res) => {
+  app.route("/loggedin").get(authProxy.checkLoggedIn, (req, res) => {
     res.status(200).json({
       status: "success",
       message: "User has logged in",
@@ -29,8 +28,8 @@ module.exports = function (app) {
 
   app.put("/password", getInfo, accountController.changePassword); //doi mat khau
 
-  app.get("/accounts/:username",checkAdmin, getInfo, accountController.findAccount); //tim tai khoan theo username
-  app.get("/accounts",checkAdmin, getInfo, accountController.accountInfo); //lay thong tin nhieu tai khoan
+  app.get("/accounts/:username",authProxy.checkAdmin, getInfo, accountController.findAccount); //tim tai khoan theo username
+  app.get("/accounts",authProxy.checkAdmin, getInfo, accountController.accountInfo); //lay thong tin nhieu tai khoan
 
   app.patch("/role", getInfo, accountController.role); //cap nhat quyen khach hang
 

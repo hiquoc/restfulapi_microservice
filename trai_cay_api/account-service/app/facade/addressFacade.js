@@ -1,6 +1,6 @@
 const Address=require("../models/address")
 
-const AddressFactory = {
+const AddressFacade = {
     create: (data) => {
         return new Address(data);
     },
@@ -26,7 +26,7 @@ const AddressFactory = {
             return null;
         }
         
-        return AddressFactory.fromDB(results[0]);
+        return AddressFacade.fromDB(results[0]);
     },
     
     // Tạo hoặc cập nhật địa chỉ
@@ -37,7 +37,7 @@ const AddressFactory = {
         }
 
         // Kiểm tra địa chỉ đã tồn tại chưa
-        const existingAddress = await AddressFactory.findByAccountId(db, address.account_id);
+        const existingAddress = await AddressFacade.findByAccountId(db, address.account_id);
         
         if (existingAddress) {
             // Cập nhật địa chỉ
@@ -75,4 +75,4 @@ const AddressFactory = {
     }
 };
 
-module.exports = AddressFactory;
+module.exports = AddressFacade;

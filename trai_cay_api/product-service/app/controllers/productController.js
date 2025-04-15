@@ -1,7 +1,7 @@
 const db = require("../config/mysql");
 const axios = require("axios");
 const cloudinary = require("cloudinary").v2;
-const productFactory = require("../factories/productFactory");
+const productFacade = require("../facade/productFacade");
 module.exports = {
   upload: async (req, res) => {
     const connection = await db.promise().getConnection();
@@ -18,7 +18,7 @@ module.exports = {
       }
 
       // Khởi tạo sản phẩm bằng Factory
-      const product = productFactory.create({
+      const product = productFacade.create({
         name: req.body.name,
         price: req.body.price,
         category: req.body.category,
@@ -74,7 +74,7 @@ module.exports = {
       const ImgSql = "SELECT * FROM product_images WHERE product_id =?";
       let [images] = await db.promise().query(ImgSql, [product_id]);
 
-      const Products=productFactory.getProducts(products,images);
+      const Products=productFacade.getProducts(products,images);
 
       return res.status(200).json(Products);
     } catch (error) {
@@ -84,20 +84,7 @@ module.exports = {
   },
 
   products: async (req, res) => {
-    let role = "user";
-    if (req.headers.authorization) {
-      try {
-        const token = req.headers.authorization;
-        const response = await axios.get("http://account-service:3001/admin", {
-          headers: { Authorization: `${token}` },
-        });
-        if (response.status != 401 || response.status != 403) {
-          role = "admin";
-        }
-      } catch (e) {
-        console.error("Lỗi server:", e.response ? e.response.data : e.message);
-      }
-    }
+    let role=productFacade.getRole(req.headers.authorization)
     try {
       let ProSql = "SELECT product_id,name,price,discount FROM products";
       let conditions = [];
@@ -129,7 +116,7 @@ module.exports = {
       const ImgSql = "SELECT product_id,image_url FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
-      const Products=productFactory.getProducts(products,images);
+      const Products=productFacade.getProducts(products,images);
       return res.status(200).json(Products);
     } catch (error) {
       console.error(error);
@@ -138,22 +125,8 @@ module.exports = {
   },
 
   productsAll: async (req, res) => {
-    let role = "user";
-    if (req.headers.authorization) {
-      try {
-        const token = req.headers.authorization;
-        const response = await axios.get("http://account-service:3001/admin", {
-          headers: { Authorization: `${token}` },
-        });
-        if (response.status != 401 || response.status != 403) {
-          role = "admin";
-        }
-      } catch (e) {
-        console.error("Lỗi server:", e.response ? e.response.data : e.message);
-      }
-    }
     try {
-      let ProSql = "SELECT product_id,name,price,stock,discount FROM products";
+      let ProSql = "SELECT product_id,name,price,stock,discount,sold FROM products";
       let conditions = [];
 
       if (req.query.sort) {
@@ -179,7 +152,7 @@ module.exports = {
       const ImgSql = "SELECT product_id,image_url FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
-      const Products=productFactory.getProducts(products,images);
+      const Products=productFacade.getProducts(products,images);
       return res.status(200).json(Products);
     } catch (error) {
       console.error(error);
@@ -188,20 +161,7 @@ module.exports = {
   },
 
   findProduct: async (req, res) => {
-    let role = "user";
-    if (req.headers.authorization) {
-      try {
-        const token = req.headers.authorization;
-        const response = await axios.get("http://account-service:3001/admin", {
-          headers: { Authorization: `${token}` },
-        });
-        if (response.status != 401 || response.status != 403) {
-          role = "admin";
-        }
-      } catch (e) {
-        console.error("Lỗi server:", e.response ? e.response.data : e.message);
-      }
-    }
+    let role=productFacade.getRole(req.headers.authorization)
     try {
       let ProSql = "SELECT * FROM products WHERE name LIKE ?";
       if (role == "user") {
@@ -215,7 +175,7 @@ module.exports = {
       const ImgSql = "SELECT * FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
-      const Products=productFactory.getProducts(products,images);
+      const Products=productFacade.getProducts(products,images);
       return res.status(200).json(Products);
     } catch (error) {
       console.error(error);
@@ -253,7 +213,7 @@ module.exports = {
           .json({ message: "Vui lòng tải ít nhất một ảnh!" });
       }
       // Tạo product từ Factory
-      const product = productFactory.create({
+      const product = productFacade.create({
         name: req.body.name,
         price: req.body.price,
         category: req.body.category,
@@ -266,8 +226,6 @@ module.exports = {
           : null,
         images: req.files["images"]?.map((file) => file.path) || [],
       });
-      console.log(product.discount)
-      console.log(req.body.discount)
       // --- Cập nhật sản phẩm ---
       const updateProSql =
         "UPDATE products SET name=?, description=?, price=?, stock=?, category=?, status=?,discount=? WHERE product_id=?";
@@ -289,7 +247,7 @@ module.exports = {
 
       // --- Xóa ảnh cũ trên Cloudinary ---
       for (const img of oldImages) {
-        const public_id = productFactory.extractPublicIdFromUrl(img.image_url);
+        const public_id = productFacade.extractPublicIdFromUrl(img.image_url);
 
         try {
           const result = await cloudinary.uploader.destroy(public_id);
@@ -334,7 +292,7 @@ module.exports = {
       const product_id = req.params.product_id;
 
       // Dùng Factory để tạo đối tượng sản phẩm
-      const product = productFactory.create(req.body);
+      const product = productFacade.create(req.body);
       const updateProSql =
         "UPDATE products SET name=?, description=?, price=?, stock=?, category=?, status=?,discount=? WHERE product_id=?";
       await connection.query(updateProSql, [
@@ -368,7 +326,7 @@ module.exports = {
     const conn = await db.promise().getConnection();
     try {
       const token = req.headers.authorization;
-      const checkResult = await productFactory.checkIfProductCanBeDeleted(
+      const checkResult = await productFacade.checkIfProductCanBeDeleted(
         product_id,
         token
       );
@@ -380,11 +338,11 @@ module.exports = {
       await conn.beginTransaction();
 
       // Lấy thông tin ảnh từ DB
-    const oldImages = await productFactory.getProductImages(product_id, conn);
+    const oldImages = await productFacade.getProductImages(product_id, conn);
 
       // Xóa ảnh trên Cloudinary
       for (const img of oldImages) {
-        const public_id = productFactory.extractPublicIdFromUrl(img.image_url);
+        const public_id = productFacade.extractPublicIdFromUrl(img.image_url);
 
         try {
           const result = await cloudinary.uploader.destroy(public_id);
@@ -430,7 +388,7 @@ module.exports = {
       const ImgSql = "SELECT * FROM product_images WHERE product_id !=?";
       let [images] = await db.promise().query(ImgSql, [product_id]);
 
-      const Products=productFactory.getProducts(products,images);
+      const Products=productFacade.getProducts(products,images);
       return res.status(200).json(Products);
     } catch (error) {
       console.log(error);
@@ -448,7 +406,7 @@ module.exports = {
       const ImgSql = "SELECT * FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
-      const Products=productFactory.getProducts(products,images);
+      const Products=productFacade.getProducts(products,images);
       return res.status(200).json(Products);
     } catch (error) {
       console.log(error);
@@ -465,7 +423,7 @@ module.exports = {
       const ImgSql = "SELECT * FROM product_images";
       let [images] = await db.promise().query(ImgSql);
 
-      const Products=productFactory.getProducts(products,images);
+      const Products=productFacade.getProducts(products,images);
       return res.status(200).json(Products);
     } catch (error) {
       console.log(error);

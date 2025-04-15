@@ -241,7 +241,6 @@
 
         // Iterate through uploaded files for thumbnails
         Array.from(files).forEach((file, index) => {
-
             const reader = new FileReader();
             reader.onload = function (e) {
                 const img = document.createElement('img');

@@ -27,7 +27,6 @@ class Database {
   }
 }
 
-// Tạo và export trực tiếp pool như cũ
 const instance = new Database();
 const db = instance.getPool();
 

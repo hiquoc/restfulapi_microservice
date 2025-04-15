@@ -1,7 +1,7 @@
 const db = require("../config/mysql");
 const axios = require("axios");
-const cartFactory = require("../factories/cartFactory");
-const orderFactory = require("../factories/orderFactory");
+const cartFacade = require("../facade/cartFacade");
+const orderFacade = require("../facade/orderFacade");
 module.exports = {
   cartPost: async (req, res) => {
     try {
@@ -17,7 +17,7 @@ module.exports = {
         price: unitPrice * quantity,
       };
 
-      await cartFactory.addOrUpdateItem(db, cartData, stock);
+      await cartFacade.addOrUpdateItem(db, cartData, stock);
 
       return res.status(201).json({
         success: true,
@@ -36,7 +36,7 @@ module.exports = {
     try {
       const account_id = req.user.account_id;
       const products = req.products;
-      const cartData = await cartFactory.cartGet(
+      const cartData = await cartFacade.cartGet(
         db,
         account_id,
         products
@@ -59,7 +59,7 @@ module.exports = {
       const account_id = req.user.account_id;
       const cart_id = req.params.cart_id;
 
-      await cartFactory.removeItem(db, cart_id, account_id);
+      await cartFacade.removeItem(db, cart_id, account_id);
 
       return res.status(200).json({
         success: true,
@@ -86,7 +86,7 @@ module.exports = {
       const quantity = Number(req.body.quantity);
       const stock = req.product.stock;
 
-      await cartFactory.updateQuantity(
+      await cartFacade.updateQuantity(
         db,
         cart_id,
         account_id,
@@ -135,7 +135,7 @@ module.exports = {
         });
       }
 
-      const { order, items } = await orderFactory.createWithItems(
+      const { order, items } = await orderFacade.createWithItems(
         connection,
         account_id,
         cartItems,
@@ -192,7 +192,7 @@ module.exports = {
       const account_id = req.user.account_id;
       const products = req.products;
 
-      const orders = await orderFactory.getByAccount(
+      const orders = await orderFacade.getByAccount(
         db,
         account_id,
         req.query.sort
@@ -241,7 +241,7 @@ module.exports = {
       await connection.beginTransaction();
 
       if (status === "da-huy") {
-        const itemsToCancel = await orderFactory.getItemsForCancellation(
+        const itemsToCancel = await orderFacade.getItemsForCancellation(
           connection,
           order_item_id
         );
@@ -270,7 +270,7 @@ module.exports = {
         }
       }
 
-      await orderFactory.updateStatus(connection, order_item_id, status);
+      await orderFacade.updateStatus(connection, order_item_id, status);
 
       await connection.commit();
       return res.status(200).json({
@@ -372,4 +372,35 @@ module.exports = {
       return res.status(500).json({ message: "Lỗi server!" });
     }
   },
+
+  thongke: async(req,res)=>{
+    try {
+      const products=req.products;
+      const sortedProducts = products.sort((a, b) => b.sold - a.sold).slice(0, 10);
+      const [orders] = await db.promise().query(`
+        SELECT DATE(created_at) AS date, COUNT(*) AS total
+        FROM orders
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at)
+      `);
+      const [revenue] = await db.promise().query(`
+        SELECT DATE(created_at) AS date, SUM(total_price) AS total
+        FROM orders
+        GROUP BY DATE(created_at)
+        ORDER BY DATE(created_at)
+      `);
+      const [revenueByMonth] = await db.promise().query(`
+        SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, SUM(total_price) AS total
+        FROM orders
+        GROUP BY month
+        ORDER BY month
+      `);
+      
+
+      return res.status(200).json({ products:sortedProducts,orders,revenue,revenueByMonth });
+    } catch (err) {
+      console.log(err)
+      return res.status(500).json({ error: "Lỗi server" });
+    }
+  }
 };

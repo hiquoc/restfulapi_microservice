@@ -1,14 +1,14 @@
 const db = require("../config/mysql");
 const bcrypt = require("bcryptjs");
-const accountFactory = require("../factories/accountFactory");
-const addressFactory = require("../factories/addressFactory");
+const accountFacade = require("../facade/accountFacade");
+const addressFacade = require("../facade/addressFacade");
 
 module.exports = {
   login: async (req, res) => {
     try {
       const { username, password } = req.body;
 
-      const account = await accountFactory.findByUsername(db, username);
+      const account = await accountFacade.findByUsername(db, username);
 
       if (!account) {
         return res
@@ -16,7 +16,7 @@ module.exports = {
           .json({ message: "Sai tài khoản hoặc mật khẩu!" });
       }
 
-      const isMatch = await accountFactory.verifyPassword(
+      const isMatch = await accountFacade.verifyPassword(
         password,
         account.password
       );
@@ -27,7 +27,7 @@ module.exports = {
       }
 
       // Tạo token
-      const token = accountFactory.generateToken(username);
+      const token = accountFacade.generateToken(username);
 
       return res.json({ message: "Đăng nhập thành công!", token });
     } catch (err) {
@@ -42,9 +42,9 @@ module.exports = {
     try {
       const { username, password, hovaten, sdt, email } = req.body;
 
-      const newAccount = accountFactory.create({
+      const newAccount = accountFacade.create({
         username,
-        password, // password gốc, sẽ được hash sau
+        password,
         fullname: hovaten,
         phone: sdt,
         email,
@@ -57,7 +57,7 @@ module.exports = {
       }
 
       // Kiểm tra tài khoản đã tồn tại
-      const existingCheck = await accountFactory.checkExisting(db, {
+      const existingCheck = await accountFacade.checkExisting(db, {
         username,
         phone: sdt,
         email,
@@ -68,10 +68,10 @@ module.exports = {
       }
 
       // Hash mật khẩu
-      newAccount.password = await accountFactory.hashPassword(password);
+      newAccount.password = await accountFacade.hashPassword(password);
 
       // Lưu vào database
-      await accountFactory.saveToDatabase(db, newAccount);
+      await accountFacade.saveToDatabase(db, newAccount);
 
       return res.status(201).json({ message: "Đăng ký thành công!" });
     } catch (error) {
@@ -105,7 +105,7 @@ module.exports = {
         role: "user", // Mặc định, không thay đổi role
       };
 
-      const result = await accountFactory.updateInDatabase(
+      const result = await accountFacade.updateInDatabase(
         db,
         account_id,
         updateData
@@ -141,7 +141,7 @@ module.exports = {
   addressGet: async (req, res) => {
     try {
       const account_id = req.user.account_id;
-      const address = await addressFactory.findByAccountId(db, account_id);
+      const address = await addressFacade.findByAccountId(db, account_id);
 
       if (!address) {
         return res.status(404).json({
@@ -172,7 +172,7 @@ module.exports = {
       const account_id = req.user.account_id;
       const { tinh, quan, phuong, nha, ghichu } = req.body;
 
-      const address = addressFactory.create({
+      const address = addressFacade.create({
         account_id,
         tinh,
         quan,
@@ -182,7 +182,7 @@ module.exports = {
       });
 
       // Lưu địa chỉ
-      const result = await addressFactory.save(db, address);
+      const result = await addressFacade.save(db, address);
 
       res.status(result.action === "created" ? 201 : 200).json({
         success: true,

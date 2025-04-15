@@ -740,7 +740,7 @@
             const data = await response.json();
             console.log("✅ API trả về:", data);
 
-            document.getElementById("alert-text").innerHTML = data.message || "Hủy đơn hàng thành công!";
+            document.getElementById("alert-text").innerHTML =  "Hủy đơn hàng thành công!";
             $("#alertModal").modal("show");
 
             $("#alertModal").on("hidden.bs.modal", function () {

@@ -38,6 +38,6 @@ class Account {
       errors,
     };
   }
+  createAccount(data) {}
 }
 module.exports = Account;
-

@@ -12,7 +12,7 @@ class OrderItem {
     this.product_id = product_id;
     this.quantity = quantity;
     this.price = price;
-    this.status = status || "pending";
+    this.status = status || "dang-xu-ly";
   }
 
   // Phương thức validate dữ liệu
@@ -39,7 +39,7 @@ class OrderItem {
       errors.push("Giá phải lớn hơn 0");
     }
 
-    const validStatuses = ["pending", "processing", "completed", "cancelled"];
+    const validStatuses = ["dang-xu-ly", "dang-giao", "da-giao", "da-huy"];
     if (!validStatuses.includes(this.status)) {
       errors.push("Trạng thái đơn hàng không hợp lệ");
     }

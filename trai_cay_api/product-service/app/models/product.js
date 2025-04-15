@@ -28,5 +28,7 @@ class Product {
     }
     return allImages;
   }
+  createProduct(){}
+  
 }
 module.exports = Product;

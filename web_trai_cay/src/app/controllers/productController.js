@@ -21,9 +21,29 @@ class productController {
       case "3": {name="Rau củ";break}
     }
     try {
-      const products = await axios.get(`http://localhost:3002/category/${category}`, {}); 
+      const results = await axios.get(`http://localhost:3002/category/${category}`, {});
+      let products=results.data;
+      if (req.query.sort) {
+        switch (req.query.sort) {
+          case "thap-den-cao":
+            products.sort((a, b) => a.afterDiscount - b.afterDiscount);
+            break;
+          case "cao-den-thap":
+            products.sort((a, b) => b.afterDiscount - a.afterDiscount);
+            break;
+          case "moi-nhap":
+            products.sort((a, b) => b.product_id - a.product_id);
+            break;
+          case "mua-nhieu":
+            products.sort((a, b) => b.sold - a.sold);
+            break;
+          default:
+            products.sort((a, b) => b.product_id - a.product_id);
+            break;
+        }
+      }
       const tops = await axios.get(`http://localhost:3002/top`, {}); 
-      res.render("product/products", { products:products.data,tops:tops.data,name });
+      res.render("product/products", { products:products,tops:tops.data,name });
     } catch (e) {
       console.error("Lỗi khi lấy sản phẩm");
       res.status(500).json({ message: "Lỗi server" });

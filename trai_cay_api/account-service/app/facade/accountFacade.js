@@ -1,15 +1,20 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const Account=require("../models/account")
+// const Account=require("../models/account");
+const AdminAccount = require("../models/adminAccount");
+const UserAccount = require("../models/userAccount");
 
-const AccountFactory = {
+const AccountFacade = {
   create: (data) => {
-    return new Account(data);
+    if(data.role==="admin"){
+      return AdminAccount.createAccount(data);
+    }
+      return UserAccount.createAccount(data);
   },
 
   // Tạo account từ dữ liệu database
   fromDB: (dbData) => {
-    return new Account({
+    const accountData=({
       id: dbData.id || dbData.account_id,
       username: dbData.username,
       password: dbData.password,
@@ -18,6 +23,10 @@ const AccountFactory = {
       email: dbData.email,
       role: dbData.role,
     });
+    if (dbData.role === "admin") {
+      return new AdminAccount(accountData);
+    }
+    return new UserAccount(accountData);
   },
 
   // Kiểm tra tài khoản đã tồn tại chưa
@@ -99,10 +108,10 @@ const AccountFactory = {
       return null;
     }
 
-    return AccountFactory.fromDB(results[0]);
+    return AccountFacade.fromDB(results[0]);
   },
   updateInDatabase: async (db, accountId, updateData) => {
-    const account = new Account(updateData);
+    const account = AccountFacade.create(updateData);
     const checkExitSql =
       "SELECT * FROM accounts WHERE (phone=? OR email=?) AND account_id!=?";
     const [results] = await db
@@ -141,4 +150,4 @@ const AccountFactory = {
   },
 };
 
-module.exports = AccountFactory;
+module.exports = AccountFacade;

@@ -1,8 +1,19 @@
-const Product = require("../models/product");
+const gtcProduct = require("../models/gtcProduct");
+const tcProduct = require("../models/tcProduct");
+const rcProduct = require("../models/rcProduct");
 const axios = require("axios");
-const ProductFactory = {
+const ProductFacade = {
   create: (data) => {
-    return new Product(data);
+    switch (data.category) {
+      case 1:
+        return gtcProduct.createProduct(data);
+      case 2:
+        return tcProduct.createProduct(data);
+      case 3:
+        return rcProduct.createProduct(data);
+      default:
+        return tcProduct.createProduct(data);
+    }
   },
 
   checkIfProductCanBeDeleted: async (product_id, token) => {
@@ -49,12 +60,13 @@ const ProductFactory = {
           images: [],
         };
       }
-
       if (image.image_url.includes("/uploads/main")) {
         imageMap[pid].mainImg = image.image_url;
       }
-
-      imageMap[pid].images.push(image.image_url);
+      else{
+        imageMap[pid].images.push(image.image_url);
+      }
+      
     });
 
     // Tạo danh sách sản phẩm với ảnh kết hợp
@@ -83,6 +95,23 @@ const ProductFactory = {
       };
     }
   },
+  getRole: async (headers) => {
+    let role = "user";
+    if (headers) {
+      try {
+        const token = headers;
+        const response = await axios.get("http://localhost:3001/admin", {
+          headers: { Authorization: `${token}` },
+        });
+        if (response.status != 401 || response.status != 403) {
+          role = "admin";
+        }
+      } catch (e) {
+        console.error("Lỗi server:", e.response ? e.response.data : e.message);
+      }
+    }
+    return role;
+  },
 };
 
-module.exports = ProductFactory;
+module.exports = ProductFacade;

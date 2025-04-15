@@ -53,7 +53,25 @@
         <div id="order-item-div">
 
         </div>
-
+        <div style="justify-content: center; display:flex">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination" id="pagination">
+                    <li class="page-item">
+                        <a class="page-link" id="prevPage" href="#" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item"><a class="page-link" data-page="1" href="#">1</a></li>
+                    <li class="page-item"><a class="page-link" data-page="2" href="#">2</a></li>
+                    <li class="page-item"><a class="page-link" data-page="3" href="#">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" id="nextPage" href="#" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
 
     </div>
 
@@ -220,17 +238,45 @@
 <script>
     document.addEventListener("DOMContentLoaded", async () => {
         const path = window.location.pathname;
+
         const match = path.match(/\/admin\/order\/(\d+)/);
         const accountId = match ? match[1] : null;
 
         const urlParams = new URLSearchParams(window.location.search);
         const sortValue = urlParams.get("sort");
         const token = localStorage.getItem("token");
+
+        const currentUrl = new URL(window.location.href); // full URL
+        const currentPath = currentUrl.origin + currentUrl.pathname;
+        const params = currentUrl.searchParams;
+
+        const currentPage = parseInt(params.get('p')) || 1;
+        const prevPage = currentPage > 1 ? currentPage - 1 : 1;
+        const nextPage = currentPage + 1;
+
+        // Cập nhật link phân trang
+        document.querySelectorAll('[data-page]').forEach(link => {
+            const page = link.getAttribute('data-page');
+            const newParams = new URLSearchParams(currentUrl.search);
+            newParams.set('p', page);
+            link.href = `${currentPath}?${newParams.toString()}`;
+        });
+
+        // Nút Prev
+        const prevParams = new URLSearchParams(currentUrl.search);
+        prevParams.set('p', prevPage);
+        document.getElementById('prevPage').href = `${currentPath}?${prevParams.toString()}`;
+
+        // Nút Next
+        const nextParams = new URLSearchParams(currentUrl.search);
+        nextParams.set('p', nextPage);
+        document.getElementById('nextPage').href = `${currentPath}?${nextParams.toString()}`;
+
         try {
             let url = accountId
                 ? `http://localhost:3003/orders/${accountId}`
                 : "http://localhost:3003/orders";
-            url+=sortValue ? `?sort=${sortValue}` : ``
+            url += sortValue ? `?sort=${sortValue}` : ``
             console.log(url);
             const response = await fetch(url, {
                 method: "GET",
@@ -241,13 +287,44 @@
             if (!response.ok) throw new Error("Lỗi khi tải đơn hàng");
 
             const data = await response.json();
-            const orders = data.orderItems || [];
+            let orders = data.orderItems || [];
             if (orders.length == 0) {
                 document.getElementById("empty").style.display = "block";
             }
 
             const orderItemDiv = document.getElementById("order-item-div");
             orderItemDiv.innerHTML = ""; // Xóa nội dung cũ
+            const itemsPerPage = 10;
+            const totalOrders = orders.length;
+            const totalPages = Math.ceil(totalOrders / itemsPerPage);
+            orders = orders.slice((currentPage - 1) * 10, currentPage * 10)
+            const paginationDiv = document.getElementById("pagination");
+            paginationDiv.innerHTML = "";
+
+            const ul = document.createElement("ul");
+            ul.className = "pagination";
+
+            // Previous button
+            const prevLi = document.createElement("li");
+            prevLi.className = `page-item ${currentPage === 1 ? "disabled" : ""}`;
+            prevLi.innerHTML = `<a class="page-link" href="?p=${prevPage}">&laquo;</a>`;
+            ul.appendChild(prevLi);
+
+            // Page buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = `page-item ${i === currentPage ? "active" : ""}`;
+                li.innerHTML = `<a class="page-link" href="?p=${i}">${i}</a>`;
+                ul.appendChild(li);
+            }
+
+            // Next button
+            const nextLi = document.createElement("li");
+            nextLi.className = `page-item ${currentPage === totalPages ? "disabled" : ""}`;
+            nextLi.innerHTML = `<a class="page-link" href="?p=${nextPage}">&raquo;</a>`;
+            ul.appendChild(nextLi);
+
+            paginationDiv.appendChild(ul);
 
             orders.forEach(order => {
                 if ([order.tinh, order.quan, order.phuong, order.nha, order.ghichu].some(value => value == null)) {
@@ -257,7 +334,7 @@
                 const selectedUser = order.role === "user" ? "selected" : "";
                 const selectedAdmin = order.role === "admin" ? "selected" : "";
 
-                let xbtn = "",btn="";
+                let xbtn = "", btn = "";
                 if (order.status == "dang-xu-ly") {
                     xbtn = `<i class="bi bi-x"  data-bs-toggle="modal" data-bs-target="#huyModal${order.order_item_id}"></i>
                                 <!-- Modal hủy đơn -->
@@ -284,7 +361,7 @@
                                         </div>
                                     </div>
                                 </div>`
-                    btn=`<button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#xacnhanModal${order.order_item_id}" 
+                    btn = `<button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#xacnhanModal${order.order_item_id}" 
                                     style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
                                      border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
                                     <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
@@ -314,8 +391,8 @@
                                     </div>
                                 </div>`
                 }
-                else if (order.status=="dang-giao"){
-                     btn = `<button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#tcongnModal${order.order_item_id}" 
+                else if (order.status == "dang-giao") {
+                    btn = `<button class="madonhang statusButton" data-bs-toggle="modal" data-bs-target="#tcongnModal${order.order_item_id}" 
                                     style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
                                      border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
                                     <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
@@ -345,23 +422,23 @@
                                     </div>
                                 </div>`
                 }
-                else if (order.status=="da-huy"){
-                     btn = `<button class="madonhang statusButton" data-bs-toggle="modal" 
+                else if (order.status == "da-huy") {
+                    btn = `<button class="madonhang statusButton" data-bs-toggle="modal" 
                                     style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
                                      border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
                                     <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
                             </button>
                             `
                 }
-                else if (order.status=="da-giao"){
-                     btn = `<button class="madonhang statusButton" data-bs-toggle="modal" 
+                else if (order.status == "da-giao") {
+                    btn = `<button class="madonhang statusButton" data-bs-toggle="modal" 
                                     style="background-color: #ff5722; color: #fff; margin-top: 30px; width: 170px; height: 40px; display: flex; align-items: center; justify-content: center; border: none;
                                      border-radius: 0; cursor: pointer; box-sizing: border-box; font-size: 16px;position: absolute;bottom: 30px; right: 30px;">
                                     <i class="bi bi-truck" style="margin-right: 8px; font-size: 20px;"></i> ${order.status}
                             </button>
                             `
                 }
- 
+
                 const div = document.createElement("div");
                 div.style = "height: 250px; border: 1px solid #000; overflow: hidden; margin-bottom: 30px;";
                 div.innerHTML = `
@@ -662,5 +739,5 @@
         }
     }
 
-    
+
 </script>

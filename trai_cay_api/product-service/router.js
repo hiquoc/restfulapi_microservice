@@ -1,9 +1,7 @@
 module.exports = function (app) {
   let productController = require("./app/controllers/productController");
   let upload = require("./app/middleware/cloud");
-  let checkAdmin = require("./app/middleware/checkAdmin");
-  let checkLoggedIn = require("./app/middleware/checkLoggedIn");
-
+  let authProxy = require("./app/middleware/authProxy");
  
   app.route("/categories").get(productController.categories); //lay danh sach danh muc
   app.route("/category/:category").get(productController.category);  //lay danh sach san pham theo 1 danh muc
@@ -14,12 +12,12 @@ module.exports = function (app) {
   app.route("/random/:product_id").get(productController.random);
 
   //cap nhat sold va stock (duoc goi tu buy-service)
-  app.route("/orderAdd").patch(checkLoggedIn, productController.orderAdd);
-  app.route("/orderAbort").patch(checkLoggedIn, productController.orderAbort);
+  app.route("/orderAdd").patch(authProxy.checkLoggedIn, productController.orderAdd);
+  app.route("/orderAbort").patch(authProxy.checkLoggedIn, productController.orderAbort);
 
   //sua thong tin san pham
   app.route("/edit1/:product_id").patch(
-    checkAdmin,
+    authProxy.checkAdmin,
     upload.fields([
       { name: "images", maxCount: 4 },
       { name: "mainImage", maxCount: 1 },
@@ -28,7 +26,7 @@ module.exports = function (app) {
   );//cap nhat san pham va co thay doi hinh anh
   app
     .route("/edit2/:product_id")
-    .patch(checkAdmin, upload.none(), productController.edit2);//cap nhat san pham ma khong thay doi hinh anh
+    .patch(authProxy.checkAdmin, upload.none(), productController.edit2);//cap nhat san pham ma khong thay doi hinh anh
 
   app.route("/products/:product").get(productController.findProduct); //tim san pham theo ten
 
@@ -38,11 +36,11 @@ module.exports = function (app) {
   app
     .route("/:product_id")
     .get(productController.product) //lay thong tin 1 san pham
-    .delete(checkAdmin, productController.delete); //xoa san pham
+    .delete(authProxy.checkAdmin, productController.delete); //xoa san pham
 
 
   app.route("/").post(
-    checkAdmin,
+    authProxy.checkAdmin,
     upload.fields([
       { name: "images", maxCount: 4 },
       { name: "mainImage", maxCount: 1 },
