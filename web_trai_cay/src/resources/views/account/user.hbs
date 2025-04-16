@@ -413,7 +413,7 @@
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ hovatenval, emailval, sdtval }),
+                body: JSON.stringify({ fullname:hovatenval, email:emailval, phone:sdtval }),
             })
                 .then(async (respone) => {
                     const data = await respone.json();

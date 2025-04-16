@@ -40,13 +40,13 @@ module.exports = {
 
   signup: async (req, res) => {
     try {
-      const { username, password, hovaten, sdt, email } = req.body;
+      const { username, password, fullname, phone, email } = req.body;
 
       const newAccount = accountFacade.create({
         username,
         password,
-        fullname: hovaten,
-        phone: sdt,
+        fullname,
+        phone,
         email,
       });
 
@@ -59,7 +59,7 @@ module.exports = {
       // Kiểm tra tài khoản đã tồn tại
       const existingCheck = await accountFacade.checkExisting(db, {
         username,
-        phone: sdt,
+        phone,
         email,
       });
 
@@ -95,13 +95,13 @@ module.exports = {
   infoPost: async (req, res) => {
     try {
       const account_id = req.user.account_id;
-      const { hovatenval, emailval, sdtval } = req.body;
+      const { fullname, email, phone } = req.body;
 
       // Tạo dữ liệu cập nhật
       const updateData = {
-        fullname: hovatenval,
-        email: emailval,
-        phone: sdtval,
+        fullname,
+        email,
+        phone,
         role: "user", // Mặc định, không thay đổi role
       };
 

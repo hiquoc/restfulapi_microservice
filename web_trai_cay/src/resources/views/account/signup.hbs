@@ -35,14 +35,14 @@
                 </div>
             </div>
             <div style="margin-bottom: 10px;">
-                <label for="hovaten" style="display: block; margin-bottom: 5px; color: #555;">Họ và tên</label>
-                <input type="text" id="hovaten" name="hovaten"
+                <label for="fullname" style="display: block; margin-bottom: 5px; color: #555;">Họ và tên</label>
+                <input type="text" id="fullname" name="fullname"
                     style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
             </div>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                 <div style="flex: 3;">
-                    <label for="sdt" style="display: block; margin-bottom: 5px; color: #555;">Số điện thoại</label>
-                    <input type="text" id="sdt" name="sdt"
+                    <label for="phone" style="display: block; margin-bottom: 5px; color: #555;">Số điện thoại</label>
+                    <input type="text" id="phone" name="phone"
                         style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ddd;">
                 </div>
                 <div style="flex: 7;">
@@ -96,14 +96,14 @@
             } else {
                 const username = document.getElementById("username").value;
                 const password = document.getElementById("password").value;
-                const hovaten = document.getElementById("hovaten").value;
-                const sdt = document.getElementById("sdt").value;
+                const fullname = document.getElementById("fullname").value;
+                const phone = document.getElementById("phone").value;
                 const email = document.getElementById("email").value;
                 try {
                     const response = await fetch("http://localhost:3001/signup", { 
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ username, password, hovaten, sdt, email }),
+                        body: JSON.stringify({ username, password, fullname, phone, email }),
                     });
 
                     const data = await response.json();
@@ -153,25 +153,25 @@
             }
 
             //Ho va ten
-            const hovaten = document.getElementById("hovaten");
-            if (hovaten.value == '') {
+            const fullname = document.getElementById("fullname");
+            if (fullname.value == '') {
                 alerttext.innerHTML = "Họ và tên không được để trống!";
                 return false;
-            } else if (containsOnlyText(hovaten.value) == false) {
+            } else if (containsOnlyText(fullname.value) == false) {
                 alerttext.innerHTML = "Họ và tên chỉ được chứa chữ cái!";
                 return false;
             }
 
             //So dien thoai
-            const sdt = document.getElementById("sdt");
-            if (sdt.value == '') {
+            const phone = document.getElementById("phone");
+            if (phone.value == '') {
                 alerttext.innerHTML = "Số điện thoại không được để trống!";
                 return false;
             }
-            else if (sdt.value.length > 11 || sdt.value.length < 7) {
+            else if (phone.value.length > 11 || phone.value.length < 7) {
                 alerttext.innerHTML = "Số điện thoại không hợp lệ!";
                 return false;
-            } else if (containsOnlyNumbers(sdt.value) == false) {
+            } else if (containsOnlyNumbers(phone.value) == false) {
 
                 alerttext.innerHTML = "Số điện thoại chỉ được chứa chữ số!";
                 return false;
