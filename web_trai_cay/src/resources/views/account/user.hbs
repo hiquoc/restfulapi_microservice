@@ -64,12 +64,12 @@
                     Thông tin cá nhân
                 </h2>
                 <div style="margin-bottom: 15px; display: flex">
-                    <input type="text" id="hovaten" name="hovaten" placeholder="Nhập họ và tên của bạn" value=""
+                    <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên của bạn" value=""
                         style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
                 </div>
                 <input type="email" id="email" name="email" placeholder="Nhập email của bạn" value=""
                     style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;margin-bottom: 15px;">
-                <input type="text" id="sdt" name="sdt" placeholder="Nhập sdt của bạn" value=""
+                <input type="text" id="phone" name="phone" placeholder="Nhập sdt của bạn" value=""
                     style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;margin-bottom: 15px;">
                 <div style="display: flex;  justify-content: space-between;gap:10px">
                     <button class="button-27" type="submit" id="info-button"
@@ -357,8 +357,8 @@
     document.addEventListener("DOMContentLoaded", async (event) => {
         const token = localStorage.getItem("token") || "";
         const alerttext = document.getElementById("alert-text");
-        const hovaten = document.getElementById("hovaten");
-        const sdt = document.getElementById("sdt");
+        const fullname = document.getElementById("fullname");
+        const phone = document.getElementById("phone");
         const email = document.getElementById("email");
         const info = document.getElementById('info-button');
         if (!token) {
@@ -380,8 +380,8 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    hovaten.value = data.fullname || "";
-                    sdt.value = data.phone || "";
+                    fullname.value = data.fullname || "";
+                    phone.value = data.phone || "";
                     email.value = data.email || "";
                 } else {
                     alerttext.innerHTML = data.message || "Xác thực thất bại!";
@@ -394,15 +394,15 @@
 
         info.addEventListener('click', async (e) => {
             e.preventDefault();
-            const hovatenval = hovaten.value.trim();
+            const fullnameval = fullname.value.trim();
             const emailval = email.value.trim();
-            const sdtval = sdt.value.trim();
-            if (hovatenval == "" || sdtval == "" || emailval == "") {
+            const phoneval = phone.value.trim();
+            if (fullnameval == "" || phoneval == "" || emailval == "") {
                 alerttext.innerHTML = "Vui lòng điền đầy đủ thông tin!";
                 $("#alertModal").modal("show");
                 return;
             }
-            if (sdtval.length < 8) {
+            if (phoneval.length < 8) {
                 alerttext.innerHTML = "Số điện thoại không hợp lệ!";
                 $("#alertModal").modal("show");
                 return;
@@ -413,7 +413,7 @@
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ fullname:hovatenval, email:emailval, phone:sdtval }),
+                body: JSON.stringify({ fullname:fullnameval, email:emailval, phone:phoneval }),
             })
                 .then(async (respone) => {
                     const data = await respone.json();

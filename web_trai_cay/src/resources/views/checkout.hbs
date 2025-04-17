@@ -93,9 +93,8 @@
                     </button>
                     <ul class="dropdown-menu dropdown-menu-header" id="user-dropdown"
                         aria-labelledby="dropdownMenuButton4">
-
+                        <li><a class="dropdown-item" href="#">Test</a></li>
                     </ul>
-
                 </div>
 
 
@@ -125,142 +124,7 @@
 
         </div>
 
-        <script>
-            function handleSearch() {
-                const searchInput = document.getElementById('search-input');
-                const searchTerm = searchInput.value.trim();
-                const form = document.getElementById('form-search');
-                if (!searchTerm) {
-                    alert('Vui lòng nhập nội dung tìm kiếm!');
-                } else {
-                    // Redirect to a new URL with the search term as a query parameter
-                    form.submit()
-                }
-            }
 
-            document.addEventListener("DOMContentLoaded", async () => {
-                let dropdown = document.getElementById("user-dropdown");
-                const token = localStorage.getItem("token");
-
-                if (!token) {
-                    dropdown.innerHTML = `
-            <li><a class="dropdown-item dropdown-item-header" href="/account/login">Đăng nhập</a></li>
-            <li><a class="dropdown-item dropdown-item-header" href="/account/signup">Đăng kí</a></li>
-        `;
-                    return;
-                }
-
-                fetch("http://localhost:3001", {
-                    method: "GET",
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    }
-                })
-                    .then(async (response) => {
-                        if (!response.ok) {
-                            throw new Error("Không thể lấy thông tin tài khoản");
-                        }
-                        const data = await response.json();
-
-                        dropdown.innerHTML = `
-            <li><a class="dropdown-item dropdown-item-header" href="/account/user">${data.username}</a></li>
-            <li><a class="dropdown-item dropdown-item-header" href="/account/logout" onclick="logout()">Đăng xuất</a></li>
-        `;
-
-                        if (data.role === "admin") {
-                            dropdown.innerHTML = `<li><a class="dropdown-item dropdown-item-header" href="/admin/product">Quản lý</a></li>` + dropdown.innerHTML;
-                        }
-                    })
-                    .catch(() => {
-                        dropdown.innerHTML = `
-            <li><a class="dropdown-item dropdown-item-header" href="/account/login">Đăng nhập</a></li>
-            <li><a class="dropdown-item dropdown-item-header" href="/account/signup">Đăng kí</a></li>
-        `;
-                    });
-            });
-
-            // Hàm đăng xuất
-            async function logout() {
-                localStorage.removeItem("token");
-            }
-
-            function checkOut() {
-                window.location.href = "/checkout";
-            }
-            const cartButton = document.getElementById("cartButton");
-            const cartDropdown = document.getElementById("cartDropdown");
-
-            // Toggle cart dropdown visibility
-            cartButton.addEventListener("click", function (event) {
-                event.stopPropagation(); // Prevent click from closing immediately
-                cartDropdown.style.display = cartDropdown.style.display === "block" ? "none" : "block";
-            });
-
-            // Hide dropdown when clicking outside
-            //document.addEventListener("click", function (event) {
-            //  if (!cartButton.contains(event.target) && !cartDropdown.contains(event.target)) {
-            //    cartDropdown.style.display = "none";
-            //  }
-            //});
-
-            function incrementQuantityCart(cart_id, product_id) {
-                let quantityInput = document.getElementById(cart_id);
-                let currentValue = parseInt(quantityInput.value);
-                if (currentValue < 10) {
-                    quantityInput.value = currentValue + 1;
-                    updateCartProduct(cart_id, parseInt(quantityInput.value), product_id)
-                }
-            }
-
-            function decrementQuantityCart(cart_id, product_id) {
-                let quantityInput = document.getElementById(cart_id);
-                let currentValue = parseInt(quantityInput.value);
-                if (currentValue > 1) {
-                    quantityInput.value = currentValue - 1;
-                    updateCartProduct(cart_id, parseInt(quantityInput.value), product_id)
-                }
-            }
-
-            async function updateCartProduct(cart_id, quantity, product_id) {
-                const token = localStorage.getItem("token");
-                try {
-                    let formData = {
-                        product_id: product_id,
-                        quantity: quantity
-                    };
-
-                    const response = await fetch(`http://localhost:3003/cart/${cart_id}`, {
-                        method: "PATCH",
-                        headers: {
-                            "Authorization": `Bearer ${token}`,
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(formData)
-                    });
-
-                    const data = await response.json();
-
-                    if (data.message === "Vui lòng đăng nhập!") {
-                        document.getElementById("alert-text").innerHTML = "Vui lòng đăng nhập!";
-                        $("#alertModal").modal("show");
-
-                        $("#alertModal").on("hidden.bs.modal", function () {
-                            window.location.href = "/account/login";
-                        });
-                        return; // Không gọi updateCart nếu chưa đăng nhập
-                    }
-                    else if (data.message != "Cập nhật thành công!") {
-                        document.getElementById("alert-text").innerHTML = data.message;
-                        $("#alertModal").modal("show");
-                    }
-                    await updateCart();
-                } catch (error) {
-                    console.error("Lỗi fetch API:", error);
-                }
-            }
-
-        </script>
     </div>
 
     <div style="padding:10px 100px 10px 100px;margin-top:75px">
@@ -279,7 +143,7 @@
                             liên hệ
                         </h2>
                         <div style="margin-bottom: 15px; display: flex; gap: 4%;">
-                            <input type="text" id="hovaten" name="hovaten" placeholder="Nhập họ và tên của bạn"
+                            <input type="text" id="fullname" name="fullname" placeholder="Nhập họ và tên của bạn"
                                 style="width: 100%; padding: 12px; border: 1px solid #000000; border-radius: 0px; font-size: 16px;">
                         </div>
                         <div style="margin-bottom: 15px; display: flex; gap: 4%;">
@@ -459,16 +323,16 @@
                     e.preventDefault();
                     let check = true;
 
-                    const hovatenval = document.getElementById("hovaten").value.trim();
-                    const emailval = document.getElementById("email").value.trim();
-                    const sdtval = document.getElementById("phone").value.trim();
-
-                    if (hovatenval === "" || sdtval === "" || emailval === "") {
+                    const fullname = document.getElementById("fullname").value.trim();
+                    const email = document.getElementById("email").value.trim();
+                    const phone = document.getElementById("phone").value.trim();
+                    console.log(fullname)
+                    if (fullname === "" || phone === "" || email === "") {
                         alerttext.innerHTML = "Vui lòng điền đầy đủ thông tin!";
                         $("#alertModal").modal("show");
                         check = false;
                     }
-                    if (sdtval.length < 8) {
+                    if (phone.length < 8) {
                         alerttext.innerHTML = "Số điện thoại không hợp lệ!";
                         $("#alertModal").modal("show");
                         check = false;
@@ -482,7 +346,7 @@
                                 "Authorization": `Bearer ${token}`,
                                 "Content-Type": "application/json",
                             },
-                            body: JSON.stringify({ hovatenval, emailval, sdtval }),
+                            body: JSON.stringify({ fullname, email, phone }),
                         });
 
                         const data = await response.json();
@@ -536,7 +400,7 @@
 
 
                 const token = localStorage.getItem("token") || "";
-                const hovaten = document.getElementById("hovaten");
+                const fullname = document.getElementById("fullname");
                 const phone = document.getElementById("phone");
                 const email = document.getElementById("email");
 
@@ -558,9 +422,9 @@
                 })
                     .then(async (response) => {
                         const data = await response.json();
-
+                        console.log(response.data)
                         if (response.ok) {
-                            hovaten.value = data.fullname || "";
+                            fullname.value = data.fullname || "";
                             phone.value = data.phone || "";
                             email.value = data.email || "";
                         } else {
@@ -728,7 +592,7 @@
                             <i class="bi bi-x"  onclick=xoa(${item.cart_id})></i>
                         </div>
                     </div>`;
-                             checkOutItems.appendChild(div);
+                            checkOutItems.appendChild(div);
                         });
                         document.getElementById("nop").innerHTML = `${num} sản phẩm`
                         document.getElementById("pop").innerHTML = `${sum.toLocaleString('vi-VN')}₫`
@@ -799,7 +663,7 @@
                             <i class="bi bi-x"  onclick=xoa(${item.cart_id})></i>
                         </div>
                     </div>`;
-                             cartItems.appendChild(div);
+                            cartItems.appendChild(div);
                         });
                         const tongGia = document.createElement("div");
                         tongGia.innerHTML = `
@@ -833,13 +697,150 @@
                     })
             }
 
+
+        </script>
+
+        <script>
+            function handleSearch() {
+                const searchInput = document.getElementById('search-input');
+                const searchTerm = searchInput.value.trim();
+                const form = document.getElementById('form-search');
+                if (!searchTerm) {
+                    alert('Vui lòng nhập nội dung tìm kiếm!');
+                } else {
+                    // Redirect to a new URL with the search term as a query parameter
+                    form.submit()
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", async () => {
+                let dropdown = document.getElementById("user-dropdown");
+                const token = localStorage.getItem("token");
+
+                if (!token) {
+                    dropdown.innerHTML = `
+            <li><a class="dropdown-item dropdown-item-header" href="/account/login">Đăng nhập</a></li>
+            <li><a class="dropdown-item dropdown-item-header" href="/account/signup">Đăng kí</a></li>
+        `;
+                    return;
+                }
+
+                fetch("http://localhost:3001", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    }
+                })
+                    .then(async (response) => {
+                        if (!response.ok) {
+                            throw new Error("Không thể lấy thông tin tài khoản");
+                        }
+                        const data = await response.json();
+                        dropdown.innerHTML = `
+            <li><a class="dropdown-item dropdown-item-header" href="/account/user">${data.username}</a></li>
+            <li><a class="dropdown-item dropdown-item-header" href="/account/logout" onclick="logout()">Đăng xuất</a></li>
+        `;
+
+                        if (data.role === "admin") {
+                            dropdown.innerHTML = `<li><a class="dropdown-item dropdown-item-header" href="/admin/product">Quản lý</a></li>` + dropdown.innerHTML;
+                        }
+                    })
+                    .catch(() => {
+                        dropdown.innerHTML = `
+            <li><a class="dropdown-item dropdown-item-header" href="/account/login">Đăng nhập</a></li>
+            <li><a class="dropdown-item dropdown-item-header" href="/account/signup">Đăng kí</a></li>
+        `;
+                    });
+            });
+
+            // Hàm đăng xuất
+            async function logout() {
+                localStorage.removeItem("token");
+            }
+
+            function checkOut() {
+                window.location.href = "/checkout";
+            }
+            const cartButton = document.getElementById("cartButton");
+            const cartDropdown = document.getElementById("cartDropdown");
+
+            // Toggle cart dropdown visibility
+            cartButton.addEventListener("click", function (event) {
+                //event.stopPropagation(); // Prevent click from closing immediately
+                cartDropdown.style.display = cartDropdown.style.display === "block" ? "none" : "block";
+            });
+
+            // Hide dropdown when clicking outside
+            //document.addEventListener("click", function (event) {
+            //  if (!cartButton.contains(event.target) && !cartDropdown.contains(event.target)) {
+            //    cartDropdown.style.display = "none";
+            //  }
+            //});
+
+            function incrementQuantityCart(cart_id, product_id) {
+                let quantityInput = document.getElementById(cart_id);
+                let currentValue = parseInt(quantityInput.value);
+                if (currentValue < 10) {
+                    quantityInput.value = currentValue + 1;
+                    updateCartProduct(cart_id, parseInt(quantityInput.value), product_id)
+                }
+            }
+
+            function decrementQuantityCart(cart_id, product_id) {
+                let quantityInput = document.getElementById(cart_id);
+                let currentValue = parseInt(quantityInput.value);
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                    updateCartProduct(cart_id, parseInt(quantityInput.value), product_id)
+                }
+            }
+
+            async function updateCartProduct(cart_id, quantity, product_id) {
+                const token = localStorage.getItem("token");
+                try {
+                    let formData = {
+                        product_id: product_id,
+                        quantity: quantity
+                    };
+
+                    const response = await fetch(`http://localhost:3003/cart/${cart_id}`, {
+                        method: "PATCH",
+                        headers: {
+                            "Authorization": `Bearer ${token}`,
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.message === "Vui lòng đăng nhập!") {
+                        document.getElementById("alert-text").innerHTML = "Vui lòng đăng nhập!";
+                        $("#alertModal").modal("show");
+
+                        $("#alertModal").on("hidden.bs.modal", function () {
+                            window.location.href = "/account/login";
+                        });
+                        return; // Không gọi updateCart nếu chưa đăng nhập
+                    }
+                    else if (data.message != "Cập nhật thành công!") {
+                        document.getElementById("alert-text").innerHTML = data.message;
+                        $("#alertModal").modal("show");
+                    }
+                    await updateCart();
+                } catch (error) {
+                    console.error("Lỗi fetch API:", error);
+                }
+            }
+
         </script>
     </div>
     <div>
 
     </div>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.min.js"></script>
