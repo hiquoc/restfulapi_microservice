@@ -1,10 +1,11 @@
 const db = require("../config/mysql");
-const axios = require("axios");
-const cloudinary = require("cloudinary").v2;
 const productFacade = require("../facade/productFacade");
+const ProductRepository = require("../repositories/productRepository");
+
 module.exports = {
   upload: async (req, res) => {
     const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
     try {
       await connection.beginTransaction();
 
@@ -33,24 +34,9 @@ module.exports = {
           : [],
       });
 
-      // Insert product info
-      const newProSql =
-        "INSERT INTO products (name, description, price, stock, category, status) VALUES (?, ?, ?, ?, ?, ?)";
-      const [proResult] = await connection.query(newProSql, [
-        product.name,
-        product.details,
-        product.price,
-        product.stock,
-        product.category,
-        product.status,
-      ]);
-      const productId = proResult.insertId;
-
-      // Insert image URLs
-      const values = product.getAllImages().map((url) => [productId, url]);
-      const newImgSql =
-        "INSERT INTO product_images (product_id, image_url) VALUES ?";
-      await connection.query(newImgSql, [values]);
+      // Use repository methods
+      const productId = await productRepo.createProduct(product);
+      await productRepo.addProductImages(productId, product.getAllImages());
 
       await connection.commit();
       connection.release();
@@ -66,118 +52,99 @@ module.exports = {
   },
 
   product: async (req, res) => {
-    const product_id = req.params.product_id;
-    try {
-      const ProSql = "SELECT * FROM products WHERE product_id =?";
-      let [products] = await db.promise().query(ProSql, [product_id]);
-
-      const ImgSql = "SELECT * FROM product_images WHERE product_id =?";
-      let [images] = await db.promise().query(ImgSql, [product_id]);
-
-      const Products=productFacade.getProducts(products,images);
-
-      return res.status(200).json(Products);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Lỗi server!" });
+  const product_id = req.params.product_id;
+  const connection = await db.promise().getConnection();
+  const productRepo = new ProductRepository(connection);
+  
+  try {
+    const productWithImages = await productRepo.getProductWithImages(product_id);
+    if (!productWithImages) {
+      connection.release();
+      return res.status(404).json({ message: "Product not found" });
     }
-  },
+    
+    const result = {
+      ...productWithImages,
+      mainImg: productWithImages.images.find(img => 
+        img.image_url.includes("/main") || 
+        img.image_url.match(/\/main(-|_|\.)?/i)
+      )?.image_url || null,
+      images: productWithImages.images.filter(img => 
+        !img.image_url.includes("/main") && 
+        !img.image_url.match(/\/main(-|_|\.)?/i)
+      ).map(img => img.image_url),
+      afterDiscount: Math.round(productWithImages.price * (1 - productWithImages.discount / 100))
+    };
+    
+    connection.release();
+    return res.status(200).json([result]);
+  } catch (error) {
+    connection.release();
+    console.error(error);
+    return res.status(500).json({ message: "Lỗi server!" });
+  }
+},
 
   products: async (req, res) => {
-    let role=productFacade.getRole(req.headers.authorization)
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
     try {
-      let ProSql = "SELECT product_id,name,price,discount FROM products";
-      let conditions = [];
+      const role = productFacade.getRole(req.headers.authorization);
 
-      if (role == "user") {
-        conditions.push("status='con-hang'");
-      }
+      const { products, images } = await productRepo.getProductsWithImages({
+        role,
+        sort: req.query.sort,
+      });
 
-      if (req.query.sort) {
-        switch (req.query.sort) {
-          case "gio-trai-cay":
-            conditions.push("category=1");
-            break;
-          case "trai-cay":
-            conditions.push("category=2");
-            break;
-          case "rau-cu":
-            conditions.push("category=3");
-            break;
-        }
-      }
-      if (conditions.length > 0) {
-        ProSql += " WHERE " + conditions.join(" AND ");
-      }
-      ProSql += " ORDER BY product_id DESC";
+      const Products = productFacade.getProducts(products, images);
 
-      let [products] = await db.promise().query(ProSql);
-
-      const ImgSql = "SELECT product_id,image_url FROM product_images";
-      let [images] = await db.promise().query(ImgSql);
-
-      const Products=productFacade.getProducts(products,images);
+      connection.release();
       return res.status(200).json(Products);
     } catch (error) {
+      connection.release();
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
   },
 
   productsAll: async (req, res) => {
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
     try {
-      let ProSql = "SELECT product_id,name,price,stock,discount,sold FROM products";
-      let conditions = [];
+      const { products, images } = await productRepo.getAllProductsDetailed({
+        sort: req.query.sort,
+      });
 
-      if (req.query.sort) {
-        switch (req.query.sort) {
-          case "gio-trai-cay":
-            conditions.push("category=1");
-            break;
-          case "trai-cay":
-            conditions.push("category=2");
-            break;
-          case "rau-cu":
-            conditions.push("category=3");
-            break;
-        }
-      }
-      if (conditions.length > 0) {
-        ProSql += " WHERE " + conditions.join(" AND ");
-      }
-      ProSql += " ORDER BY product_id DESC";
+      const Products = productFacade.getProducts(products, images);
 
-      let [products] = await db.promise().query(ProSql);
-
-      const ImgSql = "SELECT product_id,image_url FROM product_images";
-      let [images] = await db.promise().query(ImgSql);
-
-      const Products=productFacade.getProducts(products,images);
+      connection.release();
       return res.status(200).json(Products);
     } catch (error) {
+      connection.release();
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
   },
 
   findProduct: async (req, res) => {
-    let role=productFacade.getRole(req.headers.authorization)
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+    const role = productFacade.getRole(req.headers.authorization);
+
     try {
-      let ProSql = "SELECT * FROM products WHERE name LIKE ?";
-      if (role == "user") {
-        ProSql += " AND status='con-hang'";
-      }
-      ProSql += " ORDER BY product_id DESC";
-      let [products] = await db
-        .promise()
-        .query(ProSql, [`%${req.params.product}%`]);
+      const { products, images } = await productRepo.searchProducts(
+        req.params.product,
+        { role }
+      );
 
-      const ImgSql = "SELECT * FROM product_images";
-      let [images] = await db.promise().query(ImgSql);
+      const Products = productFacade.getProducts(products, images);
 
-      const Products=productFacade.getProducts(products,images);
+      connection.release();
       return res.status(200).json(Products);
     } catch (error) {
+      connection.release();
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
@@ -199,20 +166,21 @@ module.exports = {
 
   edit1: async (req, res) => {
     const connection = await db.promise().getConnection();
-    const product_id = req.params.product_id;
+    const productRepo = new ProductRepository(connection);
+    const productId = req.params.product_id;
 
     try {
-      await connection.beginTransaction();
-
       if (
         !req.files ||
         (req.files["images"] && req.files["images"].length === 0)
       ) {
+        connection.release();
         return res
           .status(400)
           .json({ message: "Vui lòng tải ít nhất một ảnh!" });
       }
-      // Tạo product từ Factory
+
+      // Create product Factory
       const product = productFacade.create({
         name: req.body.name,
         price: req.body.price,
@@ -221,62 +189,19 @@ module.exports = {
         status: req.body.status,
         details: req.body.details,
         discount: req.body.discount,
-        mainImage: req.files["mainImage"]
-          ? req.files["mainImage"][0].path
-          : null,
-        images: req.files["images"]?.map((file) => file.path) || [],
+        mainImage: req.files["mainImage"]?.[0]?.path || null,
+        images: req.files["images"]?.map((f) => f.path) || [],
       });
-      // --- Cập nhật sản phẩm ---
-      const updateProSql =
-        "UPDATE products SET name=?, description=?, price=?, stock=?, category=?, status=?,discount=? WHERE product_id=?";
-      await connection.query(updateProSql, [
-        product.name,
-        product.details,
-        product.price,
-        product.stock,
-        product.category,
-        product.status,
-        product.discount,
-        product_id,
-      ]);
 
-      // --- Lấy danh sách ảnh cũ từ DB ---
-      const getOldImagesSql =
-        "SELECT image_url FROM product_images WHERE product_id = ?";
-      const [oldImages] = await connection.query(getOldImagesSql, [product_id]);
+      // Use repository for full update
+      await productRepo.fullProductUpdate(productId, product, {
+        mainImage: product.getMainImage(),
+        images: product.getAdditionalImages(),
+      });
 
-      // --- Xóa ảnh cũ trên Cloudinary ---
-      for (const img of oldImages) {
-        const public_id = productFacade.extractPublicIdFromUrl(img.image_url);
-
-        try {
-          const result = await cloudinary.uploader.destroy(public_id);
-          console.log("Kết quả xóa ảnh từ Cloudinary:", result);
-        } catch (error) {
-          console.error("Lỗi khi xóa ảnh Cloudinary:", error);
-        }
-      }
-
-      // --- Xóa ảnh cũ khỏi bảng product_images ---
-      await connection.query(
-        "DELETE FROM product_images WHERE product_id = ?",
-        [product_id]
-      );
-
-      // --- Thêm ảnh mới ---
-      const newImgValues = product
-        .getAllImages()
-        .map((url) => [product_id, url]);
-      await connection.query(
-        "INSERT INTO product_images (product_id, image_url) VALUES ?",
-        [newImgValues]
-      );
-
-      await connection.commit();
       connection.release();
       return res.status(200).json({ message: "Cập nhật thành công!" });
     } catch (err) {
-      await connection.rollback();
       connection.release();
       console.error(err);
       return res.status(500).json({ message: "Lỗi server!" });
@@ -285,259 +210,167 @@ module.exports = {
 
   edit2: async (req, res) => {
     const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+    const productId = req.params.product_id;
 
     try {
-      await connection.beginTransaction();
-
-      const product_id = req.params.product_id;
-
-      // Dùng Factory để tạo đối tượng sản phẩm
+      // Create product via Factory
       const product = productFacade.create(req.body);
-      const updateProSql =
-        "UPDATE products SET name=?, description=?, price=?, stock=?, category=?, status=?,discount=? WHERE product_id=?";
-      await connection.query(updateProSql, [
-        product.name,
-        product.details,
-        product.price,
-        product.stock,
-        product.category,
-        product.status,
-        product.discount,
-        product_id,
-      ]);
 
-      await connection.commit();
+      // Use repository for basic update
+      const updated = await productRepo.updateProduct(productId, product);
+      if (!updated) {
+        connection.release();
+        return res.status(404).json({ message: "Sản phẩm không tồn tại" });
+      }
+
       connection.release();
-
-      return res.status(201).json({
-        message: "Cập nhật thành công!",
-      });
+      return res.status(200).json({ message: "Cập nhật thành công!" });
     } catch (error) {
-      await connection.rollback();
       connection.release();
-
       console.error(error);
       return res.status(500).json({ message: "Lỗi server!" });
     }
   },
 
   delete: async (req, res) => {
-    const product_id = req.params.product_id;
-    const conn = await db.promise().getConnection();
+    const productId = req.params.product_id;
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
     try {
-      const token = req.headers.authorization;
-      const checkResult = await productFacade.checkIfProductCanBeDeleted(
-        product_id,
-        token
+      const checkResult = await productRepo.checkDeletePermission(
+        productId,
+        req.headers.authorization
       );
+
       if (!checkResult.canDelete) {
+        connection.release();
         return res.status(400).json({ message: checkResult.message });
       }
 
-      // Bắt đầu transaction
-      await conn.beginTransaction();
+      const deleted = await productRepo.deleteProduct(productId);
 
-      // Lấy thông tin ảnh từ DB
-    const oldImages = await productFacade.getProductImages(product_id, conn);
-
-      // Xóa ảnh trên Cloudinary
-      for (const img of oldImages) {
-        const public_id = productFacade.extractPublicIdFromUrl(img.image_url);
-
-        try {
-          const result = await cloudinary.uploader.destroy(public_id);
-          if (result.result === "ok") {
-            console.log(`Đã xóa ảnh: ${public_id}`);
-          } else {
-            console.log(`Không thể xóa ảnh: ${public_id}`);
-          }
-        } catch (error) {
-          console.log(`Lỗi xóa ảnh trên Cloudinary: ${error}`);
-        }
+      if (!deleted) {
+        connection.release();
+        return res.status(404).json({ message: "Sản phẩm không tồn tại" });
       }
 
-      // Xóa ảnh khỏi bảng product_image
-      await conn.query("DELETE FROM product_images WHERE product_id = ?", [
-        product_id,
-      ]);
-
-      // Xóa sản phẩm
-      await conn.query("DELETE FROM products WHERE product_id = ?", [
-        product_id,
-      ]);
-
-      // Commit transaction
-      await conn.commit();
+      connection.release();
       return res.status(200).json({ message: "Xóa thành công!" });
     } catch (error) {
-      await conn.rollback(); // Rollback nếu lỗi
+      connection.release();
       console.error("Lỗi server:", error);
       return res.status(500).json({ message: "Lỗi server!" });
-    } finally {
-      conn.release(); // Giải phóng kết nối
     }
   },
 
   random: async (req, res) => {
-    const product_id = req.params.product_id;
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
     try {
-      const randomProSql =
-        "SELECT * FROM products WHERE product_id != ? AND status='con-hang' ORDER BY RAND() LIMIT 10";
-      const [products] = await db.promise().query(randomProSql, [product_id]);
+      const product_id = req.params.product_id;
 
-      const ImgSql = "SELECT * FROM product_images WHERE product_id !=?";
-      let [images] = await db.promise().query(ImgSql, [product_id]);
+      const products = await productRepo.getRandomProducts(product_id);
 
-      const Products=productFacade.getProducts(products,images);
+      const productIds = products.map((p) => p.product_id);
+      const images =
+        productIds.length > 0
+          ? await productRepo.getImagesForProducts(productIds)
+          : [];
+
+      const Products = productFacade.getProducts(products, images);
+
       return res.status(200).json(Products);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Lỗi server!" });
+    } finally {
+      connection.release();
     }
   },
 
   category: async (req, res) => {
-    const category = req.params.category;
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
     try {
-      const randomProSql =
-        "SELECT * FROM products WHERE status='con-hang' AND category=?";
-      const [products] = await db.promise().query(randomProSql, [category]);
+      const category = req.params.category;
 
-      const ImgSql = "SELECT * FROM product_images";
-      let [images] = await db.promise().query(ImgSql);
+      const products = await productRepo.getProductsByCategory(category);
 
-      const Products=productFacade.getProducts(products,images);
+      const productIds = products.map((p) => p.product_id);
+      const images =
+        productIds.length > 0
+          ? await productRepo.getImagesForProducts(productIds)
+          : [];
+
+      const Products = productFacade.getProducts(products, images);
+
       return res.status(200).json(Products);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Lỗi server!" });
+    } finally {
+      connection.release();
     }
   },
 
   top: async (req, res) => {
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
     try {
-      const topProSql =
-        "SELECT * FROM products WHERE status='con-hang' ORDER BY sold DESC";
-      const [products] = await db.promise().query(topProSql);
+      const products = await productRepo.getTopProducts();
 
-      const ImgSql = "SELECT * FROM product_images";
-      let [images] = await db.promise().query(ImgSql);
+      const images = await productRepo.getAllProductImages();
 
-      const Products=productFacade.getProducts(products,images);
+      const Products = productFacade.getProducts(products, images);
+
       return res.status(200).json(Products);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ message: "Lỗi server!" });
+    } finally {
+      connection.release();
     }
   },
 
   orderAdd: async (req, res) => {
     const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
 
     try {
       await connection.beginTransaction();
-
-      const stockChangeValues = req.body;
-      const updateOrderSql = `
-            UPDATE products
-            SET 
-                stock = CASE 
-                    ${stockChangeValues
-                      .map(
-                        ([id, qty]) =>
-                          `WHEN product_id = ${id} THEN stock - ${qty}`
-                      )
-                      .join(" ")}
-                END,
-                sold = CASE 
-                    ${stockChangeValues
-                      .map(
-                        ([id, qty]) =>
-                          `WHEN product_id = ${id} THEN sold + ${qty}`
-                      )
-                      .join(" ")}
-                END,
-                status = CASE 
-                    ${stockChangeValues
-                      .map(
-                        ([id]) =>
-                          `WHEN product_id = ${id} AND stock - ${
-                            stockChangeValues.find((v) => v[0] === id)[1]
-                          } <= 0 THEN 'het-hang'`
-                      )
-                      .join(" ")}
-                      ELSE status
-                END
-            WHERE product_id IN (${stockChangeValues
-              .map(([id]) => id)
-              .join(",")});
-        `;
-
-      await connection.query(updateOrderSql, []);
+      await productRepo.processOrder(req.body);
       await connection.commit();
       connection.release();
 
-      res.status(200).json({ message: "Stock updated successfully!" });
+      res.status(200).json({ message: "Cập nhật tồn kho thành công!" });
     } catch (error) {
       await connection.rollback();
       connection.release();
-
-      console.error("Error updating stock:", error);
+      console.error("Lỗi khi cập nhật tồn kho:", error);
       res.status(500).json({ message: "Server error!" });
     }
   },
-  
+
   orderAbort: async (req, res) => {
     const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
     try {
       await connection.beginTransaction();
-
-      const stockChangeValues = req.body;
-      const updateOrderSql = `
-          UPDATE products
-          SET 
-              stock = CASE 
-                  ${stockChangeValues
-                    .map(
-                      ([id, qty]) =>
-                        `WHEN product_id = ${id} THEN stock + ${qty}`
-                    )
-                    .join(" ")}
-              END,
-              sold = CASE 
-                  ${stockChangeValues
-                    .map(
-                      ([id, qty]) =>
-                        `WHEN product_id = ${id} THEN sold - ${qty}`
-                    )
-                    .join(" ")}
-              END,
-              status = CASE 
-                  ${stockChangeValues
-                    .map(
-                      ([id]) =>
-                        `WHEN product_id = ${id} AND stock + ${
-                          stockChangeValues.find((v) => v[0] === id)[1]
-                        } > 0 THEN 'con-hang'`
-                    )
-                    .join(" ")}
-                    ELSE status
-              END
-          WHERE product_id IN (${stockChangeValues
-            .map(([id]) => id)
-            .join(",")});
-      `;
-
-      await connection.query(updateOrderSql, []);
+      await productRepo.revertOrder(req.body);
       await connection.commit();
       connection.release();
 
-      res.status(200).json({ message: "Stock updated successfully!" });
+      res.status(200).json({ message: "Cập nhật tồn kho thành công!" });
     } catch (error) {
       await connection.rollback();
       connection.release();
-
-      console.error("Error updating stock:", error);
+      console.error("Lỗi khi cập nhật tồn kho:", error);
       res.status(500).json({ message: "Server error!" });
     }
   },

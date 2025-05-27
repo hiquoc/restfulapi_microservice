@@ -127,7 +127,6 @@
         const urlParams = new URLSearchParams(window.location.search) || "";
         const sortValue = urlParams.get("sort");
         const token = localStorage.getItem("token") || "";
-        console.log(token)
         try {
             const url = sortValue ? `http://localhost:3002/products?sort=${sortValue}` : `http://localhost:3002/products`
             const response = await fetch(url, {
@@ -136,9 +135,9 @@
                     "Authorization": `Bearer ${token}`,
                 },
             });
-            console.log(url)
-            const products = await response.json();
 
+            const products = await response.json();
+ 
             const productContainer = document.querySelector(".row");
             productContainer.innerHTML = ""; // Clear existing content
 
@@ -149,7 +148,7 @@
             <a href="/product/${product.product_id}" class="product-image" style="height:100%; position: relative;">
                 <img style="height: 100%;width:100%" src="${product.mainImg}" class="img-fluid" alt="${product.name}">
                 ${product.discount > 0 ? `
-                    <div class="discount-tag" style="position: absolute; top: 3px; right: -10px;">
+                    <div class="discount-tag" style="position: absolute; top: 0px; right: -15px;">
                         -${product.discount}%
                     </div>
                 ` : ''}

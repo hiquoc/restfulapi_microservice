@@ -1,3 +1,7 @@
+<div>
+    <img style="width: 100%;"
+     src="https://file.hstatic.net/200000377165/collection/banner_trai_cay_viet_2e7b9948ce92487895a56ffdbcbbfeea.png" alt="">
+</div>
 <div style="display: flex; align-items: center; width: 100%; margin: 20px 0;padding-top:00px">
     <span style="border-top: 1px solid #696969;flex:0.05 "></span>
     <h1
@@ -307,7 +311,7 @@
                 });
                 return; // Không gọi updateCart nếu chưa đăng nhập
             }
-            else if (data.message == "Số lượng sản phẩm trong kho có hạn!") {
+            else if (data.message == "Số lượng vượt quá tồn kho!") {
                 document.getElementById("alert-text").innerHTML = data.message;
                 $("#alertModal").modal("show");
             }

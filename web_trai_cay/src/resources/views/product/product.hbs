@@ -553,7 +553,7 @@
     {{!-- <button class="prev-btn" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%);
         background: none; border: none; cursor: pointer; font-size: 36px; z-index: 10;">
         <i class="bi bi-arrow-left-square"></i></button> --}}
-    <div class="slider-wrapper">
+    <div class="slider-wrapper" style="gap:3px">
         {{#each other}}
         <div class="product-card" style="display: flex; flex-direction: column; height: 380px; width: 240px; margin: 0 10px; position: relative;">
             <a href="/product/{{this.product_id}}" class="product-image"
@@ -926,35 +926,6 @@
         });
 
         ////////////////////////////////
-        let currentIndex = 0;
-        const itemsToShow = 5; // Show 5 items at a time
-        const itemWidth = 258; // 238px width + 10px margin
-        const sliderWrapper = document.querySelector('.slider-wrapper');
-        const totalSlides = document.querySelectorAll('.slider-item').length;
 
-        function showSlide(index) {
-            const maxIndex = Math.ceil(totalSlides / itemsToShow) - 1;
-
-            if (index > maxIndex) {
-                currentIndex = 0; // Loop back to first set
-            } else if (index < 0) {
-                currentIndex = maxIndex; // Loop to last set
-            } else {
-                currentIndex = index;
-            }
-
-            const offset = -currentIndex * (itemsToShow * itemWidth); // Move by 5 items
-            sliderWrapper.style.transform = `translateX(${offset}px)`;
-        }
-
-        function nextSlide() {
-            showSlide(currentIndex + 1);
-        }
-
-        function prevSlide() {
-            showSlide(currentIndex - 1);
-        }
-        document.querySelector(".next-btn").addEventListener("click", nextSlide);
-        document.querySelector(".prev-btn").addEventListener("click", prevSlide);
     });
 </script>

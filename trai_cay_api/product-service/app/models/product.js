@@ -20,6 +20,12 @@ class Product {
     this.images = images;
     this.discount=discount;
   }
+  getMainImage() {
+    return this.mainImage;
+  }
+  getAdditionalImages() {
+    return this.images;
+  }
   getAllImages() {
     // mainImage + images phụ (đã xử lý đúng thứ tự)
     const allImages = this.images || [];

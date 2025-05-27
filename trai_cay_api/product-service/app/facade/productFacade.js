@@ -5,11 +5,11 @@ const axios = require("axios");
 const ProductFacade = {
   create: (data) => {
     switch (data.category) {
-      case 1:
+      case '1':
         return gtcProduct.createProduct(data);
-      case 2:
+      case '2':
         return tcProduct.createProduct(data);
-      case 3:
+      case '3':
         return rcProduct.createProduct(data);
       default:
         return tcProduct.createProduct(data);
@@ -18,7 +18,7 @@ const ProductFacade = {
 
   checkIfProductCanBeDeleted: async (product_id, token) => {
     try {
-      const response = await axios.get("http://localhost:3003/orders", {
+      const response = await axios.get("http://buy-service:3003/orders", {
         headers: { Authorization: `${token}` },
       });
 
@@ -51,7 +51,6 @@ const ProductFacade = {
   getProducts: (products, images) => {
     // Map ảnh theo product_id
     const imageMap = {};
-
     images.forEach((image) => {
       const pid = image.product_id;
       if (!imageMap[pid]) {
@@ -60,13 +59,12 @@ const ProductFacade = {
           images: [],
         };
       }
-      if (image.image_url.includes("/uploads/main")) {
+      if (image.image_url.includes("/uploads/main")||image.image_url.match(/\/main(-|_|\.)?/i)) {
         imageMap[pid].mainImg = image.image_url;
       }
       else{
         imageMap[pid].images.push(image.image_url);
       }
-      
     });
 
     // Tạo danh sách sản phẩm với ảnh kết hợp
@@ -100,7 +98,7 @@ const ProductFacade = {
     if (headers) {
       try {
         const token = headers;
-        const response = await axios.get("http://localhost:3001/admin", {
+        const response = await axios.get("http://account-service:3001/admin", {
           headers: { Authorization: `${token}` },
         });
         if (response.status != 401 || response.status != 403) {

@@ -20,7 +20,7 @@ module.exports = function (app) {
 
   app
     .route("/orders/:account_id")
-    .get(authProxy.checkAdmin, getAccounts, getProducts, buyController.ordersGet1); //lay danh sach don hang 1 tai khoan cho admin
+    .get(authProxy.checkAdmin, getAccounts, getProducts, buyController.ordersGet); //lay danh sach don hang 1 tai khoan cho admin
   app
     .route("/orders")
     .get(authProxy.checkAdmin, getAccounts, getProducts, buyController.ordersGet); //lay danh sach don hang cho admin

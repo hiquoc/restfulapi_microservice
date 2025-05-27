@@ -5,7 +5,7 @@ const getAccounts = async (req, res, next) => {
         const token = req.headers.authorization;
         const response = await axios.get("http://account-service:3001/accounts", {
             headers: { Authorization: `${token}` },
-            validateStatus: () => true // Prevent axios from throwing an error on 4xx/5xx responses
+            validateStatus: () => true
         });
 
         if (response.status === 401 || response.status === 403) {
