@@ -71,9 +71,23 @@ class accountController {
         }
       }
       res.render("search", {
-        products: tops.data,
-        tops: products.slice(0, 10),
+        products: tops.data.slice(0, 12),
+        tops: products.slice(0, 4),
         name: "Mua nhiều nhất",
+      });
+    } catch (e) {
+      console.error("Lỗi khi lấy sản phẩm");
+      res.status(500).json({ message: "Lỗi server" });
+    }
+  }
+  async discount(req, res) {
+    try {
+      const products = await axios.get(`http://localhost:3002/discount`, {});
+      const tops = await axios.get(`http://localhost:3002/top`, {});
+      res.render("search", {
+        products: products.data,
+        tops: tops.data.slice(0, 5),
+        name: "Đang giảm giá",
       });
     } catch (e) {
       console.error("Lỗi khi lấy sản phẩm");

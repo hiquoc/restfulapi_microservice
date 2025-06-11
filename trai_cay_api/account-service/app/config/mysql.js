@@ -14,17 +14,14 @@ class Database {
         connectionLimit: 10,
         queueLimit: 0
       });
-
       Database.instance = this;
     }
     return Database.instance;
   }
-
   getPool() {
     return this.pool;
   }
 }
-
 const instance = new Database();
 const db = instance.getPool();
 

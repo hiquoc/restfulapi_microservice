@@ -9,6 +9,7 @@ class Product {
     mainImage,
     images,
     discount,
+    sold = 0,
   }) {
     this.name = name;
     this.price = price;
@@ -19,6 +20,7 @@ class Product {
     this.mainImage = mainImage;
     this.images = images;
     this.discount=discount;
+    this.sold = sold;
   }
   getMainImage() {
     return this.mainImage;

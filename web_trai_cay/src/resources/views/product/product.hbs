@@ -1,23 +1,50 @@
 <div class="flex-container"
     style="display: flex; flex-direction: row; font-size: 30px; gap: 20px; text-align: center; padding: 30px 80px 0 80px;">
-    <!-- Product Image Section -->
-    <div class="flex-item-left card" style="flex: 45%; height:auto; border:none;">
-        <!-- Display the main image -->
-        <img src="{{product.mainImg}}" class="img-fluid" id="main-image" alt="Main product image"
-            style="height: 450px; width: 100%; object-fit:contain" data-original-src="{{product.mainImg}}">
+    <div class="flex-item-left card" style="flex: 45%; height:auto; border:none; position: relative;">
+        <div style="position: relative;">
+            <img src="{{product.mainImg}}" class="img-fluid" id="main-image" alt="Main product image"
+                style="height: 450px; width: 100%; object-fit: contain; display: block; border-radius: 8px;"
+                data-original-src="{{product.mainImg}}">
 
-        <!-- Display thumbnails of other images -->
+            <button id="prev-btn" class="nav-btn" style="left: -10px;">&#10094;</button>
+            <button id="next-btn" class="nav-btn" style="right: -10px;">&#10095;</button>
+        </div>
+
         <div style="margin-top: 10px;">
             <img class="small-img" style="height: 60px; margin-right: 5px;border:1px solid #12487f;border-radius:6px"
                 src="{{product.mainImg}}" alt="Product thumbnail">
             {{#each product.images}}
-            <img class="small-img" style="height: 60px; margin-right: 5px;border:1px solid #eee;border-radius:6px "
+            <img class="small-img" style="height: 60px; margin-right: 5px;border:1px solid #eee;border-radius:6px"
                 src="{{this}}" alt="Product thumbnail">
             {{/each}}
         </div>
     </div>
+    <style>
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+            background-color: rgba(202, 5, 5, 0.7);
+            border: none;
+            color: white;
+            font-size: 24px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
 
-    <!-- Product Details Section -->
+        .nav-btn:hover {
+            background-color: rgba(18, 72, 127, 0.9);
+        }
+    </style>
+
+
     <div class="flex-item-left" style="padding: 10px; flex: 55%;padding-top:10px">
         <div>
             <input style="display:none" id="productID" value="{{product.product_id}}">
@@ -555,7 +582,8 @@
         <i class="bi bi-arrow-left-square"></i></button> --}}
     <div class="slider-wrapper" style="gap:3px">
         {{#each other}}
-        <div class="product-card" style="display: flex; flex-direction: column; height: 380px; width: 240px; margin: 0 10px; position: relative;">
+        <div class="product-card"
+            style="display: flex; flex-direction: column; height: 380px; width: 240px; margin: 0 10px; position: relative;">
             <a href="/product/{{this.product_id}}" class="product-image"
                 style="height: 220px; width: 100%; overflow: hidden; position: relative; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
                 <img src="{{this.mainImg}}" class="img-fluid" alt="{{this.name}}"
@@ -563,7 +591,8 @@
 
                 {{#if this.discount}}
                 {{#unless (eq this.discount 0)}}
-                <div class="discount-tag" style="position: absolute; top: 6px; right:-8px; background-color: #fd1818; color: white; padding: 3px 8px; border-radius: 4px; font-size: 16px; font-weight: bold;">
+                <div class="discount-tag"
+                    style="position: absolute; top: 6px; right:-8px; background-color: #fd1818; color: white; padding: 3px 8px; border-radius: 4px; font-size: 16px; font-weight: bold;">
                     -{{this.discount}}%
                 </div>
                 {{/unless}}
@@ -573,16 +602,19 @@
             <div class="product-body"
                 style="flex-grow: 1; display: flex; flex-direction: column; padding: 15px; position: relative; height: 160px;">
                 <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                    <p class="product-name" style="font-size: 15px; line-height: 1.3; margin-bottom: 12px; min-height: 38px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center;">
+                    <p class="product-name"
+                        style="font-size: 15px; line-height: 1.3; margin-bottom: 12px; min-height: 38px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-align: center;">
                         {{this.name}}
                     </p>
-                    
+
                     <div style="text-align: center;">
                         {{#if this.discount}}
-                        <p style="text-decoration: line-through; color: #888; font-size: 14px; margin-bottom: 5px; text-align: center;margin-top:-15px">
+                        <p
+                            style="text-decoration: line-through; color: #888; font-size: 14px; margin-bottom: 5px; text-align: center;margin-top:-15px">
                             {{formatPrice this.price}}₫
                         </p>
-                        <p style="color: #fd1818; font-weight: bold; font-size: 16px; text-align: center;margin-top:-5px">
+                        <p
+                            style="color: #fd1818; font-weight: bold; font-size: 16px; text-align: center;margin-top:-5px">
                             {{formatPrice this.afterDiscount}}₫
                         </p>
                         {{else}}
@@ -592,7 +624,7 @@
                         {{/if}}
                     </div>
                 </div>
-                
+
                 <button class="buy-button" onclick="themNhanh({{this.product_id}})"
                     style="position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: calc(100% - 30px); ">
                     <i class="fas fa-shopping-bag"></i> THÊM VÀO GIỎ
@@ -927,5 +959,34 @@
 
         ////////////////////////////////
 
+    });
+</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const mainImage = document.getElementById("main-image");
+        const thumbnails = Array.from(document.querySelectorAll(".small-img"));
+        let currentIndex = 0;
+
+        // Update main image
+        function updateMainImage(index) {
+            if (index >= 0 && index < thumbnails.length) {
+                mainImage.src = thumbnails[index].src;
+                currentIndex = index;
+            }
+        }
+
+        // Add event listeners to buttons
+        document.getElementById("prev-btn").addEventListener("click", function () {
+            updateMainImage((currentIndex - 1 + thumbnails.length) % thumbnails.length);
+        });
+
+        document.getElementById("next-btn").addEventListener("click", function () {
+            updateMainImage((currentIndex + 1) % thumbnails.length);
+        });
+
+        // Optional: allow clicking thumbnails to update main image
+        thumbnails.forEach((thumb, index) => {
+            thumb.addEventListener("click", () => updateMainImage(index));
+        });
     });
 </script>

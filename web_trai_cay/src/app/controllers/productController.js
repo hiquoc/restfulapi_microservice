@@ -42,10 +42,12 @@ class productController {
             break;
         }
       }
-      const tops = await axios.get(`http://localhost:3002/top`, {}); 
-      res.render("product/products", { products:products,tops:tops.data,name });
+      let topsResponse = await axios.get(`http://localhost:3002/top`);
+      let tops = topsResponse.data.slice(0, 4);
+
+      res.render("product/products", { products:products,tops:tops,name });
     } catch (e) {
-      console.error("Lỗi khi lấy sản phẩm");
+      console.error("Lỗi khi lấy sản phẩm "+e.message);
       res.status(500).json({ message: "Lỗi server" });
     }
   }

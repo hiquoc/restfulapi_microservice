@@ -10,6 +10,8 @@ module.exports = function (app) {
 
   //lay ngau nhien san pham
   app.route("/random/:product_id").get(productController.random);
+  //lay san pham dang giam gia
+  app.route("/discount").get(productController.discount);
 
   //cap nhat sold va stock (duoc goi tu buy-service)
   app.route("/orderAdd").patch(authProxy.checkLoggedIn, productController.orderAdd);

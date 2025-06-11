@@ -17,12 +17,12 @@ module.exports = {
         req.product.price * (1 - req.product.discount / 100)
       );
 
-      const cartItem = {
+      const cartItem = CartFacade.create({
         account_id,
         product_id,
         quantity: Number(quantity),
-        unitPrice,
-      };
+        price: unitPrice,
+      });
 
       await buyRepo.addOrUpdateCartItem(cartItem, stock);
 

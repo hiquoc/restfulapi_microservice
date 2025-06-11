@@ -5,7 +5,7 @@ class ProductRepository {
   constructor(connection) {
     this.connection = connection;
   }
-   
+
   async createProduct(productData) {
     const sql = `
       INSERT INTO products 
@@ -25,8 +25,8 @@ class ProductRepository {
 
   async addProductImages(productId, imageUrls) {
     if (imageUrls.length === 0) return;
-    
-    const values = imageUrls.map(url => [productId, url]);
+
+    const values = imageUrls.map((url) => [productId, url]);
     const sql = `
       INSERT INTO product_images 
         (product_id, image_url) 
@@ -36,23 +36,23 @@ class ProductRepository {
   }
 
   async getProductById(productId) {
-  const sql = "SELECT * FROM products WHERE product_id = ?";
-  const [rows] = await this.connection.query(sql, [productId]);
-  return rows[0] || null;
-}
+    const sql = "SELECT * FROM products WHERE product_id = ?";
+    const [rows] = await this.connection.query(sql, [productId]);
+    return rows[0] || null;
+  }
 
-async getProductImages(productId) {
-  const sql = "SELECT * FROM product_images WHERE product_id = ?";
-  const [rows] = await this.connection.query(sql, [productId]);
-  return rows;
-}
+  async getProductImages(productId) {
+    const sql = "SELECT * FROM product_images WHERE product_id = ?";
+    const [rows] = await this.connection.query(sql, [productId]);
+    return rows;
+  }
 
-async getProductWithImages(productId) {
-  const product = await this.getProductById(productId);
-  if (!product) return null;
-  const images = await this.getProductImages(productId);
-  return { ...product, images };
-}
+  async getProductWithImages(productId) {
+    const product = await this.getProductById(productId);
+    if (!product) return null;
+    const images = await this.getProductImages(productId);
+    return { ...product, images };
+  }
 
   async getProducts({ role, sort } = {}) {
     let sql = "SELECT product_id, name, price, discount FROM products";
@@ -66,9 +66,9 @@ async getProductWithImages(productId) {
       const categoryMap = {
         "gio-trai-cay": 1,
         "trai-cay": 2,
-        "rau-cu": 3
+        "rau-cu": 3,
       };
-      
+
       if (categoryMap[sort]) {
         conditions.push(`category = ${categoryMap[sort]}`);
       }
@@ -94,25 +94,26 @@ async getProductWithImages(productId) {
     return { products, images };
   }
   async getImagesForProducts(productIds) {
-  if (productIds.length === 0) return [];
-  const [images] = await this.connection.query(
-    "SELECT * FROM product_images WHERE product_id IN (?)",
-    [productIds]
-  );
-  return images;
-}
+    if (productIds.length === 0) return [];
+    const [images] = await this.connection.query(
+      "SELECT * FROM product_images WHERE product_id IN (?)",
+      [productIds]
+    );
+    return images;
+  }
 
   async getAllProductsDetailed({ sort } = {}) {
-    let sql = "SELECT product_id, name, price, stock, discount, sold FROM products";
+    let sql =
+      "SELECT product_id, name, price, stock, discount, sold FROM products";
     const conditions = [];
 
     if (sort) {
       const categoryMap = {
         "gio-trai-cay": 1,
         "trai-cay": 2,
-        "rau-cu": 3
+        "rau-cu": 3,
       };
-      
+
       if (categoryMap[sort]) {
         conditions.push(`category = ${categoryMap[sort]}`);
       }
@@ -125,7 +126,7 @@ async getProductWithImages(productId) {
     sql += " ORDER BY product_id DESC";
     const [products] = await this.connection.query(sql);
     const images = await this.getAllProductImages();
-    
+
     return { products, images };
   }
 
@@ -140,7 +141,7 @@ async getProductWithImages(productId) {
     sql += " ORDER BY product_id DESC";
     const [products] = await this.connection.query(sql, params);
     const images = await this.getAllProductImages();
-    
+
     return { products, images };
   }
   async updateProduct(productId, productData) {
@@ -158,7 +159,7 @@ async getProductWithImages(productId) {
       productData.category,
       productData.status,
       productData.discount,
-      productId
+      productId,
     ]);
     return result.affectedRows > 0;
   }
@@ -178,8 +179,8 @@ async getProductWithImages(productId) {
 
   async addProductImages(productId, imageUrls) {
     if (imageUrls.length === 0) return;
-    
-    const values = imageUrls.map(url => [productId, url]);
+
+    const values = imageUrls.map((url) => [productId, url]);
     await this.connection.query(
       "INSERT INTO product_images (product_id, image_url) VALUES ?",
       [values]
@@ -196,7 +197,7 @@ async getProductWithImages(productId) {
       if (fileData) {
         // Get old images
         const oldImages = await this.getProductImages(productId);
-        
+
         // Delete old images from Cloudinary
         for (const img of oldImages) {
           const publicId = productFacade.extractPublicIdFromUrl(img.image_url);
@@ -213,7 +214,7 @@ async getProductWithImages(productId) {
         // Add new images
         const allImages = [
           ...(fileData.mainImage ? [fileData.mainImage] : []),
-          ...(fileData.images || [])
+          ...(fileData.images || []),
         ];
         await this.addProductImages(productId, allImages);
       }
@@ -225,7 +226,15 @@ async getProductWithImages(productId) {
     }
   }
   async checkDeletePermission(productId, token) {
-    return productFacade.checkIfProductCanBeDeleted(productId, token);
+    const product = await this.getProductById(productId);
+    if (!product) return false;
+
+    if (Number(product.sold) > 0) {
+      return false;
+    }
+
+    const role = await productFacade.getRole(token);
+    return role === "admin";
   }
 
   async deleteProduct(productId) {
@@ -246,10 +255,10 @@ async getProductWithImages(productId) {
 
       // Xóa ảnh trên database
       await this.connection.query(
-        "DELETE FROM product_images WHERE product_id = ?", 
+        "DELETE FROM product_images WHERE product_id = ?",
         [productId]
       );
-      
+
       const [result] = await this.connection.query(
         "DELETE FROM products WHERE product_id = ?",
         [productId]
@@ -269,19 +278,25 @@ async getProductWithImages(productId) {
       UPDATE products
       SET 
         stock = CASE 
-          ${stockChanges.map(([id, qty]) => `WHEN product_id = ${id} THEN stock - ${qty}`).join(' ')}
+          ${stockChanges
+            .map(([id, qty]) => `WHEN product_id = ${id} THEN stock - ${qty}`)
+            .join(" ")}
         END,
         sold = CASE 
-          ${stockChanges.map(([id, qty]) => `WHEN product_id = ${id} THEN sold + ${qty}`).join(' ')}
+          ${stockChanges
+            .map(([id, qty]) => `WHEN product_id = ${id} THEN sold + ${qty}`)
+            .join(" ")}
         END,
         status = CASE 
-          ${stockChanges.map(([id]) => {
-            const qty = stockChanges.find(v => v[0] === id)[1];
-            return `WHEN product_id = ${id} AND stock - ${qty} <= 0 THEN 'het-hang'`;
-          }).join(' ')}
+          ${stockChanges
+            .map(([id]) => {
+              const qty = stockChanges.find((v) => v[0] === id)[1];
+              return `WHEN product_id = ${id} AND stock - ${qty} <= 0 THEN 'het-hang'`;
+            })
+            .join(" ")}
           ELSE status
         END
-      WHERE product_id IN (${stockChanges.map(([id]) => id).join(',')})
+      WHERE product_id IN (${stockChanges.map(([id]) => id).join(",")})
     `;
 
     await this.connection.query(updateSql);
@@ -294,19 +309,25 @@ async getProductWithImages(productId) {
       UPDATE products
       SET 
         stock = CASE 
-          ${stockChanges.map(([id, qty]) => `WHEN product_id = ${id} THEN stock + ${qty}`).join(' ')}
+          ${stockChanges
+            .map(([id, qty]) => `WHEN product_id = ${id} THEN stock + ${qty}`)
+            .join(" ")}
         END,
         sold = CASE 
-          ${stockChanges.map(([id, qty]) => `WHEN product_id = ${id} THEN sold - ${qty}`).join(' ')}
+          ${stockChanges
+            .map(([id, qty]) => `WHEN product_id = ${id} THEN sold - ${qty}`)
+            .join(" ")}
         END,
         status = CASE 
-          ${stockChanges.map(([id]) => {
-            const qty = stockChanges.find(v => v[0] === id)[1];
-            return `WHEN product_id = ${id} AND stock + ${qty} > 0 THEN 'con-hang'`;
-          }).join(' ')}
+          ${stockChanges
+            .map(([id]) => {
+              const qty = stockChanges.find((v) => v[0] === id)[1];
+              return `WHEN product_id = ${id} AND stock + ${qty} > 0 THEN 'con-hang'`;
+            })
+            .join(" ")}
           ELSE status
         END
-      WHERE product_id IN (${stockChanges.map(([id]) => id).join(',')})
+      WHERE product_id IN (${stockChanges.map(([id]) => id).join(",")})
     `;
 
     await this.connection.query(updateSql);
@@ -328,7 +349,18 @@ async getProductWithImages(productId) {
   }
 
   async getTopProducts(limit) {
-    let sql = "SELECT * FROM products WHERE status='con-hang' ORDER BY sold DESC";
+    let sql =
+      "SELECT * FROM products WHERE status='con-hang' ORDER BY sold DESC";
+    if (limit) {
+      sql += " LIMIT ?";
+      const [products] = await this.connection.query(sql, [limit]);
+      return products;
+    }
+    const [products] = await this.connection.query(sql);
+    return products;
+  }
+  async getDiscountProducts(limit) {
+    let sql = "SELECT * FROM products WHERE discount!=0 ORDER BY sold DESC";
     if (limit) {
       sql += " LIMIT ?";
       const [products] = await this.connection.query(sql, [limit]);

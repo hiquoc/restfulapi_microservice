@@ -17,7 +17,6 @@ module.exports = {
           .status(400)
           .json({ message: "Vui lòng tải ít nhất một ảnh!" });
       }
-
       // Khởi tạo sản phẩm bằng Factory
       const product = productFacade.create({
         name: req.body.name,
@@ -34,7 +33,6 @@ module.exports = {
           : [],
       });
 
-      // Use repository methods
       const productId = await productRepo.createProduct(product);
       await productRepo.addProductImages(productId, product.getAllImages());
 
@@ -52,38 +50,47 @@ module.exports = {
   },
 
   product: async (req, res) => {
-  const product_id = req.params.product_id;
-  const connection = await db.promise().getConnection();
-  const productRepo = new ProductRepository(connection);
-  
-  try {
-    const productWithImages = await productRepo.getProductWithImages(product_id);
-    if (!productWithImages) {
+    const product_id = req.params.product_id;
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+
+    try {
+      const productWithImages = await productRepo.getProductWithImages(
+        product_id
+      );
+      if (!productWithImages) {
+        connection.release();
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      const result = {
+        ...productWithImages,
+        mainImg:
+          productWithImages.images.find(
+            (img) =>
+              img.image_url.includes("/main") ||
+              img.image_url.match(/\/main(-|_|\.)?/i)
+          )?.image_url || null,
+        images: productWithImages.images
+          .filter(
+            (img) =>
+              !img.image_url.includes("/main") &&
+              !img.image_url.match(/\/main(-|_|\.)?/i)
+          )
+          .map((img) => img.image_url),
+        afterDiscount: Math.round(
+          productWithImages.price * (1 - productWithImages.discount / 100)
+        ),
+      };
+
       connection.release();
-      return res.status(404).json({ message: "Product not found" });
+      return res.status(200).json([result]);
+    } catch (error) {
+      connection.release();
+      console.error(error);
+      return res.status(500).json({ message: "Lỗi server!" });
     }
-    
-    const result = {
-      ...productWithImages,
-      mainImg: productWithImages.images.find(img => 
-        img.image_url.includes("/main") || 
-        img.image_url.match(/\/main(-|_|\.)?/i)
-      )?.image_url || null,
-      images: productWithImages.images.filter(img => 
-        !img.image_url.includes("/main") && 
-        !img.image_url.match(/\/main(-|_|\.)?/i)
-      ).map(img => img.image_url),
-      afterDiscount: Math.round(productWithImages.price * (1 - productWithImages.discount / 100))
-    };
-    
-    connection.release();
-    return res.status(200).json([result]);
-  } catch (error) {
-    connection.release();
-    console.error(error);
-    return res.status(500).json({ message: "Lỗi server!" });
-  }
-},
+  },
 
   products: async (req, res) => {
     const connection = await db.promise().getConnection();
@@ -193,7 +200,6 @@ module.exports = {
         images: req.files["images"]?.map((f) => f.path) || [],
       });
 
-      // Use repository for full update
       await productRepo.fullProductUpdate(productId, product, {
         mainImage: product.getMainImage(),
         images: product.getAdditionalImages(),
@@ -214,10 +220,8 @@ module.exports = {
     const productId = req.params.product_id;
 
     try {
-      // Create product via Factory
       const product = productFacade.create(req.body);
 
-      // Use repository for basic update
       const updated = await productRepo.updateProduct(productId, product);
       if (!updated) {
         connection.release();
@@ -244,9 +248,12 @@ module.exports = {
         req.headers.authorization
       );
 
-      if (!checkResult.canDelete) {
+      if (!checkResult) {
         connection.release();
-        return res.status(400).json({ message: checkResult.message });
+        return res.status(403).json({
+          success: false,
+          message: "Không có quyền xóa sản phẩm hoặc sản phẩm đã được bán.",
+        });
       }
 
       const deleted = await productRepo.deleteProduct(productId);
@@ -328,6 +335,21 @@ module.exports = {
 
       const Products = productFacade.getProducts(products, images);
 
+      return res.status(200).json(Products);
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({ message: "Lỗi server!" });
+    } finally {
+      connection.release();
+    }
+  },
+  discount: async (req, res) => {
+    const connection = await db.promise().getConnection();
+    const productRepo = new ProductRepository(connection);
+    try {
+      const products = await productRepo.getDiscountProducts();
+      const images = await productRepo.getAllProductImages();
+      const Products = productFacade.getProducts(products, images);
       return res.status(200).json(Products);
     } catch (error) {
       console.log(error);

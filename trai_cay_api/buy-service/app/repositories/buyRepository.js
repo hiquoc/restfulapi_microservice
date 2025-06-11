@@ -3,7 +3,7 @@ class BuyRepository {
     this.connection = connection;
   }
   async addOrUpdateCartItem(cartData, stock) {
-    const { account_id, product_id, quantity, unitPrice } = cartData;
+    const { account_id, product_id, quantity, price } = cartData;
 
     const [existingRows] = await this.connection.query(
       "SELECT quantity FROM carts WHERE account_id = ? AND product_id = ?",
@@ -18,7 +18,7 @@ class BuyRepository {
       throw new Error("Số lượng vượt quá tồn kho!");
     }
 
-    const totalPrice = unitPrice * totalQuantity;
+    const totalPrice = price * totalQuantity;
 
     const sql = `
     INSERT INTO carts (account_id, product_id, quantity, price)

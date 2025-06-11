@@ -12,23 +12,6 @@ const AccountFacade = {
       return UserAccount.createAccount(data);
   },
 
-  // Tạo account từ dữ liệu database
-  fromDB: (dbData) => {
-    const accountData=({
-      id: dbData.id || dbData.account_id,
-      username: dbData.username,
-      password: dbData.password,
-      fullname: dbData.fullname,
-      phone: dbData.phone,
-      email: dbData.email,
-      role: dbData.role,
-    });
-    if (dbData.role === "admin") {
-      return new AdminAccount(accountData);
-    }
-    return new UserAccount(accountData);
-  },
-
   // Hash mật khẩu
   hashPassword: async (password) => {
     return await bcrypt.hash(password, 10);

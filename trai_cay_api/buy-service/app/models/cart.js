@@ -1,11 +1,11 @@
-class Cart {
-  constructor({ cart_id, account_id, product_id, quantity, price }) {
-    this.cart_id = cart_id || null;
-    this.account_id = account_id;
-    this.product_id = product_id;
-    this.quantity = quantity;
-    this.price = price;
-  }
+  class Cart {
+    constructor({ cart_id, account_id, product_id, quantity, price }) {
+      this.cart_id = cart_id || null;
+      this.account_id = account_id;
+      this.product_id = product_id;
+      this.quantity = quantity;
+      this.price = price;
+    }
 
   // Phương thức validate dữ liệu
   validate(stock) {

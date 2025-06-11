@@ -16,32 +16,6 @@ const ProductFacade = {
     }
   },
 
-  checkIfProductCanBeDeleted: async (product_id, token) => {
-    try {
-      const response = await axios.get("http://buy-service:3003/orders", {
-        headers: { Authorization: `${token}` },
-      });
-
-      const isProductOrdered = response.data.orderItems.some(
-        (item) => item.product_id == product_id
-      );
-
-      return {
-        canDelete: !isProductOrdered,
-        message: isProductOrdered ? "Sản phẩm đã được mua!" : null,
-      };
-    } catch (error) {
-      console.error("Lỗi khi kiểm tra trạng thái đơn hàng:");
-      throw error;
-    }
-  },
-  getProductImages: async (product_id, conn) => {
-    const getImagesSql =
-      "SELECT image_url FROM product_images WHERE product_id = ?";
-    const [images] = await conn.query(getImagesSql, [product_id]);
-    return images;
-  },
-
   // Phân tích public_id từ URL của Cloudinary
   extractPublicIdFromUrl: (imageUrl) => {
     const match = imageUrl.match(/\/uploads\/(.+?)\./);
